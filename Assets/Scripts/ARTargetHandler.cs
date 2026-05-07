@@ -3,8 +3,8 @@ using Vuforia;
 using TMPro;
 using UnityEngine.UI;
 using UnityEngine.Networking;
-using GLTFast;
-
+// using Siccity.GLTFUtility; // REMOVED: Incompatible with Draco compression and URP Android
+// using GLTFast; (dipanggil langsung via namespace)
 public class ARTargetHandler : MonoBehaviour
 {
     private ObserverBehaviour mObserverBehaviour;
@@ -50,7 +50,8 @@ public class ARTargetHandler : MonoBehaviour
     [Header("3D Model Settings")]
     public GameObject slidesContainer; // Container for 2D UI elements
     public Transform modelContainer;   // Container for 3D model
-    private GltfAsset mGltfAsset;
+    private GameObject mCurrentModel;
+    private string mCurrentModelUrl;
     private ModelInteraction mInteraction;
 
     [Header("3D Auto-Normalize")]
@@ -299,16 +300,19 @@ public class ARTargetHandler : MonoBehaviour
             modelContainer.localScale = Vector3.one;
         }
 
-        if (mGltfAsset == null)
-        {
-            mGltfAsset = modelContainer.GetComponent<GltfAsset>();
-            if (mGltfAsset == null) mGltfAsset = modelContainer.gameObject.AddComponent<GltfAsset>();
-        }
-
-        bool urlChanged = mGltfAsset.Url != mData.model_url;
+        bool urlChanged = mCurrentModelUrl != mData.model_url;
 
         if (urlChanged)
         {
+            mCurrentModelUrl = mData.model_url;
+
+            // Hapus model lama jika ada
+            if (mCurrentModel != null)
+            {
+                Destroy(mCurrentModel);
+                mCurrentModel = null;
+            }
+
             // Tampilkan loading panel saat download & spawn model baru
             if (loadingPanel) loadingPanel.SetActive(true);
 
@@ -316,18 +320,9 @@ public class ARTargetHandler : MonoBehaviour
             if (AssetCacheManager.IsCached(mData.model_url))
             {
                 string localPath = AssetCacheManager.GetLocalPath(mData.model_url);
-                string finalUrl = localPath.Replace("\\", "/");
-                if (!finalUrl.StartsWith("file:///")) finalUrl = "file:///" + finalUrl.TrimStart('/');
+                Debug.Log($"[ARTargetHandler] Loading 3D model from CACHE using GLTFast: {localPath}");
                 
-                Debug.Log($"[ARTargetHandler] Loading 3D model from CACHE (Android Friendly): {finalUrl}");
-                
-                // Paksa load ulang dengan mematikan dan menyalakan komponen (untuk glTFast)
-                mGltfAsset.enabled = false;
-                mGltfAsset.Url = finalUrl;
-                mGltfAsset.enabled = true;
-                
-                // Jika versi glTFast mendukung method Load(), panggil langsung
-                // mGltfAsset.Load(finalUrl); 
+                LoadModelWithGLTFast(localPath);
             }
             else
             {
@@ -335,14 +330,42 @@ public class ARTargetHandler : MonoBehaviour
                 StartCoroutine(DownloadAndCacheModel(mData.model_url));
             }
         }
+        else
+        {
+            // Jika URL sama dan model sudah ada, langsung jalankan normalisasi
+            if (autoNormalizeBounds)
+            {
+                StartCoroutine(NormalizeBoundsAfterLoad(false));
+            }
+            else
+            {
+                if (loadingPanel) loadingPanel.SetActive(false);
+                if (mIsTargetPresent && mainCanvas) mainCanvas.SetActive(true);
+            }
+        }
+    }
 
+    private void LoadModelWithGLTFast(string localPath)
+    {
+        // Gunakan komponen bawaan GltfAsset dari GLTFast
+        GameObject gltfObj = new GameObject("GLTFast_Model");
+        gltfObj.transform.SetParent(modelContainer, false);
+        // Penting: Biarkan localRotation apa adanya agar konversi koordinat bawaan GLTFast bekerja!
+        gltfObj.transform.localPosition = Vector3.zero;
+
+        var gltfAsset = gltfObj.AddComponent<GLTFast.GltfAsset>();
+        gltfAsset.Url = "file://" + localPath;
+        
+        mCurrentModel = gltfObj;
+
+        // Berhubung GltfAsset melakukan loading secara internal, kita gunakan polling normalisasi
+        // yang sudah diset ke waitForNewLoad = true agar menunggu sampai renderers terbuat.
         if (autoNormalizeBounds)
         {
-            StartCoroutine(NormalizeBoundsAfterLoad(urlChanged));
+            StartCoroutine(NormalizeBoundsAfterLoad(true));
         }
-        else if (urlChanged)
+        else
         {
-            // Jika auto-normalize off, tetap perlu sembunyikan loading setelah model spawn
             StartCoroutine(HideLoadingAfterSpawn());
         }
     }
@@ -357,12 +380,9 @@ public class ARTargetHandler : MonoBehaviour
             {
                 AssetCacheManager.SaveAsset(url, request.downloadHandler.data);
                 string localPath = AssetCacheManager.GetLocalPath(url);
-                string finalUrl = "file:///" + localPath.Replace("\\", "/").TrimStart('/');
                 
-                Debug.Log("[ARTargetHandler] Download Finished. Loading from: " + finalUrl);
-                mGltfAsset.enabled = false;
-                mGltfAsset.Url = finalUrl;
-                mGltfAsset.enabled = true;
+                Debug.Log("[ARTargetHandler] Download Finished. Loading with GLTFast from: " + localPath);
+                LoadModelWithGLTFast(localPath);
             }
             else
             {
@@ -416,10 +436,11 @@ public class ARTargetHandler : MonoBehaviour
                 yield return new WaitForSeconds(0.1f);
                 elapsed += 0.1f;
 
-                Renderer[] renderers = modelContainer.GetComponentsInChildren<Renderer>();
+                Renderer[] renderers = modelContainer.GetComponentsInChildren<Renderer>(true);
                 if (renderers.Length > 0) 
                 {
-                    Debug.Log($"[ARTargetHandler] Model spawned after {elapsed:F1}s");
+                    Debug.Log($"[ARTargetHandler] Model spawned after {elapsed:F1}s. Waiting 1.5s for full hierarchy...");
+                    yield return new WaitForSeconds(1.5f);
                     break;
                 }
             }
@@ -437,7 +458,7 @@ public class ARTargetHandler : MonoBehaviour
             yield break;
         }
 
-        Renderer[] allRenderers = modelContainer.GetComponentsInChildren<Renderer>();
+        Renderer[] allRenderers = modelContainer.GetComponentsInChildren<Renderer>(true);
         if (allRenderers.Length == 0)
         {
             string localPath = AssetCacheManager.GetLocalPath(mData.model_url);
