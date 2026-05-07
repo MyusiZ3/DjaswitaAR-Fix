@@ -1,0 +1,459 @@
+export const WisataSection = () => `
+  <header class="header">
+    <div class="title-section">
+      <h1>Destinations List</h1>
+      <p>Kelola data marker dan hidupkan suasana dengan konten AR.</p>
+    </div>
+    <div style="display: flex; gap: 1rem; align-items: center">
+      <div class="search-box">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="search-wisata" placeholder="Cari nama wisata..." />
+      </div>
+      <button class="btn btn-primary" id="btn-add">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        New Location
+      </button>
+    </div>
+  </header>
+
+  <section class="content-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Cover</th>
+          <th>ID</th>
+          <th>Nama Lokasi</th>
+          <th>Type</th>
+          <th>Event Date</th>
+          <th>Price</th>
+          <th id="th-aksi-wisata">Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="data-table-body">
+        <!-- Data will be injected here -->
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Modal Form Wisata (Moved from index.html for modularity) -->
+  <div class="modal-overlay" id="modal-form">
+    <div class="modal-content">
+      <h2 id="modal-title">Create New Experience</h2>
+      <p style="color: var(--text-dim); font-size: 0.875rem">
+        Isi detail di bawah untuk menambahkan destinasi AR baru.
+      </p>
+      <form id="wisata-form">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem">
+          <div class="form-group">
+            <label>Unique Spot ID</label>
+            <input
+              type="text"
+              id="f-id"
+              placeholder="e.g., kawah-putih-01"
+              required
+            />
+            <small class="text-hint">Gunakan huruf kecil & strip (slug format).</small>
+          </div>
+          <div class="form-group">
+            <label>Destination Name</label>
+            <input
+              type="text"
+              id="f-nama"
+              placeholder="e.g., Kawah Putih Ciwidey"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Category / Type</label>
+          <select id="f-type">
+            <option value="wisata">Nature / Wisata</option>
+            <option value="kuliner">Culinary / Kuliner</option>
+            <option value="event">Special Event</option>
+            <option value="lainnya">Others</option>
+          </select>
+        </div>
+
+        <!-- Location Dates -->
+        <div id="event-date-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Start Date</label>
+            <input type="date" id="f-start-date" />
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>End Date</label>
+            <input type="date" id="f-end-date" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Deskripsi</label>
+          <textarea
+            id="f-deskripsi"
+            rows="4"
+            placeholder="Jelaskan tentang tempat ini..."
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Pricing / Entry Fee</label>
+          <input
+            type="text"
+            id="f-harga"
+            placeholder="e.g., 25000 (Otomatis Rp)"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Link Pemesanan (WhatsApp/Web)</label>
+          <input
+            type="url"
+            id="f-booking_url"
+            placeholder="https://wa.me/... atau link website"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Marker Image</label>
+          <div style="display: flex; gap: 10px">
+            <input
+              type="text"
+              id="f-marker-url"
+              placeholder="URL gambar yang akan discan (Marker)"
+            />
+            <input type="file" id="f-marker-file" style="display: none" />
+            <button
+              type="button"
+              class="btn btn-secondary"
+              onclick="document.getElementById('f-marker-file').click()"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              Browse
+            </button>
+          </div>
+          <small class="text-hint"
+            >Gambar ini digunakan Vuforia untuk deteksi (tidak tampil di slide). Rekomendasi: 1080x1350 (4:5).</small
+          >
+          <div
+            class="preview-container"
+            id="marker-preview-box"
+            style="height: 100px; margin-top: 5px"
+          >
+            <span class="preview-placeholder">Belum ada marker</span>
+          </div>
+        </div>
+
+        <!-- Video Section (Always Visible) -->
+        <div class="form-group">
+          <label for="f-video-url">Link Video</label>
+          <div style="display: flex; gap: 10px">
+            <input
+              type="text"
+              id="f-video-url"
+              placeholder="Link MP4 (misal: https://...video.mp4)"
+            />
+            <input
+              type="file"
+              id="f-video-file"
+              style="display: none"
+              accept="video/mp4"
+            />
+            <button
+              type="button"
+              class="btn btn-secondary"
+              onclick="document.getElementById('f-video-file').click()"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              Upload
+            </button>
+          </div>
+          <small class="text-hint">Format .MP4. Max 60MB. Video ini akan tampil saat marker discan.</small>
+        </div>
+
+        <!-- Content Type Selection -->
+        <div class="form-section-card no-accent">
+          <div class="form-section-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            AR Content Mode
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <label class="mode-selector" for="mode-image">
+              <input type="radio" name="f-main-content-type" id="mode-image" value="image_slides" checked />
+              <div class="mode-card">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                <span>Image Slides</span>
+              </div>
+            </label>
+            <label class="mode-selector" for="mode-3d">
+              <input type="radio" name="f-main-content-type" id="mode-3d" value="3d_model" />
+              <div class="mode-card">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                <span>3D Model</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Image Slides Content Section -->
+        <div id="section-slides-content">
+          <div class="form-group">
+            <label>Slide Images (KONTEN CAROUSEL)</label>
+            <div style="display: flex; gap: 10px">
+              <input
+                type="text"
+                id="f-media-url"
+                placeholder="URL gambar slide (pisahkan dengan koma)"
+              />
+              <input
+                type="file"
+                id="f-media-file"
+                style="display: none"
+                multiple
+              />
+              <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="document.getElementById('f-media-file').click()"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                Upload
+              </button>
+            </div>
+            <small class="text-hint">Gambar-gambar yang akan tampil di UI slide AR. Gunakan rasio seragam.</small>
+            <div class="preview-container" id="media-preview-box">
+              <span class="preview-placeholder">Belum ada slide</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3D Content Section -->
+        <div id="section-3d-content" style="display: none;">
+          <div class="form-section-card no-accent">
+            <div class="form-section-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+              3D Model Assets
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+              <label>Model File (.GLB)</label>
+              <div style="display: flex; gap: 10px">
+                <input
+                  type="text"
+                  id="f-model-url"
+                  placeholder="URL file .glb"
+                />
+                <input
+                  type="file"
+                  id="f-model-file"
+                  style="display: none"
+                  accept=".glb"
+                />
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  onclick="document.getElementById('f-model-file').click()"
+                  style="white-space: nowrap"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                  Browse
+                </button>
+              </div>
+              <small class="text-hint">Gunakan format .GLB untuk performa terbaik. Max 50MB.</small>
+            </div>
+
+            <div class="preview-container" id="model-3d-preview-box">
+              <div class="studio-badge">3D STUDIO</div>
+              <div id="model-3d-display">
+                <span class="preview-placeholder">Preview 3D akan muncul di sini setelah model dimuat</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section-card no-accent">
+            <div class="form-section-title" style="display: flex; align-items: center;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"></path><path d="M9 21H3v-6"></path><path d="M21 3l-7 7"></path><path d="M3 21l7-7"></path></svg>
+              <span>Transform Settings</span>
+              <button type="button" class="btn btn-secondary" onclick="reset3DTransform()" style="margin-left: auto; padding: 4px 10px; font-size: 0.7rem; border-radius: 8px; height: auto; min-height: 0;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 4px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                Reset Default
+              </button>
+            </div>
+            <div class="transform-grid">
+              <div class="transform-item">
+                <label title="Ukuran Model">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 8V4h4"></path><path d="M16 4h4v4"></path><path d="M20 16v4h-4"></path><path d="M4 16v4h4"></path></svg>
+                  Scale
+                </label>
+                <input type="number" id="f-model-scale" step="0.0001" value="1.0" />
+              </div>
+              <div class="transform-item">
+                <label title="Rotasi Sumbu Y">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>
+                  Rotation
+                </label>
+                <input type="number" id="f-model-rot-y" step="1" value="0" />
+              </div>
+              <div class="transform-item">
+                <label title="Posisi Atas/Bawah">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="7 13 12 18 17 13"></polyline><polyline points="7 6 12 11 17 6"></polyline></svg>
+                  Pos Y
+                </label>
+                <input type="number" id="f-model-pos-y" step="0.0001" value="0" />
+              </div>
+              <div class="transform-item">
+                <label title="Posisi Depan/Belakang">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="13 17 18 12 13 7"></polyline><polyline points="6 17 11 12 6 7"></polyline></svg>
+                  Pos Z
+                </label>
+                <input type="number" id="f-model-pos-z" step="0.0001" value="0.0192" />
+              </div>
+            </div>
+            <p class="text-hint" style="margin-top: 1.25rem; opacity: 0.6; font-style: italic;">
+              Tips: Atur posisi model agar pas dengan marker di aplikasi AR. Gunakan angka default jika tidak yakin.
+            </p>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="btn-cancel">
+            Batal
+          </button>
+          <button type="submit" class="btn btn-primary">Simpan Data</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal (Moved from index.html) -->
+  <div id="modal-delete" class="modal-overlay">
+    <div class="modal-content" style="max-width: 400px; text-align: center">
+      <div
+        style="
+          width: 64px;
+          height: 64px;
+          background: rgba(239, 68, 68, 0.1);
+          color: var(--danger);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 1.5rem;
+        "
+      >
+        <svg
+          width="32"
+          height="32"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path
+            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+          ></path>
+        </svg>
+      </div>
+      <h2 id="delete-modal-title" style="margin-bottom: 0.75rem">
+        Hapus Data?
+      </h2>
+      <p
+        id="delete-modal-desc"
+        style="color: var(--text-dim); margin-bottom: 1.5rem"
+      >
+        Data ini akan dihapus secara permanen dari database. Tindakan ini
+        tidak dapat dibatalkan.
+      </p>
+      <div
+        id="hard-delete-option"
+        style="
+          margin-bottom: 2rem;
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          text-align: left;
+          background: rgba(239, 68, 68, 0.05);
+          border: 1px solid rgba(239, 68, 68, 0.2);
+          padding: 14px;
+          border-radius: 12px;
+          transition: all 0.2s;
+        "
+      >
+        <div style="margin-top: 2px">
+          <input
+            type="checkbox"
+            id="check-hard-delete"
+            style="
+              width: 20px;
+              height: 20px;
+              cursor: pointer;
+              accent-color: var(--danger);
+            "
+          />
+        </div>
+        <label for="check-hard-delete" style="cursor: pointer; flex: 1">
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              font-weight: 700;
+              font-size: 0.875rem;
+              color: var(--danger);
+              margin-bottom: 2px;
+            "
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+              ></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            Pembersihan Total
+          </div>
+          <div
+            style="
+              font-size: 0.75rem;
+              color: var(--text-dim);
+              opacity: 0.9;
+              line-height: 1.4;
+            "
+          >
+            Hapus permanen semua file gambar & video dari Storage server.
+          </div>
+        </label>
+      </div>
+      <div style="display: flex; gap: 12px; justify-content: stretch">
+        <button id="btn-delete-cancel" class="btn btn-ghost" style="flex: 1">
+          Batal
+        </button>
+        <button
+          id="btn-delete-confirm"
+          class="btn btn-danger"
+          style="flex: 1"
+        >
+          Hapus
+        </button>
+      </div>
+    </div>
+  </div>
+`;
