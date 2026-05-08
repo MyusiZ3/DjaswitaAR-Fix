@@ -634,8 +634,16 @@ public class ARTargetHandler : MonoBehaviour
 
     private void OnTargetStatusChanged(ObserverBehaviour behaviour, TargetStatus status)
     {
+        bool isTracked = (status.Status == Status.TRACKED);
+
+        // Jika user sengaja mematikan internet, kita paksa AR tidak mendeteksi marker
+        if (Application.internetReachability == NetworkReachability.NotReachable)
+        {
+            isTracked = false;
+        }
+
         // Jika status adalah TRACKED (kamera melihat marker dengan jelas)
-        if (status.Status == Status.TRACKED)
+        if (isTracked)
         {
             // Hentikan coroutine penghilangan jika sedang berjalan
             if (mLostCoroutine != null)
