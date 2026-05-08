@@ -18,21 +18,51 @@ public class ShaderStrippingFix
         SerializedObject serializedObject = new SerializedObject(graphicsSettingsObj[0]);
         SerializedProperty arrayProp = serializedObject.FindProperty("m_AlwaysIncludedShaders");
 
-        // Daftar shader yang wajib ada di Android agar 3D Model glTFast bisa muncul di URP
-        string[] shadersToAdd = new string[]
+        bool changed = false;
+
+        // 1. BERSIHKAN SHADER BERAT & SHADER SALAH (MENCEGAH BUILD 3 JAM)
+        string[] badShaders = new string[]
         {
             "Universal Render Pipeline/Lit",
-            "Universal Render Pipeline/Unlit",
-            "Universal Render Pipeline/Simple Lit",
             "glTF/PbrMetallicRoughness",
             "glTF/Unlit"
         };
 
-        bool changed = false;
-
-        foreach (string shaderName in shadersToAdd)
+        for (int i = arrayProp.arraySize - 1; i >= 0; i--)
         {
-            Shader shader = Shader.Find(shaderName);
+            var element = arrayProp.GetArrayElementAtIndex(i);
+            Shader s = element.objectReferenceValue as Shader;
+            if (s != null && System.Array.Exists(badShaders, bad => bad == s.name))
+            {
+                element.objectReferenceValue = null;
+                arrayProp.DeleteArrayElementAtIndex(i);
+                changed = true;
+                Debug.Log("[ShaderStrippingFix] Dihapus shader berat/salah: " + s.name);
+            }
+        }
+
+        // 2. DAFTAR SHADER GLTF YANG BENAR (GLTFAST & GLTFUTILITY)
+        string[] requiredShaderNames = new string[]
+        {
+            // GLTFast URP shaders
+            "Shader Graphs/glTF-unlit",
+            "Shader Graphs/glTF-pbrMetallicRoughness",
+            "Shader Graphs/glTF-pbrSpecularGlossiness",
+            "Shader Graphs/URP/glTF-pbrMetallicRoughness-Clearcoat",
+            
+            // GLTFUtility built-in shaders (wajib agar tidak crash NullReferenceException di Android)
+            "GLTFUtility/Standard (Metallic)",
+            "GLTFUtility/Standard (Specular)",
+            "GLTFUtility/Standard Transparent (Metallic)",
+            "GLTFUtility/Standard Transparent (Specular)",
+            
+            // Fallback URP (Aman untuk build cepat tapi mencegah model invisible)
+            "Universal Render Pipeline/Simple Lit"
+        };
+
+        foreach (string requiredShader in requiredShaderNames)
+        {
+            Shader shader = Shader.Find(requiredShader);
             if (shader == null) continue;
 
             bool found = false;
@@ -51,7 +81,7 @@ public class ShaderStrippingFix
                 arrayProp.InsertArrayElementAtIndex(newIndex);
                 arrayProp.GetArrayElementAtIndex(newIndex).objectReferenceValue = shader;
                 changed = true;
-                Debug.Log("[ShaderStrippingFix] Added " + shaderName + " to Always Included Shaders.");
+                Debug.Log("[ShaderStrippingFix] Menambahkan " + requiredShader + " ke Always Included Shaders.");
             }
         }
 
@@ -59,7 +89,7 @@ public class ShaderStrippingFix
         {
             serializedObject.ApplyModifiedProperties();
             AssetDatabase.SaveAssets();
-            Debug.Log("[ShaderStrippingFix] Successfully updated GraphicsSettings to prevent 3D models from becoming invisible on Android!");
+            Debug.Log("[ShaderStrippingFix] Berhasil membersihkan shader berat dan memasukkan shader glTFast URP yang benar!");
         }
     }
 }

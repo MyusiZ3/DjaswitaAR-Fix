@@ -12,6 +12,7 @@ public class DynamicMarkerManager : MonoBehaviour
 
     [Header("UI Configuration")]
     public GameObject scanPrompt; // Teks "Arahkan Kamera ke Marker"
+    public GameObject noInternetPrompt; // Animasi Lottie saat tidak ada internet
 
     public static DynamicMarkerManager Instance;
     private int activeMarkers = 0;
@@ -45,10 +46,75 @@ public class DynamicMarkerManager : MonoBehaviour
         }
     }
 
+    private Coroutine connectionMonitor;
+
     private void OnVuforiaStarted()
     {
-        StartCoroutine(DelayedScanPromptPlay());
-        StartCoroutine(LoadMarkersFromDatabase());
+        // Mulai pantau koneksi secara real-time
+        if (connectionMonitor != null) StopCoroutine(connectionMonitor);
+        connectionMonitor = StartCoroutine(MonitorInternetConnection());
+
+        if (Application.internetReachability != NetworkReachability.NotReachable)
+        {
+            StartCoroutine(LoadMarkersFromDatabase());
+        }
+    }
+
+    private IEnumerator MonitorInternetConnection()
+    {
+        NetworkReachability prevStatus = Application.internetReachability;
+        
+        // Cek awal
+        if (prevStatus == NetworkReachability.NotReachable) ShowNoInternet();
+        else ShowScanPrompt();
+
+        while (true)
+        {
+            yield return new WaitForSeconds(1.0f); // Cek setiap 1 detik
+
+            NetworkReachability currentStatus = Application.internetReachability;
+            if (currentStatus != prevStatus)
+            {
+                prevStatus = currentStatus;
+
+                if (currentStatus == NetworkReachability.NotReachable)
+                {
+                    // Internet terputus!
+                    ShowNoInternet();
+                }
+                else
+                {
+                    // Internet kembali!
+                    ShowScanPrompt();
+                    
+                    // Jika sebelumnya gagal load database, coba load ulang
+                    if (loadedMarkers.Count == 0)
+                    {
+                        StartCoroutine(LoadMarkersFromDatabase());
+                    }
+                }
+            }
+        }
+    }
+
+    public void ShowNoInternet()
+    {
+        if (scanPrompt) scanPrompt.SetActive(false);
+        if (noInternetPrompt) 
+        {
+            noInternetPrompt.SetActive(true);
+            // Mainkan animasi lottie jika komponen ada
+            noInternetPrompt.BroadcastMessage("Play", SendMessageOptions.DontRequireReceiver);
+        }
+    }
+
+    public void ShowScanPrompt()
+    {
+        if (noInternetPrompt) noInternetPrompt.SetActive(false);
+        if (activeMarkers <= 0)
+        {
+            StartCoroutine(DelayedScanPromptPlay());
+        }
     }
 
     private IEnumerator DelayedScanPromptPlay()
@@ -66,6 +132,7 @@ public class DynamicMarkerManager : MonoBehaviour
     {
         activeMarkers++;
         if (scanPrompt) scanPrompt.SetActive(false);
+        if (noInternetPrompt) noInternetPrompt.SetActive(false);
     }
 
     public void MarkerLost()
@@ -74,7 +141,15 @@ public class DynamicMarkerManager : MonoBehaviour
         if (activeMarkers <= 0)
         {
             activeMarkers = 0;
-            StartCoroutine(DelayedScanPromptPlay());
+            // Jika saat hilang marker ternyata internet mati, tampilkan No Internet
+            if (Application.internetReachability == NetworkReachability.NotReachable)
+            {
+                ShowNoInternet();
+            }
+            else
+            {
+                ShowScanPrompt();
+            }
         }
     }
 
@@ -84,6 +159,9 @@ public class DynamicMarkerManager : MonoBehaviour
         
         yield return APIManager.Instance.GetAllWisata(
             (dataList) => {
+                // Pastikan kembali ke mode scan prompt jika berhasil
+                ShowScanPrompt();
+                
                 foreach (var data in dataList)
                 {
                     if (!string.IsNullOrEmpty(data.marker_url) && !loadedMarkers.Contains(data.id))
@@ -95,6 +173,7 @@ public class DynamicMarkerManager : MonoBehaviour
             },
             (error) => {
                 Debug.LogError("[DynamicMarker] Failed to fetch data: " + error);
+                ShowNoInternet();
             }
         );
     }
