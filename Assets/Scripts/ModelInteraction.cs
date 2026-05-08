@@ -1,14 +1,14 @@
 using UnityEngine;
 
 /// <summary>
-/// Menangani interaksi rotasi (swipe satu jari), zoom (pinch dua jari), 
+/// Menangani interaksi rotasi (swipe satu jari/mouse), zoom (pinch dua jari/scroll), 
 /// dan rotasi otomatis (idle) pada objek 3D di AR.
 /// </summary>
 public class ModelInteraction : MonoBehaviour
 {
     [Header("Manual Rotation")]
-    [Tooltip("Kecepatan rotasi saat di-swipe jari")]
-    public float rotationSpeed = 0.2f;
+    [Tooltip("Kecepatan rotasi saat di-swipe jari/mouse")]
+    public float rotationSpeed = 0.5f;
     
     [Header("Idle Rotation (Auto)")]
     [Tooltip("Aktifkan rotasi otomatis saat tidak disentuh")]
@@ -17,7 +17,7 @@ public class ModelInteraction : MonoBehaviour
     public float idleRotationSpeed = 15f;
 
     [Header("Zoom Settings")]
-    public float zoomSpeed = 0.005f;
+    public float zoomSpeed = 0.01f;
     public float minScaleMultiplier = 0.3f;
     public float maxScaleMultiplier = 5.0f;
 
@@ -27,6 +27,8 @@ public class ModelInteraction : MonoBehaviour
 
     private bool mIsInitialized = false;
     private bool mIsBeingTouched = false;
+
+    private Vector3 mLastMousePosition;
 
     /// <summary>
     /// Simpan keadaan awal model setelah di-load dan di-normalize ukurannya.
@@ -57,27 +59,51 @@ public class ModelInteraction : MonoBehaviour
     {
         if (!mIsInitialized) return;
 
-        // Handle Input
+        bool hasInput = false;
+
+        // Handle Touch Input
         if (Input.touchCount == 1)
         {
-            mIsBeingTouched = true;
+            hasInput = true;
             HandleRotation();
         }
         else if (Input.touchCount == 2)
         {
-            mIsBeingTouched = true;
+            hasInput = true;
             HandleZoom();
         }
-        else
+
+        // Handle Mouse Input for Editor Testing
+#if UNITY_EDITOR || UNITY_STANDALONE
+        if (Input.GetMouseButtonDown(0))
         {
-            mIsBeingTouched = false;
+            mLastMousePosition = Input.mousePosition;
+        }
+
+        if (Input.GetMouseButton(0))
+        {
+            hasInput = true;
+            HandleMouseRotation();
+        }
+        
+        if (Input.mouseScrollDelta.y != 0)
+        {
+            hasInput = true;
+            HandleMouseZoom();
+        }
+#endif
+
+        mIsBeingTouched = hasInput;
+
+        if (!mIsBeingTouched)
+        {
             HandleIdleRotation();
         }
     }
 
     private void HandleIdleRotation()
     {
-        if (useIdleRotation && !mIsBeingTouched)
+        if (useIdleRotation)
         {
             // Berputar perlahan di sumbu Y (up)
             transform.Rotate(Vector3.up, idleRotationSpeed * Time.deltaTime, Space.Self);
@@ -94,7 +120,6 @@ public class ModelInteraction : MonoBehaviour
             float yRot = touch.deltaPosition.y * rotationSpeed;
 
             // Rotasi horizontal (Y axis) dan vertikal (X axis)
-            // Menggunakan Space.Self agar rotasi terasa lebih alami terhadap objek
             transform.Rotate(Vector3.up, -xRot, Space.World);
             transform.Rotate(Vector3.right, yRot, Space.World);
         }
@@ -114,19 +139,43 @@ public class ModelInteraction : MonoBehaviour
             float currentDistance = (touch0.position - touch1.position).magnitude;
 
             float delta = currentDistance - prevDistance;
-            float zoomAmount = delta * zoomSpeed;
+            ApplyZoom(delta * zoomSpeed);
+        }
+    }
 
-            Vector3 nextScale = transform.localScale + (Vector3.one * zoomAmount);
+#if UNITY_EDITOR || UNITY_STANDALONE
+    private void HandleMouseRotation()
+    {
+        Vector3 deltaPosition = Input.mousePosition - mLastMousePosition;
+        mLastMousePosition = Input.mousePosition;
 
-            // Hitung rasio terhadap skala awal agar tidak kebesaran/kekecilan
-            float scaleRatio = nextScale.x / mInitialLocalScale.x;
-            
-            if (float.IsNaN(scaleRatio) || float.IsInfinity(scaleRatio)) return;
+        float xRot = deltaPosition.x * rotationSpeed;
+        float yRot = deltaPosition.y * rotationSpeed;
 
-            if (scaleRatio >= minScaleMultiplier && scaleRatio <= maxScaleMultiplier)
-            {
-                transform.localScale = nextScale;
-            }
+        transform.Rotate(Vector3.up, -xRot, Space.World);
+        transform.Rotate(Vector3.right, yRot, Space.World);
+    }
+
+    private void HandleMouseZoom()
+    {
+        float scrollAmount = Input.mouseScrollDelta.y;
+        ApplyZoom(scrollAmount * zoomSpeed * 10f); // Mouse scroll needs a bit multiplier
+    }
+#endif
+
+    private void ApplyZoom(float zoomAmount)
+    {
+        Vector3 nextScale = transform.localScale + (Vector3.one * zoomAmount);
+
+        // Hitung rasio terhadap skala awal agar tidak kebesaran/kekecilan
+        float scaleRatio = nextScale.x / mInitialLocalScale.x;
+        
+        if (float.IsNaN(scaleRatio) || float.IsInfinity(scaleRatio)) return;
+
+        if (scaleRatio >= minScaleMultiplier && scaleRatio <= maxScaleMultiplier)
+        {
+            transform.localScale = nextScale;
         }
     }
 }
+
