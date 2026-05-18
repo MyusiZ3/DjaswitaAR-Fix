@@ -517,8 +517,17 @@ function renderTable(data) {
 async function fetchData() {
   try {
     if (tableBody) {
-      tableBody.innerHTML =
-        '<tr><td colspan="6" style="text-align: center; padding: 3rem;"><div class="loading-spinner"></div><p style="margin-top: 1rem; color: var(--text-dim)">Memuat data...</p></td></tr>';
+      tableBody.innerHTML = Array(4).fill(0).map(() => `
+        <tr class="skeleton-row">
+          <td style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 1rem;"><div class="skeleton-box" style="width: 48px; height: 48px; border-radius: 10px;"></div></td>
+          <td style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 1rem;"><div class="skeleton-box" style="width: 120px;"></div></td>
+          <td style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 1rem;"><div class="skeleton-box" style="width: 180px;"></div></td>
+          <td style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 1rem;"><div class="skeleton-box" style="width: 80px; border-radius: 100px;"></div></td>
+          <td style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 1rem;"><div class="skeleton-box" style="width: 140px;"></div></td>
+          <td style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 1rem;"><div class="skeleton-box" style="width: 100px;"></div></td>
+          ${currentRole !== 'member' ? '<td style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 1rem;"><div class="skeleton-box" style="width: 60px;"></div></td>' : ''}
+        </tr>
+      `).join('');
     }
 
     const { data, error } = await supabase
@@ -628,6 +637,32 @@ function renderCategoryChart(labels, data) {
   if (!ctx) return;
   if (categoryChart) categoryChart.destroy();
 
+  const total = data.reduce((a, b) => a + b, 0);
+
+  const centerTextPlugin = {
+    id: 'centerText',
+    beforeDraw: function(chart) {
+      const width = chart.width, height = chart.height, ctx = chart.ctx;
+      ctx.restore();
+      const fontSize = (height / 114).toFixed(2);
+      ctx.font = "bold " + fontSize + "em Outfit, sans-serif";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#f3f4f6";
+      const text = total.toString(),
+          textX = Math.round((width - ctx.measureText(text).width) / 2),
+          textY = height / 2.2;
+      ctx.fillText(text, textX, textY);
+      
+      ctx.font = (fontSize / 2.5).toFixed(2) + "em Outfit, sans-serif";
+      ctx.fillStyle = "#8e939e";
+      const label = "Total",
+          labelX = Math.round((width - ctx.measureText(label).width) / 2),
+          labelY = height / 2.2 + (fontSize * 16);
+      ctx.fillText(label, labelX, labelY);
+      ctx.save();
+    }
+  };
+
   categoryChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
@@ -635,7 +670,7 @@ function renderCategoryChart(labels, data) {
       datasets: [{
         data: data,
         backgroundColor: [
-          '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'
+          '#bbf7d0', '#e9d5ff', '#fed7aa', '#bfdbfe', '#fecaca', '#d4fc34'
         ],
         borderWidth: 0,
         hoverOffset: 15
@@ -649,20 +684,21 @@ function renderCategoryChart(labels, data) {
         legend: {
           position: 'bottom',
           labels: {
-            color: '#999',
+            color: '#8e939e',
             padding: 20,
             usePointStyle: true,
             font: { size: 11 }
           }
         },
         tooltip: {
-          backgroundColor: '#1a1a1a',
+          backgroundColor: '#141519',
           padding: 12,
           cornerRadius: 8,
           displayColors: true
         }
       }
-    }
+    },
+    plugins: [centerTextPlugin]
   });
 }
 
@@ -674,8 +710,8 @@ function renderScansChart(labels, data) {
 
   // Create Gradient
   const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-  gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
-  gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+  gradient.addColorStop(0, 'rgba(191, 219, 254, 0.4)'); // Pastel Blue
+  gradient.addColorStop(1, 'rgba(191, 219, 254, 0)');
 
   scansChart = new Chart(ctx, {
     type: 'line',
@@ -684,18 +720,18 @@ function renderScansChart(labels, data) {
       datasets: [{
         label: 'Jumlah Scan',
         data: data,
-        borderColor: '#3b82f6',
+        borderColor: '#bfdbfe', // Pastel Blue
         backgroundColor: gradient,
-        borderWidth: 3,
+        borderWidth: 4,
         tension: 0.4,
         fill: true,
-        pointBackgroundColor: '#3b82f6',
-        pointBorderColor: '#fff',
+        pointBackgroundColor: '#bbf7d0', // Pastel Mint
+        pointBorderColor: '#141519',
         pointBorderWidth: 2,
-        pointRadius: 4,
-        pointHoverRadius: 7,
-        pointHoverBackgroundColor: '#3b82f6',
-        pointHoverBorderColor: '#fff',
+        pointRadius: 0,
+        pointHoverRadius: 8,
+        pointHoverBackgroundColor: '#bbf7d0',
+        pointHoverBorderColor: '#141519',
         pointHoverBorderWidth: 3
       }]
     },
@@ -709,11 +745,11 @@ function renderScansChart(labels, data) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#1a1a1a',
+          backgroundColor: '#141519',
           titleFont: { size: 13, weight: 'bold' },
           padding: 14,
           cornerRadius: 10,
-          borderColor: 'rgba(255,255,255,0.1)',
+          borderColor: 'rgba(255,255,255,0.05)',
           borderWidth: 1,
           displayColors: false,
           callbacks: {
@@ -725,11 +761,11 @@ function renderScansChart(labels, data) {
         y: {
           beginAtZero: true,
           grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
-          ticks: { color: '#666', font: { size: 11 }, stepSize: 1 }
+          ticks: { color: '#8e939e', font: { size: 11 }, stepSize: 1 }
         },
         x: {
           grid: { display: false },
-          ticks: { color: '#666', font: { size: 11 } }
+          ticks: { color: '#8e939e', font: { size: 11 } }
         }
       }
     }
@@ -751,11 +787,11 @@ function renderPopularLocations(data) {
     <tr>
       <td style="font-weight: 600; color: #fff;">${item.nama}</td>
       <td><span class="badge badge-${item.type}">${item.type}</span></td>
-      <td style="font-weight: 700; color: var(--accent); font-size: 1.125rem;">${item.scan_count}</td>
+      <td style="font-weight: 700; color: var(--text-main); font-size: 1.125rem;">${item.scan_count}</td>
       <td>
         <div style="display: flex; align-items: center; gap: 12px;">
           <div class="popularity-bar-container" style="flex: 1;">
-            <div class="popularity-bar" style="width: ${(item.scan_count / maxScan) * 100}%"></div>
+            <div class="popularity-bar" style="width: ${(item.scan_count / maxScan) * 100}%; background: linear-gradient(90deg, var(--pastel-mint), var(--pastel-blue));"></div>
           </div>
           <span style="font-size: 0.75rem; color: var(--text-dim); min-width: 30px; text-align: right;">
             ${Math.round((item.scan_count / maxScan) * 100)}%
