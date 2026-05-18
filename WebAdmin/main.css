@@ -707,12 +707,46 @@ input,
 textarea,
 select {
   width: 100%;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--glass-border);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 0.75rem 1rem;
   color: white;
-  transition: border-color 0.3s;
+  transition: all 0.3s;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--pastel-blue);
+  box-shadow: 0 0 12px rgba(191, 219, 254, 0.1);
+  background-color: #1a1b21;
+  outline: none;
+}
+
+/* AR Lab Upload Zone */
+.upload-zone {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 1.25rem;
+  background: var(--card-bg);
+  border: 1.5px dashed rgba(191, 219, 254, 0.3);
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.upload-zone:hover {
+  border-color: var(--pastel-mint);
+  background: rgba(187, 247, 208, 0.02);
+}
+.upload-zone .btn-secondary {
+  border-color: rgba(191, 219, 254, 0.2);
+  color: var(--text-dim);
+  transition: all 0.3s ease;
+}
+.upload-zone:hover .btn-secondary {
+  border-color: rgba(187, 247, 208, 0.4);
+  color: var(--pastel-mint);
 }
 
 select option {
