@@ -447,7 +447,8 @@ function drawPreviewWithFeatures(imgElement, corners, showFeatures = true) {
 }
 
 // AR Marker Quality Analyzer (Canvas Edge, Contrast, and Texture Entropy Detection)
-function analyzeMarkerQuality(imgElement, featureCount) {
+// AR Marker Quality Analyzer (Multi-zone Distribution, Global Contrast, and Repetitive Pattern Checks)
+function analyzeMarkerQuality(imgElement, corners) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   
@@ -458,7 +459,7 @@ function analyzeMarkerQuality(imgElement, featureCount) {
   const imgData = ctx.getImageData(0, 0, 128, 128);
   const data = imgData.data;
   
-  // 1. Convert to Grayscale & Calculate Standard Deviation (Global Contrast) & Midtone Ratio (Texture Variety)
+  // 1. Convert to Grayscale & Calculate Contrast (Standard Deviation) & Midtone Ratio (Texture Depth)
   let sum = 0;
   const grayscale = new Uint8Array(128 * 128);
   let midTones = 0;
@@ -480,44 +481,87 @@ function analyzeMarkerQuality(imgElement, featureCount) {
   }
   const stdDev = Math.sqrt(varianceSum / (128 * 128));
   
-  // 2. Base Score calculation (Features Count 60% + Global Contrast 40%)
-  const contrastScore = Math.min(stdDev * 1.3, 40);
-  const featureScore = Math.min((featureCount / 45) * 60, 60); // Maxes out at 45 high-quality features
-  let totalScore = Math.round(contrastScore + featureScore);
+  // 2. Calculate Feature Spatial Distribution (4x4 Grid, 16 Zones check)
+  const zones = new Array(16).fill(0);
+  corners.forEach(c => {
+    const zx = Math.min(Math.floor(c.x * 4), 3);
+    const zy = Math.min(Math.floor(c.y * 4), 3);
+    zones[zy * 4 + zx]++;
+  });
+  const activeZones = zones.filter(count => count > 0).length; // Number of zones containing features (0 to 16)
+  const distributionRatio = activeZones / 16;
   
-  // 3. Line Art & Repetitive Geometric Grid Penalty
-  // High contrast + lots of edges but almost ZERO organic gray textures = Wireframe / Line art / Grids
-  let isLineArt = false;
-  if (stdDev > 45 && midToneRatio < 0.12) {
-    isLineArt = true;
-    totalScore = Math.max(15, totalScore - 55); // Reduce up to 3 stars
+  // 3. Multi-Criteria Strict Scoring Engine
+  const numFeatures = corners.length;
+  let stars = 5;
+  const reasons = [];
+  
+  // A. Evaluate Feature Count
+  if (numFeatures < 6) {
+    stars = 1;
+    reasons.push("Jumlah detail sangat minim (kurang dari 6 fitur).");
+  } else if (numFeatures < 18) {
+    stars = Math.min(stars, 2);
+    reasons.push("Detail gambar kurang memadai.");
+  } else if (numFeatures < 35) {
+    stars = Math.min(stars, 3);
+  } else if (numFeatures < 60) {
+    stars = Math.min(stars, 4);
   }
   
-  let stars = 1;
-  let text = "Marker sangat polos, blur, atau tanpa kontras. Vuforia dipastikan gagal mendeteksi gambar ini.";
-  let color = "var(--pastel-coral)";
+  // B. Evaluate Global Contrast
+  if (stdDev < 15) {
+    stars = 1;
+    reasons.push("Gambar terlalu buram atau kurang kontras.");
+  } else if (stdDev < 28) {
+    stars = Math.min(stars, 2);
+    reasons.push("Kontras gambar agak redup.");
+  }
   
-  if (isLineArt) {
-    stars = 2;
-    text = "Peringatan: Terdeteksi pola garis geometris / gambar vektor (line-art). Pola garis tipis yang berulang tanpa tekstur organik rentan membuat kamera AR bingung karena semua sudutnya terlihat identik.";
-    color = "var(--pastel-coral)";
+  // C. Evaluate Spatial Distribution (Clustering Penalty)
+  if (numFeatures >= 6) {
+    if (distributionRatio < 0.25) { // Clustered in less than 4 grids
+      stars = Math.min(stars, 1);
+      reasons.push("Fitur menumpuk ekstrem di satu area sempit saja (Clustered).");
+    } else if (distributionRatio < 0.45) { // Clustered in less than 7 grids
+      stars = Math.min(stars, 2);
+      reasons.push("Sebaran fitur tidak merata, hanya berkumpul di bagian tertentu gambar.");
+    } else if (distributionRatio < 0.60) {
+      stars = Math.min(stars, 3);
+      reasons.push("Sebaran detail cukup baik, namun ada beberapa sudut kosong yang rawan tidak terdeteksi.");
+    }
+  }
+  
+  // D. Evaluate Repetitive Geometric/Line-Art Patterns (The wireframe/checkerboard killer)
+  const isHighContrastLineArt = (stdDev > 45 && midToneRatio < 0.14);
+  if (isHighContrastLineArt) {
+    if (numFeatures > 32) {
+      // High corner count + extremely low gradient variety = Symmetrical Repeating Wireframe Grid
+      stars = 1;
+      reasons.push("Peringatan Kritis: Pola geometris berulang / jaring segitiga wireframe (Repetitive Pattern). Meskipun memiliki banyak sudut tajam, pola repetitif yang identik membuat sensor AR bingung menentukan disorientasi.");
+    } else {
+      // Low features + zero texture = Flat stencil / logo
+      stars = Math.min(stars, 2);
+      reasons.push("Pola grafis vektor/garis sederhana (Line-Art). Gunakan foto organik dengan tekstur alami.");
+    }
+  }
+  
+  // 4. Construct response message and colors
+  let text = "";
+  let color = "var(--pastel-mint)";
+  
+  if (stars === 5) {
+    text = `Kontras & sebaran tekstur sempurna! Terdeteksi ${numFeatures} titik sudut unik tersebar merata di 16 sektor gambar. Vuforia menjamin pelacakan yang sangat stabil.`;
+    color = "var(--pastel-mint)";
+  } else if (stars === 4) {
+    text = `Detail sangat baik. Ditemukan ${numFeatures} titik fitur terlokalisasi di ${activeZones} area. Pelacakan AR akan berjalan lancar dan responsif.`;
+    color = "var(--pastel-mint)";
   } else {
-    if (totalScore >= 70) {
-      stars = 5;
-      text = `Kontras & tekstur sangat kaya! Ditemukan ${featureCount} titik fitur unik. Vuforia akan mendeteksinya secara instan dan sangat stabil.`;
-      color = "var(--pastel-mint)";
-    } else if (totalScore >= 50) {
-      stars = 4;
-      text = `Kualitas detail sangat baik. Ditemukan ${featureCount} titik sudut presisi. Pelacakan AR di Unity akan berjalan lancar.`;
-      color = "var(--pastel-mint)";
-    } else if (totalScore >= 32) {
-      stars = 3;
-      text = `Detail cukup. Ditemukan ${featureCount} fitur. Penanda dapat dilacak, namun disarankan meningkatkan keunikan kontras/tekstur gambar.`;
-      color = "var(--pastel-peach)";
-    } else if (totalScore >= 15) {
-      stars = 2;
-      text = `Ditemukan hanya ${featureCount} fitur. Kontras/detail kurang memadai. Kamera AR mungkin akan sering kehilangan pelacakan.`;
-      color = "var(--pastel-coral)";
+    color = stars === 3 ? "var(--pastel-peach)" : "var(--pastel-coral)";
+    if (reasons.length > 0) {
+      text = reasons.join(" ");
+    } else {
+      text = `Kualitas detail sedang. Ditemukan ${numFeatures} fitur, namun disarankan untuk meningkatkan variasi warna/tekstur gambar.`;
     }
   }
   
@@ -572,7 +616,7 @@ function evaluateMarkerQuality(imgElement) {
       }
       
       // 4. Analyze overall score
-      const evaluation = analyzeMarkerQuality(imgElement, corners.length);
+      const evaluation = analyzeMarkerQuality(imgElement, corners);
       
       let starHTML = "";
       for (let i = 1; i <= 5; i++) {
