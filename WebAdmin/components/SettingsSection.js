@@ -239,8 +239,8 @@ export const SettingsSection = () => `
         style="
           width: 64px;
           height: 64px;
-          background: rgba(245, 158, 11, 0.1);
-          color: #f59e0b;
+          background: rgba(254, 215, 170, 0.15);
+          color: var(--pastel-peach);
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -290,7 +290,7 @@ export const SettingsSection = () => `
         <button
           id="btn-settings-confirm"
           class="btn btn-primary"
-          style="flex: 1; background: #f59e0b; border-color: #f59e0b"
+          style="flex: 1; background: var(--pastel-peach); border-color: var(--pastel-peach); color: var(--text-dark); font-weight: 600;"
           type="button"
         >
           Ya, Simpan

@@ -720,8 +720,8 @@ label {
 }
 
 .about-tab.active {
-  color: white !important;
-  border-bottom: 2px solid white !important;
+  color: var(--pastel-mint) !important;
+  border-bottom: 2px solid var(--pastel-mint) !important;
   font-weight: 600 !important;
 }
 
