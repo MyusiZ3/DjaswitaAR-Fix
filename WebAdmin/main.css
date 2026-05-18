@@ -345,6 +345,51 @@ body {
   color: var(--danger);
 }
 
+/* Custom Toggle Switch (Admin Config) */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.switch .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #1e1f24;
+  border-radius: 34px;
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+.switch .slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 2px;
+  background-color: var(--text-dim);
+  border-radius: 50%;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.4s ease;
+}
+.switch input:checked + .slider {
+  background-color: var(--pastel-lime);
+  border-color: var(--pastel-lime);
+  box-shadow: 0 0 10px rgba(212, 252, 52, 0.2);
+}
+.switch input:checked + .slider:before {
+  transform: translateX(20px);
+  background-color: var(--text-dark);
+}
+
 /* Card / Table Container */
 .card,
 .content-card {

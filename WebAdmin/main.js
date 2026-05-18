@@ -1206,14 +1206,21 @@ function renderAdmins(filter = "") {
       .map(
         (item) => `
       <tr>
-        <td style="font-weight: 600; color: var(--primary)">${item.username || "-"}</td>
+        <td>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(233, 213, 255, 0.05); border: 1.5px solid var(--pastel-lavender); box-shadow: 0 0 10px rgba(233, 213, 255, 0.15); display: flex; align-items: center; justify-content: center; color: var(--pastel-lavender); font-weight: 700; font-size: 0.9rem; text-transform: uppercase;">
+              ${(item.username || "A").charAt(0)}
+            </div>
+            <span style="font-weight: 600; color: white">${item.username || "-"}</span>
+          </div>
+        </td>
         <td style="font-weight: 500">${item.email || "-"}</td>
         <td>
           <span class="badge role-${item.role || "admin"}">
             ${(item.role || "admin").toUpperCase()}
           </span>
         </td>
-        <td style="color: var(--text-dim); font-size: 0.813rem;">
+        <td style="color: var(--pastel-peach); font-family: var(--font-mono); font-size: 0.813rem;">
           ${new Date(item.created_at).toLocaleDateString("id-ID", {
             day: "2-digit",
             month: "short",
