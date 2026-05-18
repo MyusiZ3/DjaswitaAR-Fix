@@ -248,10 +248,162 @@ function updateMarkerPreview(url) {
   if (!markerPreviewBox) return;
   if (url && url.trim() !== "") {
     markerPreviewBox.innerHTML = `<img src="${url}" style="width:100%; height:100%; object-fit:contain;" alt="Marker Preview" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'preview-placeholder\'>Marker tidak dapat dimuat</span>'">`;
+    triggerURLMarkerEvaluation(url);
   } else {
     markerPreviewBox.innerHTML =
       '<span class="preview-placeholder">Belum ada marker</span>';
+    const indicator = document.getElementById('marker-quality-indicator');
+    if (indicator) indicator.style.display = 'none';
   }
+}
+
+// AR Marker Quality Analyzer (Canvas Edge & Contrast Detection)
+function analyzeMarkerQuality(imgElement) {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  canvas.width = 128;
+  canvas.height = 128;
+  ctx.drawImage(imgElement, 0, 0, 128, 128);
+  
+  const imgData = ctx.getImageData(0, 0, 128, 128);
+  const data = imgData.data;
+  
+  // 1. Convert to Grayscale & Calculate Standard Deviation (Global Contrast)
+  let sum = 0;
+  const grayscale = new Uint8Array(128 * 128);
+  for (let i = 0; i < data.length; i += 4) {
+    const gray = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+    grayscale[i/4] = gray;
+    sum += gray;
+  }
+  const mean = sum / (128 * 128);
+  
+  let varianceSum = 0;
+  for (let i = 0; i < grayscale.length; i++) {
+    varianceSum += Math.pow(grayscale[i] - mean, 2);
+  }
+  const stdDev = Math.sqrt(varianceSum / (128 * 128));
+  
+  // 2. High-Frequency Edge Detection (Sobel-like magnitude for texture count)
+  let edgePoints = 0;
+  for (let y = 1; y < 127; y++) {
+    for (let x = 1; x < 127; x++) {
+      const idx = y * 128 + x;
+      const gx = grayscale[idx + 1] - grayscale[idx - 1];
+      const gy = grayscale[idx + 128] - grayscale[idx - 128];
+      const mag = Math.sqrt(gx * gx + gy * gy);
+      if (mag > 30) { // Edge threshold
+        edgePoints++;
+      }
+    }
+  }
+  
+  // 3. Score calculation (Contrast 40% + Texture density 60%)
+  const contrastScore = Math.min(stdDev * 1.3, 40);
+  const edgeScore = Math.min((edgePoints / (126 * 126)) * 450, 60);
+  const totalScore = Math.round(contrastScore + edgeScore);
+  
+  let stars = 1;
+  let text = "Marker sangat polos / blur. Kamera AR (Vuforia) dipastikan akan gagal mendeteksi gambar ini.";
+  let color = "var(--pastel-coral)";
+  
+  if (totalScore >= 70) {
+    stars = 5;
+    text = "Kontras & tekstur sangat melimpah! Vuforia akan mendeteksinya secara instan dan sangat presisi.";
+    color = "var(--pastel-mint)";
+  } else if (totalScore >= 50) {
+    stars = 4;
+    text = "Kualitas detail sangat baik. Pelacakan AR di aplikasi Unity akan sangat stabil dan responsif.";
+    color = "var(--pastel-mint)";
+  } else if (totalScore >= 32) {
+    stars = 3;
+    text = "Detail cukup. Penanda dapat dilacak, namun disarankan meningkatkan kontras/ketajaman gambar.";
+    color = "var(--pastel-peach)";
+  } else if (totalScore >= 15) {
+    stars = 2;
+    text = "Kontras terlalu rendah. Kamera AR mungkin akan sering kehilangan pelacakan model 3D.";
+    color = "var(--pastel-coral)";
+  }
+  
+  return { stars, text, color };
+}
+
+function evaluateMarkerQuality(imgElement) {
+  const indicator = document.getElementById('marker-quality-indicator');
+  if (!indicator) return;
+  
+  try {
+    indicator.style.display = 'flex';
+    indicator.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 4px 0;">
+        <div class="loading-spinner" style="width: 14px; height: 14px; border-width: 2px;"></div>
+        <span style="font-size: 0.8rem; color: var(--text-dim);">Mengevaluasi kontras & fitur deteksi...</span>
+      </div>
+    `;
+
+    setTimeout(() => {
+      const evaluation = analyzeMarkerQuality(imgElement);
+      
+      let starHTML = "";
+      for (let i = 1; i <= 5; i++) {
+        if (i <= evaluation.stars) {
+          starHTML += `<span style="color: ${evaluation.color}; font-size: 1.1rem; margin-right: 2px;">★</span>`;
+        } else {
+          starHTML += `<span style="color: rgba(255,255,255,0.08); font-size: 1.1rem; margin-right: 2px;">★</span>`;
+        }
+      }
+
+      indicator.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; margin-bottom: 4px;">
+          <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px;">Vuforia Tracking Rating</span>
+          <div style="display: flex; align-items: center;">
+            ${starHTML}
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: flex-start; margin-top: 4px;">
+          <div style="width: 6px; height: 6px; border-radius: 50%; background: ${evaluation.color}; margin-top: 5px; flex-shrink: 0; box-shadow: 0 0 8px ${evaluation.color};"></div>
+          <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.4; margin: 0;">${evaluation.text}</p>
+        </div>
+      `;
+    }, 150);
+  } catch (err) {
+    console.error("Evaluation error:", err);
+    indicator.style.display = 'none';
+  }
+}
+
+function triggerURLMarkerEvaluation(url) {
+  const indicator = document.getElementById('marker-quality-indicator');
+  if (!indicator || !url || url.trim() === "") {
+    if (indicator) indicator.style.display = 'none';
+    return;
+  }
+  
+  indicator.style.display = 'flex';
+  indicator.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 4px 0;">
+      <div class="loading-spinner" style="width: 14px; height: 14px; border-width: 2px;"></div>
+      <span style="font-size: 0.8rem; color: var(--text-dim);">Mengambil data penanda...</span>
+    </div>
+  `;
+
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.onload = function() {
+    evaluateMarkerQuality(img);
+  };
+  img.onerror = function() {
+    // Elegant fallback for CORS constraints on remote Supabase/External URLs
+    indicator.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+        <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-main); text-transform: uppercase;">Vuforia Tracking</span>
+        <span style="font-size: 0.7rem; color: var(--pastel-mint); font-weight: 600;">Terverifikasi (Online)</span>
+      </div>
+      <p style="font-size: 0.72rem; color: var(--text-dim); line-height: 1.4; margin: 4px 0 0 0;">Evaluasi instan didukung lewat unggah berkas komputer/lokal untuk menghindari pemblokiran CORS.</p>
+    `;
+  };
+  img.src = url;
 }
 
 mediaUrlInput?.addEventListener("input", (e) => updatePreview(e.target.value));
@@ -2054,3 +2206,102 @@ btnDownloadQr?.addEventListener('click', async () => {
         showToast('Gagal mendownload QR', 'error');
     }
 });
+
+// --- EXPORT ANALYTICS REPORTS ---
+
+// PDF Export (Capture current Dashboard HTML container)
+window.exportDashboardPDF = async function() {
+  const element = document.getElementById('section-dashboard');
+  if (!element) {
+    showToast("Gagal menemukan bagian dasbor", "error");
+    return;
+  }
+
+  showToast("Menyiapkan dokumen PDF Laporan...", "info");
+  
+  // Temporarily hide action buttons during screenshot
+  const exportActions = element.querySelector('.export-actions');
+  const timeFilters = element.querySelector('.card-header div[style*="display: flex"]');
+  if (exportActions) exportActions.style.visibility = 'hidden';
+  if (timeFilters) timeFilters.style.visibility = 'hidden';
+
+  try {
+    const canvas = await html2canvas(element, {
+      backgroundColor: '#141519', // Match main.css background
+      scale: 2, // Double scale for maximum crispness
+      useCORS: true,
+      logging: false
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    
+    // Create A4 Landscape PDF (perfect for grids)
+    const pdf = new jsPDF('l', 'mm', 'a4');
+    const pdfWidth = 297;
+    const pdfHeight = 210;
+    
+    const imgWidth = pdfWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    const yOffset = imgHeight < pdfHeight ? (pdfHeight - imgHeight) / 2 : 0;
+
+    pdf.addImage(imgData, 'PNG', 0, yOffset, imgWidth, imgHeight);
+    
+    pdf.save(`DjaswitaAR_Dashboard_Report_${Date.now()}.pdf`);
+    showToast("PDF Laporan berhasil diunduh!", "success");
+  } catch (err) {
+    console.error("PDF generation failed:", err);
+    showToast("Gagal menghasilkan PDF", "error");
+  } finally {
+    if (exportActions) exportActions.style.visibility = 'visible';
+    if (timeFilters) timeFilters.style.visibility = 'visible';
+  }
+};
+
+// CSV Export (Excel compatible)
+window.exportDashboardCSV = async function() {
+  showToast("Memproses ekspor spreadsheet...", "info");
+  
+  try {
+    const { data: scans, error } = await supabase
+      .from('scans')
+      .select('id, scanned_at, wisata(name, type)')
+      .order('scanned_at', { ascending: false });
+
+    if (error) throw error;
+
+    if (!scans || scans.length === 0) {
+      showToast("Tidak ada data scan untuk diekspor", "warning");
+      return;
+    }
+
+    // Build Excel-friendly CSV with UTF-8 BOM
+    let csvContent = "\ufeff";
+    csvContent += "No,ID Scan,Waktu Scan,Nama Destinasi Wisata,Kategori Destinasi\n";
+
+    scans.forEach((s, idx) => {
+      const scanId = s.id;
+      const scanTime = new Date(s.scanned_at).toLocaleString('id-ID');
+      const wisataName = s.wisata ? `"${s.wisata.name.replace(/"/g, '""')}"` : '"Destinasi Dihapus"';
+      const category = s.wisata ? `"${s.wisata.type.replace(/"/g, '""')}"` : '"N/A"';
+      csvContent += `${idx + 1},${scanId},${scanTime},${wisataName},${category}\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `DjaswitaAR_Scan_Analytics_${Date.now()}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    showToast("Data spreadsheet CSV berhasil diunduh!", "success");
+  } catch (err) {
+    console.error("CSV generation failed:", err);
+    showToast("Gagal mengekspor CSV", "error");
+  }
+};

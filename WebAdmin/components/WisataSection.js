@@ -149,6 +149,9 @@ export const WisataSection = () => `
           >
             <span class="preview-placeholder">Belum ada marker</span>
           </div>
+          <div id="marker-quality-indicator" style="display: none; margin-top: 8px; padding: 12px; border-radius: 10px; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); flex-direction: column; gap: 6px; transition: all 0.3s ease;">
+            <!-- Will be dynamically populated via main.js -->
+          </div>
         </div>
 
         <!-- Video Section (Always Visible) -->

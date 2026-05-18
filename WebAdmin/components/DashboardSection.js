@@ -4,6 +4,24 @@ export const DashboardSection = () => `
       <h1>Performance Insights</h1>
       <p>Pantau sejauh mana pengunjung berinteraksi dengan konten AR kamu.</p>
     </div>
+    <div class="export-actions" style="display: flex; gap: 8px;">
+      <button onclick="exportDashboardPDF()" class="btn btn-secondary" style="font-size: 0.8rem; padding: 8px 14px; gap: 6px; display: flex; align-items: center; font-weight: 600;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        PDF Report
+      </button>
+      <button onclick="exportDashboardCSV()" class="btn btn-secondary" style="font-size: 0.8rem; padding: 8px 14px; gap: 6px; display: flex; align-items: center; font-weight: 600;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        CSV Excel
+      </button>
+    </div>
   </header>
 
   <div class="dashboard-grid">
