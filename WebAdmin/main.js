@@ -543,7 +543,33 @@ async function fetchData() {
 // --- ANALYTICS ---
 let scansChart = null;
 
-async function fetchAnalytics() {
+window.updateScanTimeframe = function(timeframe, btnElement) {
+  // Update button active state
+  document.querySelectorAll('.time-filter-btn').forEach(btn => btn.classList.remove('active'));
+  btnElement.classList.add('active');
+
+  // Update Title and Subtitle
+  const title = document.getElementById('scan-activity-title');
+  const desc = document.getElementById('scan-activity-desc');
+  
+  if (title && desc) {
+    if (timeframe === 'weekly') {
+      title.innerText = 'Weekly Scan Activity';
+      desc.innerText = 'Tren interaksi pengunjung dalam 7 hari terakhir.';
+    } else if (timeframe === 'monthly') {
+      title.innerText = 'Monthly Scan Activity';
+      desc.innerText = 'Tren interaksi pengunjung selama 30 hari terakhir.';
+    } else if (timeframe === 'alltime') {
+      title.innerText = 'All-Time Scan Activity';
+      desc.innerText = 'Akumulasi seluruh interaksi pengunjung dari awal.';
+    }
+  }
+  
+  // Trigger a re-fetch of chart data with the new timeframe
+  fetchAnalytics(timeframe);
+};
+
+async function fetchAnalytics(timeframe = 'weekly') {
   try {
     // Show loading state for popular locations table
     const popBody = document.getElementById('popular-locations-body');
@@ -558,34 +584,79 @@ async function fetchAnalytics() {
     document.getElementById('stat-active-locations').innerText = activeLocations || 0;
     document.getElementById('stat-total-admins').innerText = totalAdmins || 0;
 
-    // 2. Fetch Chart Data (Last 7 Days)
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setHours(0, 0, 0, 0);
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    // 2. Fetch Chart Data Based on Timeframe
+    let startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+    let query = supabase.from('scans').select('scanned_at');
     
-    const { data: scansData, error: scansError } = await supabase
-      .from('scans')
-      .select('scanned_at')
-      .gte('scanned_at', sevenDaysAgo.toISOString());
-
-    if (scansError) throw scansError;
-
-    const dailyData = {};
-    const labels = [];
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(sevenDaysAgo);
-      d.setDate(d.getDate() + i);
-      const label = d.toLocaleDateString('id-ID', { weekday: 'short' });
-      labels.push(label);
-      dailyData[label] = 0;
+    if (timeframe === 'weekly') {
+      startDate.setDate(startDate.getDate() - 6);
+      query = query.gte('scanned_at', startDate.toISOString());
+    } else if (timeframe === 'monthly') {
+      startDate.setDate(startDate.getDate() - 29); // 30 days including today
+      query = query.gte('scanned_at', startDate.toISOString());
     }
 
-    scansData.forEach(s => {
-      const label = new Date(s.scanned_at).toLocaleDateString('id-ID', { weekday: 'short' });
-      if (dailyData[label] !== undefined) dailyData[label]++;
-    });
+    const { data: scansData, error: scansError } = await query;
+    if (scansError) throw scansError;
 
-    renderScansChart(labels, labels.map(l => dailyData[l]));
+    let chartData = {};
+    let labels = [];
+
+    if (timeframe === 'weekly') {
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(startDate);
+        d.setDate(d.getDate() + i);
+        const label = d.toLocaleDateString('id-ID', { weekday: 'short' });
+        labels.push(label);
+        chartData[label] = 0;
+      }
+      scansData.forEach(s => {
+        const label = new Date(s.scanned_at).toLocaleDateString('id-ID', { weekday: 'short' });
+        if (chartData[label] !== undefined) chartData[label]++;
+      });
+    } else if (timeframe === 'monthly') {
+      for (let i = 0; i < 30; i++) {
+        const d = new Date(startDate);
+        d.setDate(d.getDate() + i);
+        const label = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        labels.push(label);
+        chartData[label] = 0;
+      }
+      scansData.forEach(s => {
+        const label = new Date(s.scanned_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        if (chartData[label] !== undefined) chartData[label]++;
+      });
+    } else if (timeframe === 'alltime') {
+      const monthlyMap = {};
+      scansData.forEach(s => {
+        const d = new Date(s.scanned_at);
+        // Format YYYY-MM for correct chronological sorting
+        const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        if (!monthlyMap[monthKey]) monthlyMap[monthKey] = 0;
+        monthlyMap[monthKey]++;
+      });
+      
+      const sortedKeys = Object.keys(monthlyMap).sort();
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
+      
+      sortedKeys.forEach(k => {
+        const [year, month] = k.split('-');
+        const labelName = `${monthNames[parseInt(month) - 1]} ${year}`;
+        labels.push(labelName);
+        chartData[labelName] = monthlyMap[k];
+      });
+
+      // Default fallback if database is completely empty
+      if (labels.length === 0) {
+        const today = new Date();
+        const fallbackLabel = `${monthNames[today.getMonth()]} ${today.getFullYear()}`;
+        labels.push(fallbackLabel);
+        chartData[fallbackLabel] = 0;
+      }
+    }
+
+    renderScansChart(labels, labels.map(l => chartData[l]));
 
     // 3. Category Distribution Chart
     if (wisataData.length === 0) {

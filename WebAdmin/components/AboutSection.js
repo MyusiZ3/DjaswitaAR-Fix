@@ -99,9 +99,9 @@ export const AboutSection = () => `
           <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background-color: var(--border-color);"></div>
           
           <div style="position: relative; margin-bottom: 2.5rem;">
-            <div style="position: absolute; left: -2.35rem; top: 0.2rem; width: 14px; height: 14px; border-radius: 50%; background-color: var(--pastel-lime); box-shadow: 0 0 10px var(--pastel-lime);"></div>
-            <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem;">
-              <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--pastel-lime); margin-bottom: 0.5rem;">v1.2.0 - CURRENT</div>
+            <div style="position: absolute; left: -2.35rem; top: 0.2rem; width: 14px; height: 14px; border-radius: 50%; background-color: var(--pastel-mint); box-shadow: 0 0 10px var(--pastel-mint);"></div>
+            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 12px; transition: all 0.3s ease;">
+              <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--pastel-mint); margin-bottom: 0.5rem;">v1.2.0 - CURRENT</div>
               <h4 style="color: white; margin-bottom: 0.5rem; font-size: 1.1rem;">Matte Pastel Dark Implementation</h4>
               <p style="color: var(--text-dim); font-size: 0.85rem; line-height: 1.6;">Major UI/UX overhaul implementing premium charcoal matte backgrounds with pastel accents, holographic viewfinders, and spring animations.</p>
             </div>

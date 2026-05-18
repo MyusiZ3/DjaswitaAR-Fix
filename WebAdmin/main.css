@@ -206,7 +206,7 @@ body {
 }
 
 .nav-item.active {
-  background: var(--pastel-lime);
+  background: var(--pastel-mint);
   color: var(--text-dark);
   font-weight: 700;
   box-shadow: none;
@@ -382,9 +382,9 @@ body {
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.4s ease;
 }
 .switch input:checked + .slider {
-  background-color: var(--pastel-lime);
-  border-color: var(--pastel-lime);
-  box-shadow: 0 0 10px rgba(212, 252, 52, 0.2);
+  background-color: var(--pastel-mint);
+  border-color: var(--pastel-mint);
+  box-shadow: 0 0 10px rgba(187, 247, 208, 0.2);
 }
 .switch input:checked + .slider:before {
   transform: translateX(20px);
@@ -418,6 +418,27 @@ body {
 .card-header h3 {
   font-size: 1.125rem;
   font-weight: 600;
+}
+
+/* Chart Time Filters */
+.time-filter-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.time-filter-btn:hover {
+  color: var(--text-main);
+}
+.time-filter-btn.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 table {
@@ -1606,8 +1627,8 @@ model-viewer {
 
 /* Mode Selector Active State overrides */
 .mode-selector input[type="radio"]:checked + .mode-card {
-  background: var(--pastel-lime);
-  border-color: var(--pastel-lime);
+  background: var(--pastel-mint);
+  border-color: var(--pastel-mint);
   box-shadow: none;
 }
 .mode-selector input[type="radio"]:checked + .mode-card svg,
@@ -1685,7 +1706,7 @@ model-viewer {
   position: absolute;
   width: 60px;
   height: 60px;
-  border: 1.5px dashed var(--pastel-lime);
+  border: 1.5px dashed var(--pastel-mint);
   border-radius: 50%;
   z-index: 2;
   display: flex;
@@ -1700,7 +1721,7 @@ model-viewer {
   position: absolute;
   width: 6px;
   height: 6px;
-  background: var(--pastel-lime);
+  background: var(--pastel-mint);
   border-radius: 50%;
 }
 
@@ -1732,7 +1753,7 @@ model-viewer {
   right: 14px;
   font-family: var(--font-mono);
   font-size: 0.72rem;
-  color: var(--pastel-lime);
+  color: var(--pastel-mint);
   background: rgba(14, 15, 19, 0.75);
   padding: 4px 10px;
   border-radius: 6px;

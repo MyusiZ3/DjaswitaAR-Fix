@@ -48,9 +48,16 @@ export const DashboardSection = () => `
 
   <div class="dashboard-charts-row" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
     <div class="card">
-      <div class="card-header">
-        <h3>Weekly Scan Activity</h3>
-        <p style="font-size: 0.875rem; color: var(--text-dim)">Tren interaksi pengunjung dalam 7 hari terakhir.</p>
+      <div class="card-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+          <h3 id="scan-activity-title">Weekly Scan Activity</h3>
+          <p id="scan-activity-desc" style="font-size: 0.875rem; color: var(--text-dim); margin-top: 2px;">Tren interaksi pengunjung dalam 7 hari terakhir.</p>
+        </div>
+        <div style="display: flex; gap: 4px; background: rgba(0, 0, 0, 0.2); padding: 4px; border-radius: 8px; border: 1px solid var(--glass-border);">
+          <button class="time-filter-btn active" onclick="updateScanTimeframe('weekly', this)">Week</button>
+          <button class="time-filter-btn" onclick="updateScanTimeframe('monthly', this)">Month</button>
+          <button class="time-filter-btn" onclick="updateScanTimeframe('alltime', this)">All</button>
+        </div>
       </div>
       <div style="padding: 1.5rem; height: 320px">
         <canvas id="scans-chart"></canvas>
