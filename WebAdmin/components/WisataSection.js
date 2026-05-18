@@ -140,7 +140,7 @@ export const WisataSection = () => `
             </button>
           </div>
           <small class="text-hint"
-            >Gambar ini digunakan Vuforia untuk deteksi (tidak tampil di slide). Rekomendasi: 1080x1350 (4:5).</small
+            >Gambar ini digunakan Vuforia untuk deteksi (tidak tampil di slide). Rekomendasi: 1080x1350 (4:5) & <span style="color: var(--pastel-peach); font-weight: 700;">Kualitas Pelacakan Minimal ★★★ (3 Bintang)</span>.</small
           >
           <div
             class="preview-container"

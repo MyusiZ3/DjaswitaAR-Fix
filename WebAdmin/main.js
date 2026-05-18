@@ -627,6 +627,16 @@ function evaluateMarkerQuality(imgElement) {
         }
       }
 
+      let warningHTML = "";
+      if (evaluation.stars < 3) {
+        warningHTML = `
+          <div style="margin-top: 8px; padding: 6px 10px; border-radius: 6px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); display: flex; align-items: center; gap: 6px; width: 100%;">
+            <span style="font-size: 0.8rem; line-height: 1;">⚠️</span>
+            <span style="font-size: 0.68rem; color: #f87171; font-weight: 600; line-height: 1.3;">Kualitas di bawah standar minimal (★★★). Sangat disarankan mengganti gambar untuk menjamin objek 3D tidak bergeser di aplikasi AR.</span>
+          </div>
+        `;
+      }
+
       indicator.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; margin-bottom: 4px;">
           <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px;">Vuforia Tracking Rating</span>
@@ -638,6 +648,7 @@ function evaluateMarkerQuality(imgElement) {
           <div style="width: 6px; height: 6px; border-radius: 50%; background: ${evaluation.color}; margin-top: 5px; flex-shrink: 0; box-shadow: 0 0 8px ${evaluation.color};"></div>
           <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.4; margin: 0;">${evaluation.text}</p>
         </div>
+        ${warningHTML}
       `;
     }, 150);
   } catch (err) {
