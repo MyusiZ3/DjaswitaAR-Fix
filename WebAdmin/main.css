@@ -1614,3 +1614,196 @@ model-viewer {
   color: var(--text-dark);
   font-weight: 700;
 }
+
+/* --- MARKER GUIDE CUSTOM STYLES --- */
+/* Marker Preview HUD & Scanning Overlay */
+.marker-preview-container {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #141519;
+  border: 1.5px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.marker-preview-container.good {
+  border-color: rgba(187, 247, 208, 0.3);
+  box-shadow: 0 0 15px rgba(187, 247, 208, 0.08);
+}
+
+.marker-preview-container.bad {
+  border-color: rgba(248, 113, 113, 0.3);
+  box-shadow: 0 0 15px rgba(248, 113, 113, 0.08);
+}
+
+.marker-preview-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(rgba(191, 219, 254, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(191, 219, 254, 0.02) 1px, transparent 1px);
+  background-size: 20px 20px;
+  z-index: 1;
+}
+
+/* Visual Mock patterns for Marker Design rules */
+.marker-pattern-mock {
+  width: 100%;
+  height: 100%;
+  opacity: 0.25;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 0;
+}
+
+/* Good pattern: High detail, asymmetric */
+.marker-pattern-mock.good-design {
+  background: 
+    radial-gradient(circle at 30% 20%, var(--pastel-mint) 0%, transparent 40%),
+    radial-gradient(circle at 75% 60%, var(--pastel-blue) 0%, transparent 45%),
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(233, 213, 255, 0.1) 10px, rgba(233, 213, 255, 0.1) 20px);
+}
+
+/* Bad pattern: Repeating dots, low contrast */
+.marker-pattern-mock.bad-design {
+  background-color: #1e1f24;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 15%, transparent 16%);
+  background-size: 16px 16px;
+}
+
+.marker-crosshair {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border: 1.5px dashed var(--pastel-lime);
+  border-radius: 50%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px rgba(212, 252, 52, 0.1);
+  animation: marker-pulse-glow 2s infinite ease-in-out;
+}
+
+.marker-crosshair::before {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--pastel-lime);
+  border-radius: 50%;
+}
+
+.marker-crosshair-bad {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border: 1.5px dashed var(--pastel-coral);
+  border-radius: 50%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px rgba(248, 113, 113, 0.1);
+}
+
+.marker-crosshair-bad::before {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--pastel-coral);
+  border-radius: 50%;
+}
+
+.marker-hud-text {
+  position: absolute;
+  bottom: 12px;
+  right: 14px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--pastel-lime);
+  background: rgba(14, 15, 19, 0.75);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(212, 252, 52, 0.2);
+  backdrop-filter: blur(4px);
+  z-index: 2;
+  opacity: 0.95;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.marker-hud-text-bad {
+  position: absolute;
+  bottom: 12px;
+  right: 14px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--pastel-coral);
+  background: rgba(14, 15, 19, 0.75);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  backdrop-filter: blur(4px);
+  z-index: 2;
+  opacity: 0.95;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Outlander Style Cards in Instructions */
+.guide-card-pastel {
+  background: rgba(254, 215, 170, 0.02); /* Peach transparent default */
+  border: 1px solid rgba(254, 215, 170, 0.08);
+  border-radius: 16px;
+  padding: 1.75rem;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.guide-card-pastel:hover {
+  transform: scale(1.02) translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border-color: rgba(254, 215, 170, 0.2);
+}
+
+.guide-card-pastel.lavender {
+  background: rgba(233, 213, 255, 0.02);
+  border-color: rgba(233, 213, 255, 0.08);
+}
+
+.guide-card-pastel.lavender:hover {
+  border-color: rgba(233, 213, 255, 0.2);
+}
+
+.guide-card-pastel.mint {
+  background: rgba(187, 247, 208, 0.02);
+  border-color: rgba(187, 247, 208, 0.08);
+}
+
+.guide-card-pastel.mint:hover {
+  border-color: rgba(187, 247, 208, 0.2);
+}
+
+@keyframes marker-pulse-glow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+    box-shadow: 0 0 15px rgba(212, 252, 52, 0.25);
+  }
+}

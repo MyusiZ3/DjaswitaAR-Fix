@@ -30,47 +30,93 @@ export const InstructionsSection = () => `
     </div>
   </header>
 
-  <div class="content-card" style="margin-top: 1.5rem; padding: 2rem">
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 3rem;">
-      <div>
-        <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
-          <span style="background: var(--primary-glow); padding: 5px 12px; border-radius: 8px; font-size: 0.9rem;">1</span>
-          Aspek Rasio & Dimensi
-        </h3>
-        <div class="guide-item" style="margin-bottom: 1.5rem; background: rgba(255, 255, 255, 0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--glass-border);">
-          <p style="color: var(--text-dim); margin-bottom: 0.5rem">Rasio yang disarankan:</p>
-          <h4 style="color: var(--primary); font-size: 1.5rem; margin-bottom: 1rem;">4 : 5</h4>
-          <ul style="color: var(--text-dim); padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.6;">
-            <li>Resolusi Ideal: <b>1080 x 1350 px</b></li>
-            <li>Minimal: 800 x 1000 px</li>
-            <li>Pastikan konten utama tidak terlalu mepet ke pinggir (safe zone 50px).</li>
-          </ul>
-        </div>
-      </div>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 1.5rem;">
+    <!-- Card 1: Dimensi -->
+    <div class="guide-card-pastel mint">
+      <h3 style="margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px;">
+        <span style="background: rgba(187, 247, 208, 0.1); border: 1px solid rgba(187, 247, 208, 0.2); color: var(--pastel-mint); padding: 5px 12px; border-radius: 8px; font-size: 0.9rem;">1</span>
+        Aspek Rasio & Dimensi
+      </h3>
+      <p style="color: var(--text-dim); margin-bottom: 0.5rem">Rasio yang disarankan:</p>
+      <h4 style="color: var(--pastel-mint); font-size: 1.75rem; margin-bottom: 1rem; font-family: var(--font-mono)">4 : 5</h4>
+      <ul style="color: var(--text-dim); padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.7; margin: 0;">
+        <li>Resolusi Ideal: <b>1080 x 1350 px</b></li>
+        <li>Minimal: 800 x 1000 px</li>
+        <li>Pastikan konten utama tidak terlalu mepet ke pinggir (safe zone 50px).</li>
+      </ul>
+    </div>
 
-      <div>
-        <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
-          <span style="background: var(--primary-glow); padding: 5px 12px; border-radius: 8px; font-size: 0.9rem;">2</span>
-          Kualitas Marker (Digital)
-        </h3>
-        <ul style="color: var(--text-dim); padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.8;">
-          <li><b>Kontras Tinggi:</b> Gunakan perpaduan warna gelap dan terang yang jelas.</li>
-          <li><b>Fitur Unik:</b> Hindari gambar yang terlalu polos atau berpola repetitif.</li>
-          <li><b>Non-Simetris:</b> Gambar yang asimetris lebih mudah dideteksi oleh sensor AR.</li>
-          <li><b>Format:</b> Gunakan .JPG atau .PNG (Max 2MB).</li>
+    <!-- Card 2: Kualitas -->
+    <div class="guide-card-pastel lavender">
+      <h3 style="margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px;">
+        <span style="background: rgba(233, 213, 255, 0.1); border: 1px solid rgba(233, 213, 255, 0.2); color: var(--pastel-lavender); padding: 5px 12px; border-radius: 8px; font-size: 0.9rem;">2</span>
+        Kualitas Marker (Digital)
+      </h3>
+      <ul style="color: var(--text-dim); padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.8; margin: 0;">
+        <li><b>Kontras Tinggi:</b> Perpaduan warna gelap & terang yang jelas.</li>
+        <li><b>Fitur Unik:</b> Hindari gambar polos atau berpola repetitif.</li>
+        <li><b>Non-Simetris:</b> Asimetris lebih mudah dilacak sensor AR.</li>
+        <li><b>Format:</b> Gunakan .JPG atau .PNG (Max 2MB).</li>
+      </ul>
+    </div>
+
+    <!-- Card 3: Panduan Cetak -->
+    <div class="guide-card-pastel">
+      <h3 style="margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px;">
+        <span style="background: rgba(254, 215, 170, 0.1); border: 1px solid rgba(254, 215, 170, 0.2); color: var(--pastel-peach); padding: 5px 12px; border-radius: 8px; font-size: 0.9rem;">3</span>
+        Panduan Cetak (Fisik)
+      </h3>
+      <ul style="color: var(--text-dim); padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.8; margin: 0;">
+        <li><b>Bahan Matte/Doff:</b> Hindari kertas glossy karena pantulan cahaya merusak tracking AR.</li>
+        <li><b>Ekspor PDF Print:</b> Gunakan format PDF Print untuk hasil cetak paling tajam.</li>
+        <li><b>Minimal 300 DPI:</b> Pastikan cetakan tajam, tidak blur.</li>
+        <li><b>Pencahayaan:</b> Cahaya merata di lokasi pameran.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Good vs Bad Marker Quality Comparison -->
+  <div class="content-card" style="margin-top: 2rem; padding: 2rem">
+    <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; color: white;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+      Marker Quality Comparison (Good vs Bad)
+    </h3>
+    <p style="color: var(--text-dim); margin-bottom: 2rem; font-size: 0.95rem;">Contoh struktur gambar marker yang ideal untuk Vuforia Engine vs gambar yang sulit terbaca oleh kamera AR.</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+      <!-- Good Marker Card -->
+      <div class="guide-card-pastel mint" style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: 600; color: white;">KONTEN KAYA FITUR</span>
+          <span style="background: var(--pastel-mint); color: var(--text-dark); font-weight: 700; font-size: 0.72rem; padding: 3px 10px; border-radius: 100px; text-transform: uppercase;">RECOMMENDED</span>
+        </div>
+        <div class="marker-preview-container good" style="background-image: url('image/goodmarker.webp'); background-size: cover; background-position: center;">
+          <div class="marker-preview-grid"></div>
+          <div class="marker-crosshair"></div>
+          <div class="marker-hud-text">TRACKING: ACTIVE (100%)</div>
+        </div>
+        <ul style="color: var(--text-dim); padding-left: 1.25rem; font-size: 0.875rem; line-height: 1.6; margin: 0;">
+          <li>Memiliki banyak sudut kontras tinggi dan elemen visual asimetris.</li>
+          <li>Titik fitur (*feature points*) berlimpah dan tersebar merata.</li>
+          <li>Sangat mudah dilacak dari sudut miring atau kondisi cahaya redup.</li>
         </ul>
       </div>
 
-      <div>
-        <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
-          <span style="background: var(--primary-glow); padding: 5px 12px; border-radius: 8px; font-size: 0.9rem;">3</span>
-          Panduan Cetak (Fisik)
-        </h3>
-        <ul style="color: var(--text-dim); padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.8;">
-          <li><b>Bahan Matte/Doff:</b> Hindari kertas <i>glossy</i> karena pantulan cahaya bisa merusak tracking AR.</li>
-          <li><b>Ekspor PDF Print:</b> Di Canva, gunakan format <b>PDF Print</b> (bukan Standard) untuk hasil cetak paling tajam.</li>
-          <li><b>Minimal 300 DPI:</b> Pastikan cetakan tajam, tidak pecah atau blur.</li>
-          <li><b>Pencahayaan:</b> Letakkan di tempat dengan cahaya merata, jangan di bawah lampu sorot langsung.</li>
+      <!-- Bad Marker Card -->
+      <div class="guide-card-pastel" style="display: flex; flex-direction: column; gap: 1.5rem; border-color: rgba(248, 113, 113, 0.15);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: 600; color: white;">POLA REPETITIF / MINIM DETAIL</span>
+          <span style="background: var(--pastel-coral); color: var(--text-dark); font-weight: 700; font-size: 0.72rem; padding: 3px 10px; border-radius: 100px; text-transform: uppercase;">POOR QUALITY</span>
+        </div>
+        <div class="marker-preview-container bad" style="background-image: url('image/badmarker.jpg'); background-size: cover; background-position: center;">
+          <div class="marker-preview-grid"></div>
+          <div class="marker-crosshair-bad"></div>
+          <div class="marker-hud-text-bad">TRACKING: WEAK (30%)</div>
+        </div>
+        <ul style="color: var(--text-dim); padding-left: 1.25rem; font-size: 0.875rem; line-height: 1.6; margin: 0;">
+          <li>Memiliki pola geometris berulang yang membingungkan pelacak AR.</li>
+          <li>Terlalu polos dengan sedikit sudut kontras atau variasi bentuk.</li>
+          <li>Menyebabkan objek 3D bergeser (*drift*) atau sulit muncul di aplikasi.</li>
         </ul>
       </div>
     </div>
