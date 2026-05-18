@@ -337,14 +337,16 @@ export const WisataSection = () => `
       <div
         style="
           width: 64px;
+          width: 64px;
           height: 64px;
-          background: rgba(239, 68, 68, 0.1);
-          color: var(--danger);
+          background: rgba(254, 202, 202, 0.1);
+          color: var(--pastel-coral);
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           margin: 0 auto 1.5rem;
+          box-shadow: 0 0 20px rgba(254, 202, 202, 0.15);
         "
       >
         <svg
@@ -381,11 +383,11 @@ export const WisataSection = () => `
           align-items: flex-start;
           gap: 12px;
           text-align: left;
-          background: rgba(239, 68, 68, 0.05);
-          border: 1px solid rgba(239, 68, 68, 0.2);
+          background: rgba(254, 202, 202, 0.05);
+          border: 1px solid rgba(254, 202, 202, 0.2);
           padding: 14px;
           border-radius: 12px;
-          transition: all 0.2s;
+          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         "
       >
         <div style="margin-top: 2px">
@@ -396,7 +398,7 @@ export const WisataSection = () => `
               width: 20px;
               height: 20px;
               cursor: pointer;
-              accent-color: var(--danger);
+              accent-color: var(--pastel-coral);
             "
           />
         </div>
@@ -408,7 +410,7 @@ export const WisataSection = () => `
               gap: 6px;
               font-weight: 700;
               font-size: 0.875rem;
-              color: var(--danger);
+              color: var(--pastel-coral);
               margin-bottom: 2px;
             "
           >
@@ -443,7 +445,7 @@ export const WisataSection = () => `
         </label>
       </div>
       <div style="display: flex; gap: 12px; justify-content: stretch">
-        <button id="btn-delete-cancel" class="btn btn-ghost" style="flex: 1">
+        <button id="btn-delete-cancel" class="btn btn-secondary" style="flex: 1">
           Batal
         </button>
         <button
