@@ -79,12 +79,12 @@ export const AboutSection = () => `
                 <!-- Unity -->
                 <div style="background: var(--card-bg); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
                   <span style="color: var(--pastel-peach); font-weight: 600; font-size: 0.85rem;">Unity Engine 6</span>
-                  <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-dim); background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 8px;">6000.0.35f1</span>
+                  <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-dim); background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 8px;">v.6000.0.35f1</span>
                 </div>
                 <!-- Vuforia -->
                 <div style="background: var(--card-bg); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
                   <span style="color: var(--pastel-coral); font-weight: 600; font-size: 0.85rem;">Vuforia Engine</span>
-                  <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-dim); background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 8px;">11.4.4</span>
+                  <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-dim); background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 8px;">v.11.4.4</span>
                 </div>
                 <!-- Vite -->
                 <div style="background: var(--card-bg); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
