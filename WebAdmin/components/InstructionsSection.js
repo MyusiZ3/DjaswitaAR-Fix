@@ -32,13 +32,13 @@ export const InstructionsSection = () => `
 
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 1.5rem;">
     <!-- Card 1: Dimensi -->
-    <div class="guide-card-pastel mint">
-      <h3 style="margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px;">
-        <span style="background: rgba(187, 247, 208, 0.1); border: 1px solid rgba(187, 247, 208, 0.2); color: var(--pastel-mint); padding: 5px 12px; border-radius: 8px; font-size: 0.9rem;">1</span>
+    <div class="guide-card-pastel">
+      <h3 style="margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px; color: white;">
+        <span style="background: var(--pastel-mint); color: var(--text-dark); padding: 5px 12px; border-radius: 8px; font-size: 0.9rem; font-weight: 700;">1</span>
         Aspek Rasio & Dimensi
       </h3>
       <p style="color: var(--text-dim); margin-bottom: 0.5rem">Rasio yang disarankan:</p>
-      <h4 style="color: var(--pastel-mint); font-size: 1.75rem; margin-bottom: 1rem; font-family: var(--font-mono)">4 : 5</h4>
+      <h4 style="color: white; font-size: 1.75rem; margin-bottom: 1rem; font-family: var(--font-mono)">4 : 5</h4>
       <ul style="color: var(--text-dim); padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.7; margin: 0;">
         <li>Resolusi Ideal: <b>1080 x 1350 px</b></li>
         <li>Minimal: 800 x 1000 px</li>
@@ -47,9 +47,9 @@ export const InstructionsSection = () => `
     </div>
 
     <!-- Card 2: Kualitas -->
-    <div class="guide-card-pastel lavender">
-      <h3 style="margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px;">
-        <span style="background: rgba(233, 213, 255, 0.1); border: 1px solid rgba(233, 213, 255, 0.2); color: var(--pastel-lavender); padding: 5px 12px; border-radius: 8px; font-size: 0.9rem;">2</span>
+    <div class="guide-card-pastel">
+      <h3 style="margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px; color: white;">
+        <span style="background: var(--pastel-lavender); color: var(--text-dark); padding: 5px 12px; border-radius: 8px; font-size: 0.9rem; font-weight: 700;">2</span>
         Kualitas Marker (Digital)
       </h3>
       <ul style="color: var(--text-dim); padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.8; margin: 0;">
@@ -62,8 +62,8 @@ export const InstructionsSection = () => `
 
     <!-- Card 3: Panduan Cetak -->
     <div class="guide-card-pastel">
-      <h3 style="margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px;">
-        <span style="background: rgba(254, 215, 170, 0.1); border: 1px solid rgba(254, 215, 170, 0.2); color: var(--pastel-peach); padding: 5px 12px; border-radius: 8px; font-size: 0.9rem;">3</span>
+      <h3 style="margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px; color: white;">
+        <span style="background: var(--pastel-peach); color: var(--text-dark); padding: 5px 12px; border-radius: 8px; font-size: 0.9rem; font-weight: 700;">3</span>
         Panduan Cetak (Fisik)
       </h3>
       <ul style="color: var(--text-dim); padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.8; margin: 0;">
@@ -85,10 +85,10 @@ export const InstructionsSection = () => `
     
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
       <!-- Good Marker Card -->
-      <div class="guide-card-pastel mint" style="display: flex; flex-direction: column; gap: 1.5rem;">
+      <div class="guide-card-pastel" style="display: flex; flex-direction: column; gap: 1.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <span style="font-weight: 600; color: white;">KONTEN KAYA FITUR</span>
-          <span style="background: var(--pastel-mint); color: var(--text-dark); font-weight: 700; font-size: 0.72rem; padding: 3px 10px; border-radius: 100px; text-transform: uppercase;">RECOMMENDED</span>
+          <span class="badge-pastel" style="background: var(--pastel-mint);">RECOMMENDED</span>
         </div>
         <div class="marker-preview-container good" style="background-image: url('image/goodmarker.webp'); background-size: cover; background-position: center;">
           <div class="marker-preview-grid"></div>
@@ -103,10 +103,10 @@ export const InstructionsSection = () => `
       </div>
 
       <!-- Bad Marker Card -->
-      <div class="guide-card-pastel" style="display: flex; flex-direction: column; gap: 1.5rem; border-color: rgba(248, 113, 113, 0.15);">
+      <div class="guide-card-pastel" style="display: flex; flex-direction: column; gap: 1.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <span style="font-weight: 600; color: white;">POLA REPETITIF / MINIM DETAIL</span>
-          <span style="background: var(--pastel-coral); color: var(--text-dark); font-weight: 700; font-size: 0.72rem; padding: 3px 10px; border-radius: 100px; text-transform: uppercase;">POOR QUALITY</span>
+          <span class="badge-pastel" style="background: var(--pastel-coral);">POOR QUALITY</span>
         </div>
         <div class="marker-preview-container bad" style="background-image: url('image/badmarker.jpg'); background-size: cover; background-position: center;">
           <div class="marker-preview-grid"></div>
@@ -122,8 +122,8 @@ export const InstructionsSection = () => `
     </div>
   </div>
 
-  <div class="content-card" style="margin-top: 1.5rem; padding: 2rem; border-left: 4px solid #f59e0b; background: rgba(245, 158, 11, 0.03);">
-    <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; color: #f59e0b;">
+  <div class="content-card" style="margin-top: 1.5rem; padding: 2rem; border-left: 4px solid var(--pastel-peach); background: rgba(254, 215, 170, 0.03);">
+    <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; color: var(--pastel-peach);">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
         <line x1="12" y1="9" x2="12" y2="13"></line>
@@ -135,7 +135,7 @@ export const InstructionsSection = () => `
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
       <div style="background: rgba(0, 0, 0, 0.2); padding: 1.25rem; border-radius: 12px;">
         <h4 style="color: white; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--pastel-coral)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
           JANGAN DIUBAH
         </h4>
         <ul style="color: var(--text-dim); padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.6;">
@@ -145,7 +145,7 @@ export const InstructionsSection = () => `
       </div>
       <div style="background: rgba(0, 0, 0, 0.2); padding: 1.25rem; border-radius: 12px;">
         <h4 style="color: white; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--pastel-mint)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
           BOLEH DIUBAH
         </h4>
         <ul style="color: var(--text-dim); padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.6;">

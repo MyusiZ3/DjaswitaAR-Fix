@@ -55,9 +55,9 @@ body.is-super-admin button.super-admin-only {
   --glass-border: #212329;
   
   --primary: #ffffff;
-  --accent: #3b82f6;
-  --accent-gradient: linear-gradient(135deg, #3b82f6, #8b5cf6);
-  --accent-soft: rgba(59, 130, 246, 0.15);
+  --accent: var(--pastel-blue);
+  --accent-gradient: linear-gradient(135deg, var(--pastel-blue), var(--pastel-lavender));
+  --accent-soft: rgba(191, 219, 254, 0.15);
   
   /* Primary Text Colors */
   --text-main: #f3f4f6;
@@ -76,8 +76,8 @@ body.is-super-admin button.super-admin-only {
   --pastel-coral-dark: #7f1d1d;
   --pastel-lime: #d4fc34;
   
-  --danger: #ef4444;
-  --success: #10b981;
+  --danger: var(--pastel-coral);
+  --success: var(--pastel-mint);
 }
 
 .search-box {
@@ -294,14 +294,15 @@ body {
 
 .btn-primary {
   background: var(--accent);
-  color: #ffffff;
-  box-shadow: 0 10px 20px rgba(255, 255, 255, 0.05);
+  color: var(--text-dark);
+  font-weight: 700;
+  box-shadow: 0 8px 16px var(--accent-soft);
 }
 
 .btn-primary:hover {
-  background: #e4e4e7;
+  background: var(--pastel-lavender);
   transform: translateY(-2px);
-  box-shadow: 0 15px 30px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 24px rgba(233, 213, 255, 0.25);
 }
 
 .btn-secondary {
@@ -1761,10 +1762,10 @@ model-viewer {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* Outlander Style Cards in Instructions */
+/* Outlander Style Cards */
 .guide-card-pastel {
-  background: rgba(254, 215, 170, 0.02); /* Peach transparent default */
-  border: 1px solid rgba(254, 215, 170, 0.08);
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border);
   border-radius: 16px;
   padding: 1.75rem;
   transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -1774,26 +1775,18 @@ model-viewer {
 
 .guide-card-pastel:hover {
   transform: scale(1.02) translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  border-color: rgba(254, 215, 170, 0.2);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  border-color: #3b3e4a;
 }
 
-.guide-card-pastel.lavender {
-  background: rgba(233, 213, 255, 0.02);
-  border-color: rgba(233, 213, 255, 0.08);
-}
-
-.guide-card-pastel.lavender:hover {
-  border-color: rgba(233, 213, 255, 0.2);
-}
-
-.guide-card-pastel.mint {
-  background: rgba(187, 247, 208, 0.02);
-  border-color: rgba(187, 247, 208, 0.08);
-}
-
-.guide-card-pastel.mint:hover {
-  border-color: rgba(187, 247, 208, 0.2);
+/* Base Pill Badge Style mimicking reference */
+.badge-pastel {
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-dark);
 }
 
 @keyframes marker-pulse-glow {

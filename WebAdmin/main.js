@@ -144,6 +144,11 @@ function showToast(message, type = "info") {
 }
 
 function showSection(sectionId) {
+  // Auto-close any open modals when navigating
+  document.querySelectorAll(".modal-overlay.active").forEach((modal) => {
+    modal.classList.remove("active");
+  });
+
   // Hide all sections
   document.querySelectorAll(".view-section").forEach((s) => {
     s.classList.remove("active");
