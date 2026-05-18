@@ -78,8 +78,8 @@ export const AboutSection = () => `
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
                 <!-- AR Tech -->
                 <div style="background: var(--card-bg); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
-                  <span style="color: var(--pastel-peach); font-weight: 600; font-size: 0.85rem;">Unity 3D & Vuforia</span>
-                  <span style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-dim); background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 8px;">v2022.3</span>
+                  <span style="color: var(--pastel-peach); font-weight: 600; font-size: 0.85rem;">Unity 6 & Vuforia 11</span>
+                  <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-dim); background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 8px;">6000.0.35 / 11.4.4</span>
                 </div>
                 <!-- Web Tech -->
                 <div style="background: var(--card-bg); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
