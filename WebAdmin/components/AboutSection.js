@@ -2,7 +2,7 @@ export const AboutSection = () => `
   <header class="header">
     <div class="title-section">
       <h1>About Platform</h1>
-      <p>Pelajari lebih lanjut tentang ekosistem D'JawitaAR dan pengembangnya.</p>
+      <p>Pelajari lebih lanjut tentang ekosistem D'Jaswita AR dan pengembangnya.</p>
     </div>
   </header>
 
@@ -16,9 +16,9 @@ export const AboutSection = () => `
     <div id="tab-platform" class="about-tab-content" style="padding: 3rem 2.5rem; animation: fadeIn 0.4s ease; position: relative;">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem">
         <div>
-          <h2 style="margin-bottom: 1.5rem; color: var(--text-main); font-size: 2rem">D'JawitaAR Project</h2>
+          <h2 style="margin-bottom: 1.5rem; color: var(--text-main); font-size: 2rem">D'Jaswita AR Project</h2>
           <p style="color: var(--text-dim); line-height: 1.8; margin-bottom: 2.5rem; font-size: 1rem; text-align: justify;">
-            D'JawitaAR adalah platform Augmented Reality (AR) modern yang dirancang untuk merevolusi pengalaman pariwisata. Dengan menggabungkan teknologi tracking marker yang presisi dan dashboard manajemen data yang intuitif, D'JawitaAR memungkinkan pengelola lokasi untuk memberikan informasi interaktif kepada user.
+            D'Jaswita AR adalah platform Augmented Reality (AR) modern yang dirancang untuk merevolusi pengalaman pariwisata. Dengan menggabungkan teknologi tracking marker yang presisi dan dashboard manajemen data yang intuitif, D'Jaswita AR memungkinkan pengelola lokasi untuk memberikan informasi interaktif kepada user.
           </p>
           <p style="color: var(--pastel-blue); font-size: 0.9rem; font-weight: 500; padding: 1.25rem; background: rgba(191, 219, 254, 0.03); border-radius: 12px; border: 1px solid rgba(191, 219, 254, 0.1); border-left: 4px solid var(--pastel-blue); margin-bottom: 2.5rem; display: flex; align-items: flex-start; gap: 12px; text-align: justify;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px">
@@ -90,7 +90,7 @@ export const AboutSection = () => `
 
       <!-- Section Footer -->
       <div style="margin-top: 5rem; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center; color: var(--text-dim); font-size: 0.75rem;">
-        <div>© 2026 D'JawitaAR Platform • Official Production</div>
+        <div>© 2026 D'Jaswita AR Platform • Official Production</div>
         <div style="display: flex; gap: 1.5rem">
           <span>Jaswita Jabar</span>
           <span>Telkom University</span>
@@ -107,7 +107,7 @@ export const AboutSection = () => `
         <h2 style="margin-bottom: 0.5rem; color: var(--text-main)">Muhamad Sidik</h2>
         <p style="color: var(--pastel-mint); margin-bottom: 1.5rem; font-weight: 600;">Creative Designer & Unity Developer</p>
         <p style="color: var(--text-dim); line-height: 1.8; margin-bottom: 2.5rem;">
-          To me, technology is not just about a functioning system, but about creating new experiences that people can truly feel. D'JawitaAR is one of my works that integrates my expertise in Fullstack Development and AR Interaction Design.
+          To me, technology is not just about a functioning system, but about creating new experiences that people can truly feel. D'Jaswita AR is one of my works that integrates my expertise in Fullstack Development and AR Interaction Design.
         </p>
         <div style="display: flex; justify-content: center; gap: 1.5rem">
           <a href="https://www.linkedin.com/in/muhamad-sidik-a6757b25b/" target="_blank" class="btn btn-ghost" style="padding: 0 1.5rem; text-decoration: none; display: flex; align-items: center; gap: 8px;">

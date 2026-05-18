@@ -2492,63 +2492,28 @@ btnDownloadQr?.addEventListener('click', async () => {
 
 // --- EXPORT ANALYTICS REPORTS ---
 
-// PDF Export (Capture current Dashboard HTML container)
+// PDF Export (Structured formal business report using jsPDF and jspdf-autotable)
 window.exportDashboardPDF = async function() {
-  const element = document.getElementById('section-dashboard');
-  if (!element) {
-    showToast("Gagal menemukan bagian dasbor", "error");
-    return;
+  // 1. Identify active timeframe from dashboard buttons
+  const activeBtn = document.querySelector('.time-filter-btn.active');
+  const timeframe = activeBtn ? activeBtn.getAttribute('onclick').match(/'([^']+)'/)[1] : 'weekly';
+  
+  let rangeText = "";
+  if (timeframe === 'weekly') {
+    rangeText = "Mingguan (7 Hari Terakhir)";
+  } else if (timeframe === 'monthly') {
+    rangeText = "Bulanan (30 Hari Terakhir)";
+  } else {
+    rangeText = "Semua Waktu (All-Time)";
   }
 
-  showToast("Menyiapkan dokumen PDF Laporan...", "info");
-  
-  // Temporarily hide action buttons during screenshot
-  const exportActions = element.querySelector('.export-actions');
-  const timeFilters = element.querySelector('.card-header div[style*="display: flex"]');
-  if (exportActions) exportActions.style.visibility = 'hidden';
-  if (timeFilters) timeFilters.style.visibility = 'hidden';
+  showToast(`Menyiapkan data laporan PDF periode ${timeframe}...`, "info");
 
   try {
-    const canvas = await html2canvas(element, {
-      backgroundColor: '#141519', // Match main.css background
-      scale: 2, // Double scale for maximum crispness
-      useCORS: true,
-      logging: false
-    });
-
-    const imgData = canvas.toDataURL('image/png');
-    const { jsPDF } = window.jspdf;
-    
-    // Create A4 Landscape PDF (perfect for grids)
-    const pdf = new jsPDF('l', 'mm', 'a4');
-    const pdfWidth = 297;
-    const pdfHeight = 210;
-    
-    const imgWidth = pdfWidth;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    const yOffset = imgHeight < pdfHeight ? (pdfHeight - imgHeight) / 2 : 0;
-
-    pdf.addImage(imgData, 'PNG', 0, yOffset, imgWidth, imgHeight);
-    
-    pdf.save(`DjaswitaAR_Dashboard_Report_${Date.now()}.pdf`);
-    showToast("PDF Laporan berhasil diunduh!", "success");
-  } catch (err) {
-    console.error("PDF generation failed:", err);
-    showToast("Gagal menghasilkan PDF", "error");
-  } finally {
-    if (exportActions) exportActions.style.visibility = 'visible';
-    if (timeFilters) timeFilters.style.visibility = 'visible';
-  }
-};
-
-// CSV Export (Excel compatible)
-window.exportDashboardCSV = async function() {
-  showToast("Memproses ekspor spreadsheet...", "info");
-  
-  try {
+    // 2. Fetch all scans from Supabase to filter precisely
     const { data: scans, error } = await supabase
       .from('scans')
-      .select('id, scanned_at, wisata(name, type)')
+      .select('id, scanned_at, wisata(id, nama, type)')
       .order('scanned_at', { ascending: false });
 
     if (error) throw error;
@@ -2558,33 +2523,410 @@ window.exportDashboardCSV = async function() {
       return;
     }
 
-    // Build Excel-friendly CSV with UTF-8 BOM
-    let csvContent = "\ufeff";
-    csvContent += "No,ID Scan,Waktu Scan,Nama Destinasi Wisata,Kategori Destinasi\n";
+    // 3. Filter data by date range
+    let cutoff = null;
+    if (timeframe === 'weekly') {
+      cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 7);
+    } else if (timeframe === 'monthly') {
+      cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 30);
+    }
 
-    scans.forEach((s, idx) => {
-      const scanId = s.id;
-      const scanTime = new Date(s.scanned_at).toLocaleString('id-ID');
-      const wisataName = s.wisata ? `"${s.wisata.name.replace(/"/g, '""')}"` : '"Destinasi Dihapus"';
-      const category = s.wisata ? `"${s.wisata.type.replace(/"/g, '""')}"` : '"N/A"';
-      csvContent += `${idx + 1},${scanId},${scanTime},${wisataName},${category}\n`;
+    const filteredScans = scans.filter(s => {
+      if (!cutoff) return true;
+      return new Date(s.scanned_at) >= cutoff;
     });
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    // 4. Calculate stats & popular destinations for this range
+    const destinationCounts = {};
+    filteredScans.forEach(s => {
+      if (s.wisata) {
+        const id = s.wisata.id;
+        const nama = s.wisata.nama;
+        const type = s.wisata.type;
+        if (!destinationCounts[id]) {
+          destinationCounts[id] = { nama, type, count: 0 };
+        }
+        destinationCounts[id].count++;
+      }
+    });
+
+    const topDestinations = Object.values(destinationCounts)
+      .sort((a, b) => b.count - a.count);
+
+    const activeSpotsCount = Object.keys(destinationCounts).length;
+    const totalAdmins = document.getElementById('stat-total-admins')?.innerText || '0';
+
+    // 5. Initialize jsPDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4'); // Portrait, A4 size
+    const pageWidth = 210;
+
+    // PAGE 1: HEADER & EXECUTIVE SUMMARY
+    // Deep slate top border accent
+    doc.setFillColor(30, 41, 59);
+    doc.rect(0, 0, pageWidth, 8, 'F');
+
+    // Platform Logo & Subtitle
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(30, 41, 59);
+    doc.text("D'JASWITA AR", 14, 25);
+
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(100, 110, 120);
+    doc.text("SISTEM MANAJEMEN INFORMASI PARIWISATA & AR", 14, 30);
+
+    // Decorative line divider
+    doc.setDrawColor(220, 225, 230);
+    doc.setLineWidth(0.5);
+    doc.line(14, 34, 196, 34);
+
+    // Document Details
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(15, 23, 42);
+    doc.text("LAPORAN ANALISIS INTERAKSI PENGUNJUNG", 14, 44);
+
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(9.5);
+    doc.setTextColor(70, 80, 90);
+    
+    // Detailed Metadata Table Box style
+    doc.text(`Periode Laporan : ${rangeText}`, 14, 51);
+    doc.text(`Tanggal Cetak   : ${new Date().toLocaleString('id-ID')}`, 14, 56);
+    doc.text(`Dicetak Oleh    : Administrator WebAdmin`, 14, 61);
+
+    // EXECUTIVE SUMMARY TABLE
+    doc.autoTable({
+      startY: 68,
+      head: [['Metrik Ringkasan Laporan', 'Nilai Tercatat']],
+      body: [
+        ['Total Scan Pengunjung (Engagement)', `${filteredScans.length} kali scan`],
+        ['Destinasi Aktif Di-scan (Active Spots)', `${activeSpotsCount} lokasi aktif`],
+        ['Administrator Terverifikasi (Verified Admins)', `${totalAdmins} user`]
+      ],
+      theme: 'striped',
+      headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+      styles: { fontSize: 9.5, cellPadding: 5 },
+      margin: { left: 14, right: 14 }
+    });
+
+    // TOP DESTINATIONS TABLE
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(30, 41, 59);
+    doc.text("DAFTAR DESTINASI TERPOPULER (ENGAGEMENT TERTINGGI)", 14, doc.lastAutoTable.finalY + 12);
+
+    const topDestRows = topDestinations.slice(0, 10).map((item, idx) => {
+      const maxCount = topDestinations[0]?.count || 1;
+      const pct = Math.round((item.count / maxCount) * 100);
+      return [idx + 1, item.nama, item.type, `${item.count} scan`, `${pct}%`];
+    });
+
+    doc.autoTable({
+      startY: doc.lastAutoTable.finalY + 16,
+      head: [['Peringkat', 'Nama Destinasi Wisata', 'Kategori', 'Total Scan', 'Kontribusi Popularitas']],
+      body: topDestRows.length > 0 ? topDestRows : [['-', 'Belum ada data interaksi di periode ini', '-', '-', '-']],
+      theme: 'grid',
+      headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+      styles: { fontSize: 9, cellPadding: 4 },
+      margin: { left: 14, right: 14 }
+    });
+
+    // PAGE 2: DETAILED TRANSACTION LOGS
+    doc.addPage();
+    
+    // Header for Page 2
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(30, 41, 59);
+    doc.text("LOG RINCIAN RIWAYAT INTERAKSI SCAN", 14, 20);
+
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(100, 110, 120);
+    doc.text(`Rincian log scan aktif periode: ${rangeText} | Total: ${filteredScans.length} data`, 14, 25);
+
+    const logRows = filteredScans.map((s, idx) => {
+      const scanTime = new Date(s.scanned_at).toLocaleString('id-ID');
+      const name = s.wisata ? s.wisata.nama : 'Destinasi Dihapus';
+      const type = s.wisata ? s.wisata.type : 'N/A';
+      return [idx + 1, s.id, scanTime, name, type];
+    });
+
+    doc.autoTable({
+      startY: 30,
+      head: [['No', 'ID Scan', 'Waktu Pindai (Scan)', 'Nama Destinasi Wisata', 'Kategori']],
+      body: logRows.length > 0 ? logRows : [['-', 'Belum ada data scan', '-', '-', '-']],
+      theme: 'striped',
+      headStyles: { fillColor: [71, 85, 105], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8.5 },
+      styles: { fontSize: 8, cellPadding: 3.5 },
+      margin: { left: 14, right: 14 }
+    });
+
+    // Signature Block at the bottom of the table
+    const finalY = doc.lastAutoTable.finalY || 30;
+    const footerY = finalY + 20;
+
+    if (footerY < 260) {
+      drawSignature(doc, footerY);
+    } else {
+      doc.addPage();
+      drawSignature(doc, 30);
+    }
+
+    function drawSignature(doc, y) {
+      doc.setFont("Helvetica", "normal");
+      doc.setFontSize(9.5);
+      doc.setTextColor(30, 41, 59);
+      doc.text("Mengetahui,", 138, y);
+      doc.text("Administrator D'Jaswita AR WebAdmin", 138, y + 5);
+      
+      // Signature line
+      doc.setDrawColor(180, 185, 195);
+      doc.line(138, y + 25, 190, y + 25);
+      
+      doc.setFontSize(8.5);
+      doc.setTextColor(120, 130, 140);
+      doc.text("Sistem Verifikasi Digital Laporan", 138, y + 29);
+    }
+
+    // Save and download PDF
+    doc.save(`DjaswitaAR_Laporan_Analisis_${timeframe}_${Date.now()}.pdf`);
+    showToast("PDF Laporan resmi berhasil diunduh!", "success");
+
+  } catch (err) {
+    console.error("PDF generation failed:", err);
+    showToast("Gagal menghasilkan PDF Laporan: " + err.message, "error");
+  }
+};
+
+// CSV / Styled Excel Export (Excel compatible structured report with full styling and auto-borders)
+window.exportDashboardCSV = async function() {
+  const activeBtn = document.querySelector('.time-filter-btn.active');
+  const timeframe = activeBtn ? activeBtn.getAttribute('onclick').match(/'([^']+)'/)[1] : 'weekly';
+  
+  let rangeText = "";
+  if (timeframe === 'weekly') {
+    rangeText = "Mingguan (7 Hari Terakhir)";
+  } else if (timeframe === 'monthly') {
+    rangeText = "Bulanan (30 Hari Terakhir)";
+  } else {
+    rangeText = "Semua Waktu (All-Time)";
+  }
+
+  showToast(`Mengekstrak spreadsheet ber-style periode ${timeframe}...`, "info");
+  
+  try {
+    const { data: scans, error } = await supabase
+      .from('scans')
+      .select('id, scanned_at, wisata(id, nama, type)')
+      .order('scanned_at', { ascending: false });
+
+    if (error) throw error;
+
+    if (!scans || scans.length === 0) {
+      showToast("Tidak ada data scan untuk diekspor", "warning");
+      return;
+    }
+
+    // Filter by Date Range
+    let cutoff = null;
+    if (timeframe === 'weekly') {
+      cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 7);
+    } else if (timeframe === 'monthly') {
+      cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 30);
+    }
+
+    const filteredScans = scans.filter(s => {
+      if (!cutoff) return true;
+      return new Date(s.scanned_at) >= cutoff;
+    });
+
+    // Grouping Top Destinations
+    const destinationCounts = {};
+    filteredScans.forEach(s => {
+      if (s.wisata) {
+        const id = s.wisata.id;
+        const nama = s.wisata.nama;
+        const type = s.wisata.type;
+        if (!destinationCounts[id]) {
+          destinationCounts[id] = { nama, type, count: 0 };
+        }
+        destinationCounts[id].count++;
+      }
+    });
+
+    const topDestinations = Object.values(destinationCounts)
+      .sort((a, b) => b.count - a.count);
+
+    const activeSpotsCount = Object.keys(destinationCounts).length;
+    const totalAdmins = document.getElementById('stat-total-admins')?.innerText || '0';
+
+    // Build premium XML/HTML-based styled spreadsheet
+    let excelContent = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; color: #1e293b; }
+        table { border-collapse: collapse; margin-bottom: 24px; }
+        td, th { border: 1px solid #cbd5e1; padding: 8px 12px; font-size: 10pt; text-align: left; }
+        th { background-color: #1e293b; color: #ffffff; font-weight: bold; font-size: 10pt; }
+        .title-cell { font-size: 16pt; font-weight: bold; color: #0f172a; border: none; height: 40px; }
+        .subtitle-cell { font-size: 9.5pt; color: #64748b; border: none; height: 25px; }
+        .section-header { background-color: #475569; color: #ffffff; font-weight: bold; font-size: 11pt; padding: 10px; text-align: center; }
+        .metrics-label { background-color: #f8fafc; font-weight: bold; width: 320px; }
+        .metrics-value { font-weight: normal; }
+        .rank-col { text-align: center; font-weight: bold; width: 80px; }
+        .number-col { text-align: right; width: 110px; }
+        .date-col { width: 180px; }
+        .id-col { width: 220px; }
+        .name-col { width: 260px; }
+        .type-col { width: 140px; }
+      </style>
+    </head>
+    <body>
+      <!-- Document Header -->
+      <table>
+        <tr>
+          <td colspan="5" class="title-cell">LAPORAN ANALISIS INTERAKSI PENGUNJUNG AR - D'JASWITA AR</td>
+        </tr>
+        <tr>
+          <td colspan="5" class="subtitle-cell">
+            Periode Laporan: ${rangeText} | 
+            Tanggal Cetak: ${new Date().toLocaleString('id-ID')} | 
+            Status: Resmi WebAdmin Export
+          </td>
+        </tr>
+      </table>
+
+      <!-- Spacer table for clean gap -->
+      <table style="border: none; margin: 0; padding: 0;">
+        <tr style="border: none; height: 16px;">
+          <td style="border: none; height: 16px;" colspan="5"></td>
+        </tr>
+      </table>
+
+      <!-- 1. Executive Summary Table -->
+      <table>
+        <tr>
+          <th colspan="2" class="section-header">=== RINGKASAN METRIK STATISTIK ===</th>
+        </tr>
+        <tr>
+          <td class="metrics-label">Total Scan Pengunjung (Engagement)</td>
+          <td class="metrics-value">${filteredScans.length} kali scan</td>
+        </tr>
+        <tr>
+          <td class="metrics-label">Destinasi Aktif Di-scan (Active Spots)</td>
+          <td class="metrics-value">${activeSpotsCount} lokasi aktif</td>
+        </tr>
+        <tr>
+          <td class="metrics-label">Administrator Terverifikasi (Verified Admins)</td>
+          <td class="metrics-value">${totalAdmins} user</td>
+        </tr>
+      </table>
+
+      <!-- Spacer table for clean gap -->
+      <table style="border: none; margin: 0; padding: 0;">
+        <tr style="border: none; height: 16px;">
+          <td style="border: none; height: 16px;" colspan="5"></td>
+        </tr>
+      </table>
+
+      <!-- 2. Top Destinations Table -->
+      <table>
+        <tr>
+          <th colspan="5" class="section-header">=== DAFTAR SEPULUH DESTINASI TERPOPULER ===</th>
+        </tr>
+        <tr>
+          <th class="rank-col">Peringkat</th>
+          <th class="name-col">Nama Destinasi Wisata</th>
+          <th class="type-col">Kategori Wisata</th>
+          <th class="number-col">Total Scan</th>
+          <th class="number-col">Popularitas</th>
+        </tr>
+    `;
+
+    topDestinations.slice(0, 10).forEach((item, idx) => {
+      const maxCount = topDestinations[0]?.count || 1;
+      const pct = Math.round((item.count / maxCount) * 100);
+      excelContent += `
+        <tr>
+          <td class="rank-col">${idx + 1}</td>
+          <td>${item.nama}</td>
+          <td>${item.type}</td>
+          <td class="number-col">${item.count} scan</td>
+          <td class="number-col">${pct}%</td>
+        </tr>
+      `;
+    });
+
+    excelContent += `
+      </table>
+
+      <!-- Spacer table for clean gap -->
+      <table style="border: none; margin: 0; padding: 0;">
+        <tr style="border: none; height: 16px;">
+          <td style="border: none; height: 16px;" colspan="5"></td>
+        </tr>
+      </table>
+
+      <!-- 3. Detailed Scan Logs Table -->
+      <table>
+        <tr>
+          <th colspan="5" class="section-header">=== DETAIL LOG RIWAYAT INTERAKSI SCAN PENGUNJUNG ===</th>
+        </tr>
+        <tr>
+          <th class="rank-col">No</th>
+          <th class="id-col">ID Scan</th>
+          <th class="date-col">Waktu Pindai (Scan)</th>
+          <th class="name-col">Nama Destinasi Wisata</th>
+          <th class="type-col">Kategori</th>
+        </tr>
+    `;
+
+    filteredScans.forEach((s, idx) => {
+      const scanTime = new Date(s.scanned_at).toLocaleString('id-ID');
+      const name = s.wisata ? s.wisata.nama : 'Destinasi Dihapus';
+      const type = s.wisata ? s.wisata.type : 'N/A';
+      excelContent += `
+        <tr>
+          <td class="rank-col">${idx + 1}</td>
+          <td>${s.id}</td>
+          <td>${scanTime}</td>
+          <td>${name}</td>
+          <td>${type}</td>
+        </tr>
+      `;
+    });
+
+    excelContent += `
+      </table>
+    </body>
+    </html>
+    `;
+
+    const blob = new Blob([excelContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     
     const link = document.createElement("a");
     link.href = url;
-    link.download = `DjaswitaAR_Scan_Analytics_${Date.now()}.csv`;
+    link.download = `DjaswitaAR_Spreadsheet_Laporan_${timeframe}_${Date.now()}.xls`;
     document.body.appendChild(link);
     link.click();
     
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     
-    showToast("Data spreadsheet CSV berhasil diunduh!", "success");
+    showToast("Excel Laporan ber-style premium berhasil diunduh!", "success");
   } catch (err) {
-    console.error("CSV generation failed:", err);
-    showToast("Gagal mengekspor CSV", "error");
+    console.error("Excel generation failed:", err);
+    showToast("Gagal mengekspor Excel Laporan: " + err.message, "error");
   }
 };
