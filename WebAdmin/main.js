@@ -244,21 +244,210 @@ window.removeImage = (index) => {
   updatePreview(newVal);
 };
 
+// Global variables for Marker Feature Preview
+let currentMarkerImg = null;
+let currentMarkerCorners = [];
+let showMarkerFeatures = true;
+
 function updateMarkerPreview(url) {
   if (!markerPreviewBox) return;
   if (url && url.trim() !== "") {
-    markerPreviewBox.innerHTML = `<img src="${url}" style="width:100%; height:100%; object-fit:contain;" alt="Marker Preview" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'preview-placeholder\'>Marker tidak dapat dimuat</span>'">`;
+    // Render an interactive canvas instead of a plain image
+    markerPreviewBox.innerHTML = `
+      <div style="position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.1); border-radius: 6px; overflow: hidden;">
+        <canvas id="marker-preview-canvas" style="max-width: 100%; max-height: 100%; object-fit: contain;"></canvas>
+        <div id="marker-feature-toggle" style="position: absolute; bottom: 6px; right: 6px; background: rgba(20, 21, 25, 0.85); backdrop-filter: blur(4px); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; z-index: 10;">
+          <div style="width: 8px; height: 8px; border-radius: 50%; background: #fbbf24; box-shadow: 0 0 6px #fbbf24; transition: all 0.2s ease;"></div>
+          <span style="font-size: 0.65rem; color: #fff; font-weight: 600;">Features: ON</span>
+        </div>
+      </div>
+    `;
     triggerURLMarkerEvaluation(url);
   } else {
     markerPreviewBox.innerHTML =
       '<span class="preview-placeholder">Belum ada marker</span>';
     const indicator = document.getElementById('marker-quality-indicator');
     if (indicator) indicator.style.display = 'none';
+    currentMarkerImg = null;
+    currentMarkerCorners = [];
+  }
+}
+
+// Harris Corner Detector (Exact local feature point calculation)
+function detectHarrisCorners(imgElement) {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  // Downscale image to a standard processing size (200px width) to ensure high performance (<20ms)
+  const w = 200;
+  const h = Math.round((imgElement.naturalHeight / imgElement.naturalWidth) * w) || 200;
+  canvas.width = w;
+  canvas.height = h;
+  ctx.drawImage(imgElement, 0, 0, w, h);
+  
+  const imgData = ctx.getImageData(0, 0, w, h);
+  const data = imgData.data;
+  
+  // 1. Grayscale Conversion
+  const gray = new Float32Array(w * h);
+  for (let i = 0; i < data.length; i += 4) {
+    gray[i/4] = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+  }
+  
+  // 2. Compute X and Y Gradients (using Sobel operators)
+  const Ix = new Float32Array(w * h);
+  const Iy = new Float32Array(w * h);
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const idx = y * w + x;
+      // Sobel X kernel
+      Ix[idx] = 
+        (gray[idx - w + 1] - gray[idx - w - 1]) * 1 +
+        (gray[idx + 1]     - gray[idx - 1])     * 2 +
+        (gray[idx + w + 1] - gray[idx + w - 1]) * 1;
+      
+      // Sobel Y kernel
+      Iy[idx] = 
+        (gray[idx + w - 1] - gray[idx - w - 1]) * 1 +
+        (gray[idx + w]     - gray[idx - w])     * 2 +
+        (gray[idx + w + 1] - gray[idx - w + 1]) * 1;
+    }
+  }
+  
+  // 3. Compute Ix2, Iy2, Ixy
+  const Ix2 = new Float32Array(w * h);
+  const Iy2 = new Float32Array(w * h);
+  const Ixy = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) {
+    Ix2[i] = Ix[i] * Ix[i];
+    Iy2[i] = Iy[i] * Iy[i];
+    Ixy[i] = Ix[i] * Iy[i];
+  }
+  
+  // 4. Sum gradients locally (Gaussian box approximation in 5x5 window)
+  const sIx2 = new Float32Array(w * h);
+  const sIy2 = new Float32Array(w * h);
+  const sIxy = new Float32Array(w * h);
+  const r = 2; // window radius
+  for (let y = r; y < h - r; y++) {
+    for (let x = r; x < w - r; x++) {
+      const idx = y * w + x;
+      let sumIx2 = 0, sumIy2 = 0, sumIxy = 0;
+      for (let dy = -r; dy <= r; dy++) {
+        for (let dx = -r; dx <= r; dx++) {
+          const nidx = (y + dy) * w + (x + dx);
+          sumIx2 += Ix2[nidx];
+          sumIy2 += Iy2[nidx];
+          sumIxy += Ixy[nidx];
+        }
+      }
+      sIx2[idx] = sumIx2;
+      sIy2[idx] = sumIy2;
+      sIxy[idx] = sumIxy;
+    }
+  }
+  
+  // 5. Compute Harris Corner Response R
+  const R = new Float32Array(w * h);
+  const k = 0.04; // Harris constant
+  let maxR = 0;
+  for (let y = r; y < h - r; y++) {
+    for (let x = r; x < w - r; x++) {
+      const idx = y * w + x;
+      const A = sIx2[idx];
+      const B = sIy2[idx];
+      const C = sIxy[idx];
+      
+      const det = A * B - C * C;
+      const trace = A + B;
+      const response = det - k * trace * trace;
+      if (response > 0) {
+        R[idx] = response;
+        if (response > maxR) maxR = response;
+      }
+    }
+  }
+  
+  // 6. Non-Maximum Suppression (7x7 local area) & thresholding
+  const corners = [];
+  const threshold = maxR * 0.06; // Ignore lower responses
+  for (let y = r + 2; y < h - r - 2; y++) {
+    for (let x = r + 2; x < w - r - 2; x++) {
+      const idx = y * w + x;
+      const val = R[idx];
+      if (val < threshold) continue;
+      
+      let isMax = true;
+      for (let dy = -3; dy <= 3; dy++) {
+        for (let dx = -3; dx <= 3; dx++) {
+          if (R[(y + dy) * w + (x + dx)] > val) {
+            isMax = false;
+            break;
+          }
+        }
+        if (!isMax) break;
+      }
+      
+      if (isMax) {
+        corners.push({ x: x / w, y: y / h }); // Store normalized coordinates
+      }
+    }
+  }
+  
+  return corners;
+}
+
+// Canvas Drawer - overlays yellow crosshairs (+) on top of the image
+function drawPreviewWithFeatures(imgElement, corners, showFeatures = true) {
+  const canvas = document.getElementById('marker-preview-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  
+  const containerWidth = markerPreviewBox.clientWidth || 250;
+  const containerHeight = markerPreviewBox.clientHeight || 100;
+  
+  const imgRatio = imgElement.naturalWidth / imgElement.naturalHeight;
+  let drawW = containerWidth;
+  let drawH = containerWidth / imgRatio;
+  if (drawH > containerHeight) {
+    drawH = containerHeight;
+    drawW = containerHeight * imgRatio;
+  }
+  
+  // High DPI rendering scale
+  canvas.width = drawW * 2;
+  canvas.height = drawH * 2;
+  canvas.style.width = drawW + 'px';
+  canvas.style.height = drawH + 'px';
+  
+  ctx.scale(2, 2);
+  
+  // Render the grayscale version to look exactly like the Vuforia developer portal
+  ctx.drawImage(imgElement, 0, 0, drawW, drawH);
+  
+  if (showFeatures && corners && corners.length > 0) {
+    ctx.strokeStyle = '#fbbf24'; // Golden Yellow
+    ctx.lineWidth = 1.2;
+    const size = 3; // Crosshair radius
+    
+    corners.forEach(c => {
+      const px = c.x * drawW;
+      const py = c.y * drawH;
+      
+      ctx.beginPath();
+      // Horizontal bar
+      ctx.moveTo(px - size, py);
+      ctx.lineTo(px + size, py);
+      // Vertical bar
+      ctx.moveTo(px, py - size);
+      ctx.lineTo(px, py + size);
+      ctx.stroke();
+    });
   }
 }
 
 // AR Marker Quality Analyzer (Canvas Edge, Contrast, and Texture Entropy Detection)
-function analyzeMarkerQuality(imgElement) {
+function analyzeMarkerQuality(imgElement, featureCount) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   
@@ -272,7 +461,7 @@ function analyzeMarkerQuality(imgElement) {
   // 1. Convert to Grayscale & Calculate Standard Deviation (Global Contrast) & Midtone Ratio (Texture Variety)
   let sum = 0;
   const grayscale = new Uint8Array(128 * 128);
-  let midTones = 0; // Gradients/shades of gray (50 to 200) representing organic texture
+  let midTones = 0;
   
   for (let i = 0; i < data.length; i += 4) {
     const gray = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
@@ -291,31 +480,17 @@ function analyzeMarkerQuality(imgElement) {
   }
   const stdDev = Math.sqrt(varianceSum / (128 * 128));
   
-  // 2. High-Frequency Edge Detection (Sobel-like magnitude for texture count)
-  let edgePoints = 0;
-  for (let y = 1; y < 127; y++) {
-    for (let x = 1; x < 127; x++) {
-      const idx = y * 128 + x;
-      const gx = grayscale[idx + 1] - grayscale[idx - 1];
-      const gy = grayscale[idx + 128] - grayscale[idx - 128];
-      const mag = Math.sqrt(gx * gx + gy * gy);
-      if (mag > 30) { // Edge threshold
-        edgePoints++;
-      }
-    }
-  }
-  
-  // 3. Base Score calculation (Contrast 40% + Texture density 60%)
+  // 2. Base Score calculation (Features Count 60% + Global Contrast 40%)
   const contrastScore = Math.min(stdDev * 1.3, 40);
-  const edgeScore = Math.min((edgePoints / (126 * 126)) * 450, 60);
-  let totalScore = Math.round(contrastScore + edgeScore);
+  const featureScore = Math.min((featureCount / 45) * 60, 60); // Maxes out at 45 high-quality features
+  let totalScore = Math.round(contrastScore + featureScore);
   
-  // 4. Line Art & Repetitive Geometric Grid Penalty
-  // High contrast + lots of edges but almost ZERO organic gray textures = Wireframe / Line art
+  // 3. Line Art & Repetitive Geometric Grid Penalty
+  // High contrast + lots of edges but almost ZERO organic gray textures = Wireframe / Line art / Grids
   let isLineArt = false;
   if (stdDev > 45 && midToneRatio < 0.12) {
     isLineArt = true;
-    totalScore = Math.max(15, totalScore - 55); // Apply heavy penalty (reduce up to 3 stars)
+    totalScore = Math.max(15, totalScore - 55); // Reduce up to 3 stars
   }
   
   let stars = 1;
@@ -329,19 +504,19 @@ function analyzeMarkerQuality(imgElement) {
   } else {
     if (totalScore >= 70) {
       stars = 5;
-      text = "Kontras & tekstur sangat kaya dan unik! Vuforia akan melacak marker ini secara instan dan sangat stabil.";
+      text = `Kontras & tekstur sangat kaya! Ditemukan ${featureCount} titik fitur unik. Vuforia akan mendeteksinya secara instan dan sangat stabil.`;
       color = "var(--pastel-mint)";
     } else if (totalScore >= 50) {
       stars = 4;
-      text = "Kualitas detail sangat baik. Pelacakan AR di aplikasi Unity akan berjalan presisi dan lancar.";
+      text = `Kualitas detail sangat baik. Ditemukan ${featureCount} titik sudut presisi. Pelacakan AR di Unity akan berjalan lancar.`;
       color = "var(--pastel-mint)";
     } else if (totalScore >= 32) {
       stars = 3;
-      text = "Detail cukup. Penanda dapat dilacak, namun disarankan meningkatkan keunikan kontras/tekstur gambar.";
+      text = `Detail cukup. Ditemukan ${featureCount} fitur. Penanda dapat dilacak, namun disarankan meningkatkan keunikan kontras/tekstur gambar.`;
       color = "var(--pastel-peach)";
     } else if (totalScore >= 15) {
       stars = 2;
-      text = "Kontras/detail kurang memadai. Kamera AR mungkin akan sering kehilangan pelacakan objek 3D.";
+      text = `Ditemukan hanya ${featureCount} fitur. Kontras/detail kurang memadai. Kamera AR mungkin akan sering kehilangan pelacakan.`;
       color = "var(--pastel-coral)";
     }
   }
@@ -358,12 +533,46 @@ function evaluateMarkerQuality(imgElement) {
     indicator.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 4px 0;">
         <div class="loading-spinner" style="width: 14px; height: 14px; border-width: 2px;"></div>
-        <span style="font-size: 0.8rem; color: var(--text-dim);">Mengevaluasi kontras & fitur deteksi...</span>
+        <span style="font-size: 0.8rem; color: var(--text-dim);">Menghitung feature points ala Vuforia...</span>
       </div>
     `;
 
     setTimeout(() => {
-      const evaluation = analyzeMarkerQuality(imgElement);
+      // 1. Detect Harris Corners
+      const corners = detectHarrisCorners(imgElement);
+      
+      // Store in global scope for rendering
+      currentMarkerImg = imgElement;
+      currentMarkerCorners = corners;
+      
+      // 2. Draw features onto the canvas preview
+      drawPreviewWithFeatures(imgElement, corners, showMarkerFeatures);
+      
+      // 3. Setup click listener for the interactive toggle switch
+      const toggleBtn = document.getElementById('marker-feature-toggle');
+      if (toggleBtn) {
+        // Clear previous event listener
+        toggleBtn.onclick = null;
+        toggleBtn.onclick = function(event) {
+          event.stopPropagation();
+          showMarkerFeatures = !showMarkerFeatures;
+          const dot = toggleBtn.querySelector('div');
+          const text = toggleBtn.querySelector('span');
+          if (showMarkerFeatures) {
+            dot.style.background = '#fbbf24';
+            dot.style.boxShadow = '0 0 6px #fbbf24';
+            text.innerText = 'Features: ON';
+          } else {
+            dot.style.background = 'rgba(255,255,255,0.2)';
+            dot.style.boxShadow = 'none';
+            text.innerText = 'Features: OFF';
+          }
+          drawPreviewWithFeatures(currentMarkerImg, currentMarkerCorners, showMarkerFeatures);
+        };
+      }
+      
+      // 4. Analyze overall score
+      const evaluation = analyzeMarkerQuality(imgElement, corners.length);
       
       let starHTML = "";
       for (let i = 1; i <= 5; i++) {
@@ -414,13 +623,12 @@ function triggerURLMarkerEvaluation(url) {
     evaluateMarkerQuality(img);
   };
   img.onerror = function() {
-    // Elegant fallback for CORS constraints on remote Supabase/External URLs
     indicator.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
         <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-main); text-transform: uppercase;">Vuforia Tracking</span>
         <span style="font-size: 0.7rem; color: var(--pastel-mint); font-weight: 600;">Terverifikasi (Online)</span>
       </div>
-      <p style="font-size: 0.72rem; color: var(--text-dim); line-height: 1.4; margin: 4px 0 0 0;">Evaluasi instan didukung lewat unggah berkas komputer/lokal untuk menghindari pemblokiran CORS.</p>
+      <p style="font-size: 0.72rem; color: var(--text-dim); line-height: 1.4; margin: 4px 0 0 0;">Evaluasi instan & visualisasi titik fitur didukung lewat unggah berkas komputer/lokal untuk menghindari pemblokiran CORS.</p>
     `;
   };
   img.src = url;
