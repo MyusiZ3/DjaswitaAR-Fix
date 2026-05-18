@@ -72,60 +72,19 @@ export const AboutSection = () => `
               </div>
             </div>
 
-            <!-- Tech Stack Badges -->
+            <!-- Tech Stack Badges (Moved Here) -->
             <div style="margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.05);">
-              <h4 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-main); margin-bottom: 1rem; opacity: 0.7; text-align: center;">Technology Stack</h4>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                <!-- Unity -->
-                <div style="background: var(--card-bg); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
-                  <span style="color: var(--pastel-peach); font-weight: 600; font-size: 0.85rem;">Unity Engine 6</span>
-                  <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-dim); background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 8px;">v.6000.0.35f1</span>
-                </div>
-                <!-- Vuforia -->
-                <div style="background: var(--card-bg); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
-                  <span style="color: var(--pastel-coral); font-weight: 600; font-size: 0.85rem;">Vuforia Engine</span>
-                  <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-dim); background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 8px;">v.11.4.4</span>
-                </div>
-                <!-- Vite -->
-                <div style="background: var(--card-bg); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
-                  <span style="color: var(--pastel-blue); font-weight: 600; font-size: 0.85rem;">Vite JS</span>
-                  <span style="font-size: 0.65rem; color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.03); padding: 2px 8px; border-radius: 8px;">Bundler</span>
-                </div>
-                <!-- Supabase -->
-                <div style="background: var(--card-bg); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
-                  <span style="color: var(--pastel-mint); font-weight: 600; font-size: 0.85rem;">Supabase</span>
-                  <span style="font-size: 0.65rem; color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.03); padding: 2px 8px; border-radius: 8px;">Database</span>
-                </div>
+              <h4 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary); margin-bottom: 1rem; opacity: 0.7; text-align: center;">Technology Stack</h4>
+              <div style="display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center;">
+                <span style="background: rgba(255, 255, 255, 0.05); padding: 5px 12px; border-radius: 100px; font-size: 0.75rem; border: 1px solid var(--glass-border); color: white;">Unity 3D</span>
+                <span style="background: rgba(255, 255, 255, 0.05); padding: 5px 12px; border-radius: 100px; font-size: 0.75rem; border: 1px solid var(--glass-border); color: white;">Vuforia AR</span>
+                <span style="background: rgba(255, 255, 255, 0.05); padding: 5px 12px; border-radius: 100px; font-size: 0.75rem; border: 1px solid var(--glass-border); color: white;">Supabase</span>
+                <span style="background: rgba(255, 255, 255, 0.05); padding: 5px 12px; border-radius: 100px; font-size: 0.75rem; border: 1px solid var(--glass-border); color: white;">Vite.js</span>
+                <span style="background: rgba(255, 255, 255, 0.05); padding: 5px 12px; border-radius: 100px; font-size: 0.75rem; border: 1px solid var(--glass-border); color: white;">C#</span>
+                <span style="background: rgba(255, 255, 255, 0.05); padding: 5px 12px; border-radius: 100px; font-size: 0.75rem; border: 1px solid var(--glass-border); color: white;">REST API</span>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Release Timeline -->
-      <div style="margin-top: 4rem;">
-        <h3 style="margin-bottom: 2rem; color: white; font-size: 1.5rem">Release Timeline</h3>
-        <div style="position: relative; padding-left: 2rem;">
-          <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background-color: var(--border-color);"></div>
-          
-          <div style="position: relative; margin-bottom: 2.5rem;">
-            <div style="position: absolute; left: -2.35rem; top: 0.2rem; width: 14px; height: 14px; border-radius: 50%; background-color: var(--pastel-mint); box-shadow: 0 0 10px var(--pastel-mint);"></div>
-            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 12px; transition: all 0.3s ease;">
-              <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--pastel-mint); margin-bottom: 0.5rem;">v1.2.0 - CURRENT</div>
-              <h4 style="color: white; margin-bottom: 0.5rem; font-size: 1.1rem;">Matte Pastel Dark Implementation</h4>
-              <p style="color: var(--text-dim); font-size: 0.85rem; line-height: 1.6;">Major UI/UX overhaul implementing premium charcoal matte backgrounds with pastel accents, holographic viewfinders, and spring animations.</p>
-            </div>
-          </div>
-          
-          <div style="position: relative; margin-bottom: 2.5rem;">
-            <div style="position: absolute; left: -2.35rem; top: 0.2rem; width: 14px; height: 14px; border-radius: 50%; background-color: var(--pastel-lavender);"></div>
-            <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem;">
-              <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--pastel-lavender); margin-bottom: 0.5rem;">v1.1.0</div>
-              <h4 style="color: white; margin-bottom: 0.5rem; font-size: 1.1rem;">Cyberpunk Neon Phase</h4>
-              <p style="color: var(--text-dim); font-size: 0.85rem; line-height: 1.6;">Implemented initial dark mode with high contrast neon borders and real-time Supabase sync integration.</p>
-            </div>
-          </div>
-          
         </div>
       </div>
 
@@ -139,39 +98,30 @@ export const AboutSection = () => `
       </div>
     </div>
 
+    <!-- Tab Content: Developer -->
     <div id="tab-developer" class="about-tab-content" style="padding: 2.5rem; display: none; animation: fadeIn 0.4s ease;">
-      <div style="max-width: 800px; margin: 0 auto;">
-        
-        <!-- Profile Card: Mint -->
-        <div style="background: var(--pastel-mint); border-radius: 32px; padding: 4rem 3rem; color: var(--text-dark); position: relative; overflow: hidden; box-shadow: 0 20px 40px rgba(187, 247, 208, 0.15);">
-          
-          <div style="position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; text-align: center;">
-            <div style="width: 150px; height: 150px; border-radius: 50%; margin: 0 auto 2rem; display: flex; align-items: center; justify-content: center; border: 6px solid rgba(255,255,255,0.4); overflow: hidden; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);">
-              <img src="image/Imyusi.JPG" alt="Profile" style="width: 100%; height: 100%; object-fit: cover" />
-            </div>
-            
-            <h2 style="margin-bottom: 0.5rem; color: var(--text-dark); font-size: 2.5rem; font-weight: 800; letter-spacing: -1px;">Muhamad Sidik</h2>
-            <p style="color: rgba(0,0,0,0.6); margin-bottom: 2rem; font-weight: 700; letter-spacing: 1px; font-size: 0.9rem; text-transform: uppercase;">Creative Designer & Unity Developer</p>
-            
-            <p style="color: rgba(0,0,0,0.8); line-height: 1.8; margin-bottom: 2.5rem; max-width: 600px; font-size: 1.05rem;">
-              To me, technology is not just about a functioning system, but about creating new experiences that people can truly feel. D'JawitaAR is one of my works that integrates my expertise in Fullstack Development and AR Interaction Design.
-            </p>
-            
-            <div style="display: flex; justify-content: center; gap: 1.5rem">
-              <a href="https://www.linkedin.com/in/muhamad-sidik-a6757b25b/" target="_blank" style="background: rgba(0,0,0,0.85); color: white; padding: 0.85rem 1.75rem; border-radius: 100px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 0.85rem; font-weight: 600; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);" onmouseover="this.style.transform='translateY(-4px)'; this.style.background='#0c0d0f'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.2)';" onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(0,0,0,0.85)'; this.style.boxShadow='none';">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
-                LinkedIn
-              </a>
-              <a href="https://github.com/MyusiZ3" target="_blank" style="background: rgba(0,0,0,0.85); color: white; padding: 0.85rem 1.75rem; border-radius: 100px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 0.85rem; font-weight: 600; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);" onmouseover="this.style.transform='translateY(-4px)'; this.style.background='#0c0d0f'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.2)';" onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(0,0,0,0.85)'; this.style.boxShadow='none';">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
-                GitHub
-              </a>
-              <a href="https://creative-portfolio-q6cryumhb-myusiz3s-projects.vercel.app/" target="_blank" style="background: rgba(0,0,0,0.85); color: white; padding: 0.85rem 1.75rem; border-radius: 100px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 0.85rem; font-weight: 600; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);" onmouseover="this.style.transform='translateY(-4px)'; this.style.background='#0c0d0f'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.2)';" onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(0,0,0,0.85)'; this.style.boxShadow='none';">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-                Portfolio
-              </a>
-            </div>
-          </div>
+      <div style="max-width: 800px; margin: 0 auto; text-align: center">
+        <div style="width: 150px; height: 150px; background: var(--primary-glow); border-radius: 50%; margin: 0 auto 2rem; display: flex; align-items: center; justify-content: center; border: 4px solid var(--glass-border); overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);">
+          <img src="image/Imyusi.JPG" alt="Profile" style="width: 100%; height: 100%; object-fit: cover" />
+        </div>
+        <h2 style="margin-bottom: 0.5rem; color: white">Muhamad Sidik</h2>
+        <p style="color: var(--primary); margin-bottom: 1.5rem; font-weight: 600;">Creative Designer & Unity Developer</p>
+        <p style="color: var(--text-dim); line-height: 1.8; margin-bottom: 2.5rem;">
+          To me, technology is not just about a functioning system, but about creating new experiences that people can truly feel. D'JawitaAR is one of my works that integrates my expertise in Fullstack Development and AR Interaction Design.
+        </p>
+        <div style="display: flex; justify-content: center; gap: 1.5rem">
+          <a href="https://www.linkedin.com/in/muhamad-sidik-a6757b25b/" target="_blank" class="btn btn-ghost" style="padding: 0 1.5rem; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+            LinkedIn
+          </a>
+          <a href="https://github.com/MyusiZ3" target="_blank" class="btn btn-ghost" style="padding: 0 1.5rem; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+            GitHub
+          </a>
+          <a href="https://creative-portfolio-q6cryumhb-myusiz3s-projects.vercel.app/" target="_blank" class="btn btn-ghost" style="padding: 0 1.5rem; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            Portfolio
+          </a>
         </div>
       </div>
     </div>
