@@ -76,15 +76,25 @@ export const AboutSection = () => `
             <div style="margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.05);">
               <h4 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-main); margin-bottom: 1rem; opacity: 0.7; text-align: center;">Technology Stack</h4>
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                <!-- AR Tech -->
+                <!-- Unity -->
                 <div style="background: var(--card-bg); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
-                  <span style="color: var(--pastel-peach); font-weight: 600; font-size: 0.85rem;">Unity 6 & Vuforia 11</span>
-                  <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-dim); background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 8px;">6000.0.35 / 11.4.4</span>
+                  <span style="color: var(--pastel-peach); font-weight: 600; font-size: 0.85rem;">Unity Engine 6</span>
+                  <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-dim); background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 8px;">6000.0.35f1</span>
                 </div>
-                <!-- Web Tech -->
+                <!-- Vuforia -->
                 <div style="background: var(--card-bg); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
-                  <span style="color: var(--pastel-blue); font-weight: 600; font-size: 0.85rem;">Vite & Supabase</span>
-                  <span style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-dim); background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 8px;">v1.0.0</span>
+                  <span style="color: var(--pastel-coral); font-weight: 600; font-size: 0.85rem;">Vuforia Engine</span>
+                  <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-dim); background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 8px;">11.4.4</span>
+                </div>
+                <!-- Vite -->
+                <div style="background: var(--card-bg); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+                  <span style="color: var(--pastel-blue); font-weight: 600; font-size: 0.85rem;">Vite JS</span>
+                  <span style="font-size: 0.65rem; color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.03); padding: 2px 8px; border-radius: 8px;">Bundler</span>
+                </div>
+                <!-- Supabase -->
+                <div style="background: var(--card-bg); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+                  <span style="color: var(--pastel-mint); font-weight: 600; font-size: 0.85rem;">Supabase</span>
+                  <span style="font-size: 0.65rem; color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.03); padding: 2px 8px; border-radius: 8px;">Database</span>
                 </div>
               </div>
             </div>
