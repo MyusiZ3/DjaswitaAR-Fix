@@ -257,7 +257,7 @@ function updateMarkerPreview(url) {
   }
 }
 
-// AR Marker Quality Analyzer (Canvas Edge & Contrast Detection)
+// AR Marker Quality Analyzer (Canvas Edge, Contrast, and Texture Entropy Detection)
 function analyzeMarkerQuality(imgElement) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -269,15 +269,21 @@ function analyzeMarkerQuality(imgElement) {
   const imgData = ctx.getImageData(0, 0, 128, 128);
   const data = imgData.data;
   
-  // 1. Convert to Grayscale & Calculate Standard Deviation (Global Contrast)
+  // 1. Convert to Grayscale & Calculate Standard Deviation (Global Contrast) & Midtone Ratio (Texture Variety)
   let sum = 0;
   const grayscale = new Uint8Array(128 * 128);
+  let midTones = 0; // Gradients/shades of gray (50 to 200) representing organic texture
+  
   for (let i = 0; i < data.length; i += 4) {
     const gray = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
     grayscale[i/4] = gray;
     sum += gray;
+    if (gray >= 50 && gray <= 205) {
+      midTones++;
+    }
   }
   const mean = sum / (128 * 128);
+  const midToneRatio = midTones / (128 * 128);
   
   let varianceSum = 0;
   for (let i = 0; i < grayscale.length; i++) {
@@ -299,31 +305,45 @@ function analyzeMarkerQuality(imgElement) {
     }
   }
   
-  // 3. Score calculation (Contrast 40% + Texture density 60%)
+  // 3. Base Score calculation (Contrast 40% + Texture density 60%)
   const contrastScore = Math.min(stdDev * 1.3, 40);
   const edgeScore = Math.min((edgePoints / (126 * 126)) * 450, 60);
-  const totalScore = Math.round(contrastScore + edgeScore);
+  let totalScore = Math.round(contrastScore + edgeScore);
+  
+  // 4. Line Art & Repetitive Geometric Grid Penalty
+  // High contrast + lots of edges but almost ZERO organic gray textures = Wireframe / Line art
+  let isLineArt = false;
+  if (stdDev > 45 && midToneRatio < 0.12) {
+    isLineArt = true;
+    totalScore = Math.max(15, totalScore - 55); // Apply heavy penalty (reduce up to 3 stars)
+  }
   
   let stars = 1;
-  let text = "Marker sangat polos / blur. Kamera AR (Vuforia) dipastikan akan gagal mendeteksi gambar ini.";
+  let text = "Marker sangat polos, blur, atau tanpa kontras. Vuforia dipastikan gagal mendeteksi gambar ini.";
   let color = "var(--pastel-coral)";
   
-  if (totalScore >= 70) {
-    stars = 5;
-    text = "Kontras & tekstur sangat melimpah! Vuforia akan mendeteksinya secara instan dan sangat presisi.";
-    color = "var(--pastel-mint)";
-  } else if (totalScore >= 50) {
-    stars = 4;
-    text = "Kualitas detail sangat baik. Pelacakan AR di aplikasi Unity akan sangat stabil dan responsif.";
-    color = "var(--pastel-mint)";
-  } else if (totalScore >= 32) {
-    stars = 3;
-    text = "Detail cukup. Penanda dapat dilacak, namun disarankan meningkatkan kontras/ketajaman gambar.";
-    color = "var(--pastel-peach)";
-  } else if (totalScore >= 15) {
+  if (isLineArt) {
     stars = 2;
-    text = "Kontras terlalu rendah. Kamera AR mungkin akan sering kehilangan pelacakan model 3D.";
+    text = "Peringatan: Terdeteksi pola garis geometris / gambar vektor (line-art). Pola garis tipis yang berulang tanpa tekstur organik rentan membuat kamera AR bingung karena semua sudutnya terlihat identik.";
     color = "var(--pastel-coral)";
+  } else {
+    if (totalScore >= 70) {
+      stars = 5;
+      text = "Kontras & tekstur sangat kaya dan unik! Vuforia akan melacak marker ini secara instan dan sangat stabil.";
+      color = "var(--pastel-mint)";
+    } else if (totalScore >= 50) {
+      stars = 4;
+      text = "Kualitas detail sangat baik. Pelacakan AR di aplikasi Unity akan berjalan presisi dan lancar.";
+      color = "var(--pastel-mint)";
+    } else if (totalScore >= 32) {
+      stars = 3;
+      text = "Detail cukup. Penanda dapat dilacak, namun disarankan meningkatkan keunikan kontras/tekstur gambar.";
+      color = "var(--pastel-peach)";
+    } else if (totalScore >= 15) {
+      stars = 2;
+      text = "Kontras/detail kurang memadai. Kamera AR mungkin akan sering kehilangan pelacakan objek 3D.";
+      color = "var(--pastel-coral)";
+    }
   }
   
   return { stars, text, color };
