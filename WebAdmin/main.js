@@ -134,18 +134,7 @@ function showToast(message, type = "info") {
   const toast = document.createElement("div");
   toast.className = `toast toast-${type}`;
 
-  let icon = "";
-  if (type === "success")
-    icon =
-      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
-  else if (type === "error")
-    icon =
-      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
-  else
-    icon =
-      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
-
-  toast.innerHTML = `${icon} <span>${message}</span>`;
+  toast.innerHTML = `<span>${message}</span>`;
   toastContainer.appendChild(toast);
 
   setTimeout(() => {
@@ -155,6 +144,11 @@ function showToast(message, type = "info") {
 }
 
 function showSection(sectionId) {
+  // Auto-close any open modals when navigating
+  document.querySelectorAll(".modal-overlay.active").forEach((modal) => {
+    modal.classList.remove("active");
+  });
+
   // Hide all sections
   document.querySelectorAll(".view-section").forEach((s) => {
     s.classList.remove("active");
@@ -250,14 +244,449 @@ window.removeImage = (index) => {
   updatePreview(newVal);
 };
 
+// Global variables for Marker Feature Preview
+let currentMarkerImg = null;
+let currentMarkerCorners = [];
+let showMarkerFeatures = true;
+
 function updateMarkerPreview(url) {
   if (!markerPreviewBox) return;
   if (url && url.trim() !== "") {
-    markerPreviewBox.innerHTML = `<img src="${url}" style="width:100%; height:100%; object-fit:contain;" alt="Marker Preview" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'preview-placeholder\'>Marker tidak dapat dimuat</span>'">`;
+    // Render an interactive canvas instead of a plain image
+    markerPreviewBox.innerHTML = `
+      <div style="position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.1); border-radius: 6px; overflow: hidden;">
+        <canvas id="marker-preview-canvas" style="max-width: 100%; max-height: 100%; object-fit: contain;"></canvas>
+        <div id="marker-feature-toggle" style="position: absolute; bottom: 6px; right: 6px; background: rgba(20, 21, 25, 0.85); backdrop-filter: blur(4px); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; z-index: 10;">
+          <div style="width: 8px; height: 8px; border-radius: 50%; background: #fbbf24; box-shadow: 0 0 6px #fbbf24; transition: all 0.2s ease;"></div>
+          <span style="font-size: 0.65rem; color: #fff; font-weight: 600;">Features: ON</span>
+        </div>
+      </div>
+    `;
+    triggerURLMarkerEvaluation(url);
   } else {
     markerPreviewBox.innerHTML =
       '<span class="preview-placeholder">Belum ada marker</span>';
+    const indicator = document.getElementById('marker-quality-indicator');
+    if (indicator) indicator.style.display = 'none';
+    currentMarkerImg = null;
+    currentMarkerCorners = [];
   }
+}
+
+// Harris Corner Detector (Exact local feature point calculation)
+function detectHarrisCorners(imgElement) {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  // Downscale image to a standard processing size (200px width) to ensure high performance (<20ms)
+  const w = 200;
+  const h = Math.round((imgElement.naturalHeight / imgElement.naturalWidth) * w) || 200;
+  canvas.width = w;
+  canvas.height = h;
+  ctx.drawImage(imgElement, 0, 0, w, h);
+  
+  const imgData = ctx.getImageData(0, 0, w, h);
+  const data = imgData.data;
+  
+  // 1. Grayscale Conversion
+  const gray = new Float32Array(w * h);
+  for (let i = 0; i < data.length; i += 4) {
+    gray[i/4] = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+  }
+  
+  // 2. Compute X and Y Gradients (using Sobel operators)
+  const Ix = new Float32Array(w * h);
+  const Iy = new Float32Array(w * h);
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const idx = y * w + x;
+      // Sobel X kernel
+      Ix[idx] = 
+        (gray[idx - w + 1] - gray[idx - w - 1]) * 1 +
+        (gray[idx + 1]     - gray[idx - 1])     * 2 +
+        (gray[idx + w + 1] - gray[idx + w - 1]) * 1;
+      
+      // Sobel Y kernel
+      Iy[idx] = 
+        (gray[idx + w - 1] - gray[idx - w - 1]) * 1 +
+        (gray[idx + w]     - gray[idx - w])     * 2 +
+        (gray[idx + w + 1] - gray[idx - w + 1]) * 1;
+    }
+  }
+  
+  // 3. Compute Ix2, Iy2, Ixy
+  const Ix2 = new Float32Array(w * h);
+  const Iy2 = new Float32Array(w * h);
+  const Ixy = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) {
+    Ix2[i] = Ix[i] * Ix[i];
+    Iy2[i] = Iy[i] * Iy[i];
+    Ixy[i] = Ix[i] * Iy[i];
+  }
+  
+  // 4. Sum gradients locally (Gaussian box approximation in 5x5 window)
+  const sIx2 = new Float32Array(w * h);
+  const sIy2 = new Float32Array(w * h);
+  const sIxy = new Float32Array(w * h);
+  const r = 2; // window radius
+  for (let y = r; y < h - r; y++) {
+    for (let x = r; x < w - r; x++) {
+      const idx = y * w + x;
+      let sumIx2 = 0, sumIy2 = 0, sumIxy = 0;
+      for (let dy = -r; dy <= r; dy++) {
+        for (let dx = -r; dx <= r; dx++) {
+          const nidx = (y + dy) * w + (x + dx);
+          sumIx2 += Ix2[nidx];
+          sumIy2 += Iy2[nidx];
+          sumIxy += Ixy[nidx];
+        }
+      }
+      sIx2[idx] = sumIx2;
+      sIy2[idx] = sumIy2;
+      sIxy[idx] = sumIxy;
+    }
+  }
+  
+  // 5. Compute Harris Corner Response R
+  const R = new Float32Array(w * h);
+  const k = 0.04; // Harris constant
+  let maxR = 0;
+  for (let y = r; y < h - r; y++) {
+    for (let x = r; x < w - r; x++) {
+      const idx = y * w + x;
+      const A = sIx2[idx];
+      const B = sIy2[idx];
+      const C = sIxy[idx];
+      
+      const det = A * B - C * C;
+      const trace = A + B;
+      const response = det - k * trace * trace;
+      if (response > 0) {
+        R[idx] = response;
+        if (response > maxR) maxR = response;
+      }
+    }
+  }
+  
+  // 6. Non-Maximum Suppression (7x7 local area) & thresholding
+  const corners = [];
+  const threshold = maxR * 0.06; // Ignore lower responses
+  for (let y = r + 2; y < h - r - 2; y++) {
+    for (let x = r + 2; x < w - r - 2; x++) {
+      const idx = y * w + x;
+      const val = R[idx];
+      if (val < threshold) continue;
+      
+      let isMax = true;
+      for (let dy = -3; dy <= 3; dy++) {
+        for (let dx = -3; dx <= 3; dx++) {
+          if (R[(y + dy) * w + (x + dx)] > val) {
+            isMax = false;
+            break;
+          }
+        }
+        if (!isMax) break;
+      }
+      
+      if (isMax) {
+        corners.push({ x: x / w, y: y / h }); // Store normalized coordinates
+      }
+    }
+  }
+  
+  return corners;
+}
+
+// Canvas Drawer - overlays yellow crosshairs (+) on top of the image
+function drawPreviewWithFeatures(imgElement, corners, showFeatures = true) {
+  const canvas = document.getElementById('marker-preview-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  
+  const containerWidth = markerPreviewBox.clientWidth || 250;
+  const containerHeight = markerPreviewBox.clientHeight || 100;
+  
+  const imgRatio = imgElement.naturalWidth / imgElement.naturalHeight;
+  let drawW = containerWidth;
+  let drawH = containerWidth / imgRatio;
+  if (drawH > containerHeight) {
+    drawH = containerHeight;
+    drawW = containerHeight * imgRatio;
+  }
+  
+  // High DPI rendering scale
+  canvas.width = drawW * 2;
+  canvas.height = drawH * 2;
+  canvas.style.width = drawW + 'px';
+  canvas.style.height = drawH + 'px';
+  
+  ctx.scale(2, 2);
+  
+  // Render the grayscale version to look exactly like the Vuforia developer portal
+  ctx.drawImage(imgElement, 0, 0, drawW, drawH);
+  
+  if (showFeatures && corners && corners.length > 0) {
+    ctx.strokeStyle = '#fbbf24'; // Golden Yellow
+    ctx.lineWidth = 1.2;
+    const size = 3; // Crosshair radius
+    
+    corners.forEach(c => {
+      const px = c.x * drawW;
+      const py = c.y * drawH;
+      
+      ctx.beginPath();
+      // Horizontal bar
+      ctx.moveTo(px - size, py);
+      ctx.lineTo(px + size, py);
+      // Vertical bar
+      ctx.moveTo(px, py - size);
+      ctx.lineTo(px, py + size);
+      ctx.stroke();
+    });
+  }
+}
+
+// AR Marker Quality Analyzer (Canvas Edge, Contrast, and Texture Entropy Detection)
+// AR Marker Quality Analyzer (Multi-zone Distribution, Global Contrast, and Repetitive Pattern Checks)
+function analyzeMarkerQuality(imgElement, corners) {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  canvas.width = 128;
+  canvas.height = 128;
+  ctx.drawImage(imgElement, 0, 0, 128, 128);
+  
+  const imgData = ctx.getImageData(0, 0, 128, 128);
+  const data = imgData.data;
+  
+  // 1. Convert to Grayscale & Calculate Contrast (Standard Deviation) & Midtone Ratio (Texture Depth)
+  let sum = 0;
+  const grayscale = new Uint8Array(128 * 128);
+  let midTones = 0;
+  
+  for (let i = 0; i < data.length; i += 4) {
+    const gray = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+    grayscale[i/4] = gray;
+    sum += gray;
+    if (gray >= 50 && gray <= 205) {
+      midTones++;
+    }
+  }
+  const mean = sum / (128 * 128);
+  const midToneRatio = midTones / (128 * 128);
+  
+  let varianceSum = 0;
+  for (let i = 0; i < grayscale.length; i++) {
+    varianceSum += Math.pow(grayscale[i] - mean, 2);
+  }
+  const stdDev = Math.sqrt(varianceSum / (128 * 128));
+  
+  // 2. Calculate Feature Spatial Distribution (4x4 Grid, 16 Zones check)
+  const zones = new Array(16).fill(0);
+  corners.forEach(c => {
+    const zx = Math.min(Math.floor(c.x * 4), 3);
+    const zy = Math.min(Math.floor(c.y * 4), 3);
+    zones[zy * 4 + zx]++;
+  });
+  const activeZones = zones.filter(count => count > 0).length; // Number of zones containing features (0 to 16)
+  const distributionRatio = activeZones / 16;
+  
+  // 3. Multi-Criteria Strict Scoring Engine
+  const numFeatures = corners.length;
+  let stars = 5;
+  const reasons = [];
+  
+  // A. Evaluate Feature Count
+  if (numFeatures < 6) {
+    stars = 1;
+    reasons.push("Jumlah detail sangat minim (kurang dari 6 fitur).");
+  } else if (numFeatures < 18) {
+    stars = Math.min(stars, 2);
+    reasons.push("Detail gambar kurang memadai.");
+  } else if (numFeatures < 35) {
+    stars = Math.min(stars, 3);
+  } else if (numFeatures < 60) {
+    stars = Math.min(stars, 4);
+  }
+  
+  // B. Evaluate Global Contrast
+  if (stdDev < 15) {
+    stars = 1;
+    reasons.push("Gambar terlalu buram atau kurang kontras.");
+  } else if (stdDev < 28) {
+    stars = Math.min(stars, 2);
+    reasons.push("Kontras gambar agak redup.");
+  }
+  
+  // C. Evaluate Spatial Distribution (Clustering Penalty)
+  if (numFeatures >= 6) {
+    if (distributionRatio < 0.25) { // Clustered in less than 4 grids
+      stars = Math.min(stars, 1);
+      reasons.push("Fitur menumpuk ekstrem di satu area sempit saja (Clustered).");
+    } else if (distributionRatio < 0.45) { // Clustered in less than 7 grids
+      stars = Math.min(stars, 2);
+      reasons.push("Sebaran fitur tidak merata, hanya berkumpul di bagian tertentu gambar.");
+    } else if (distributionRatio < 0.60) {
+      stars = Math.min(stars, 3);
+      reasons.push("Sebaran detail cukup baik, namun ada beberapa sudut kosong yang rawan tidak terdeteksi.");
+    }
+  }
+  
+  // D. Evaluate Repetitive Geometric/Line-Art Patterns (The wireframe/checkerboard killer)
+  const isHighContrastLineArt = (stdDev > 45 && midToneRatio < 0.14);
+  if (isHighContrastLineArt) {
+    if (numFeatures > 32) {
+      // High corner count + extremely low gradient variety = Symmetrical Repeating Wireframe Grid
+      stars = 1;
+      reasons.push("Peringatan Kritis: Pola geometris berulang / jaring segitiga wireframe (Repetitive Pattern). Meskipun memiliki banyak sudut tajam, pola repetitif yang identik membuat sensor AR bingung menentukan disorientasi.");
+    } else {
+      // Low features + zero texture = Flat stencil / logo
+      stars = Math.min(stars, 2);
+      reasons.push("Pola grafis vektor/garis sederhana (Line-Art). Gunakan foto organik dengan tekstur alami.");
+    }
+  }
+  
+  // 4. Construct response message and colors
+  let text = "";
+  let color = "var(--pastel-mint)";
+  
+  if (stars === 5) {
+    text = `Kontras & sebaran tekstur sempurna! Terdeteksi ${numFeatures} titik sudut unik tersebar merata di 16 sektor gambar. Vuforia menjamin pelacakan yang sangat stabil.`;
+    color = "var(--pastel-mint)";
+  } else if (stars === 4) {
+    text = `Detail sangat baik. Ditemukan ${numFeatures} titik fitur terlokalisasi di ${activeZones} area. Pelacakan AR akan berjalan lancar dan responsif.`;
+    color = "var(--pastel-mint)";
+  } else {
+    color = stars === 3 ? "var(--pastel-peach)" : "var(--pastel-coral)";
+    if (reasons.length > 0) {
+      text = reasons.join(" ");
+    } else {
+      text = `Kualitas detail sedang. Ditemukan ${numFeatures} fitur, namun disarankan untuk meningkatkan variasi warna/tekstur gambar.`;
+    }
+  }
+  
+  return { stars, text, color };
+}
+
+function evaluateMarkerQuality(imgElement) {
+  const indicator = document.getElementById('marker-quality-indicator');
+  if (!indicator) return;
+  
+  try {
+    indicator.style.display = 'flex';
+    indicator.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 4px 0;">
+        <div class="loading-spinner" style="width: 14px; height: 14px; border-width: 2px;"></div>
+        <span style="font-size: 0.8rem; color: var(--text-dim);">Menghitung feature points ala Vuforia...</span>
+      </div>
+    `;
+
+    setTimeout(() => {
+      // 1. Detect Harris Corners
+      const corners = detectHarrisCorners(imgElement);
+      
+      // Store in global scope for rendering
+      currentMarkerImg = imgElement;
+      currentMarkerCorners = corners;
+      
+      // 2. Draw features onto the canvas preview
+      drawPreviewWithFeatures(imgElement, corners, showMarkerFeatures);
+      
+      // 3. Setup click listener for the interactive toggle switch
+      const toggleBtn = document.getElementById('marker-feature-toggle');
+      if (toggleBtn) {
+        // Clear previous event listener
+        toggleBtn.onclick = null;
+        toggleBtn.onclick = function(event) {
+          event.stopPropagation();
+          showMarkerFeatures = !showMarkerFeatures;
+          const dot = toggleBtn.querySelector('div');
+          const text = toggleBtn.querySelector('span');
+          if (showMarkerFeatures) {
+            dot.style.background = '#fbbf24';
+            dot.style.boxShadow = '0 0 6px #fbbf24';
+            text.innerText = 'Features: ON';
+          } else {
+            dot.style.background = 'rgba(255,255,255,0.2)';
+            dot.style.boxShadow = 'none';
+            text.innerText = 'Features: OFF';
+          }
+          drawPreviewWithFeatures(currentMarkerImg, currentMarkerCorners, showMarkerFeatures);
+        };
+      }
+      
+      // 4. Analyze overall score
+      const evaluation = analyzeMarkerQuality(imgElement, corners);
+      
+      let starHTML = "";
+      for (let i = 1; i <= 5; i++) {
+        if (i <= evaluation.stars) {
+          starHTML += `<span style="color: ${evaluation.color}; font-size: 1.1rem; margin-right: 2px;">★</span>`;
+        } else {
+          starHTML += `<span style="color: rgba(255,255,255,0.08); font-size: 1.1rem; margin-right: 2px;">★</span>`;
+        }
+      }
+
+      let warningHTML = "";
+      if (evaluation.stars < 3) {
+        warningHTML = `
+          <div style="margin-top: 8px; padding: 6px 10px; border-radius: 6px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); display: flex; align-items: center; gap: 6px; width: 100%;">
+            <span style="font-size: 0.8rem; line-height: 1;">⚠️</span>
+            <span style="font-size: 0.68rem; color: #f87171; font-weight: 600; line-height: 1.3;">Kualitas di bawah standar minimal (★★★). Sangat disarankan mengganti gambar untuk menjamin objek 3D tidak bergeser di aplikasi AR.</span>
+          </div>
+        `;
+      }
+
+      indicator.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; margin-bottom: 4px;">
+          <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px;">Vuforia Tracking Rating</span>
+          <div style="display: flex; align-items: center;">
+            ${starHTML}
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: flex-start; margin-top: 4px;">
+          <div style="width: 6px; height: 6px; border-radius: 50%; background: ${evaluation.color}; margin-top: 5px; flex-shrink: 0; box-shadow: 0 0 8px ${evaluation.color};"></div>
+          <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.4; margin: 0;">${evaluation.text}</p>
+        </div>
+        ${warningHTML}
+      `;
+    }, 150);
+  } catch (err) {
+    console.error("Evaluation error:", err);
+    indicator.style.display = 'none';
+  }
+}
+
+function triggerURLMarkerEvaluation(url) {
+  const indicator = document.getElementById('marker-quality-indicator');
+  if (!indicator || !url || url.trim() === "") {
+    if (indicator) indicator.style.display = 'none';
+    return;
+  }
+  
+  indicator.style.display = 'flex';
+  indicator.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 4px 0;">
+      <div class="loading-spinner" style="width: 14px; height: 14px; border-width: 2px;"></div>
+      <span style="font-size: 0.8rem; color: var(--text-dim);">Mengambil data penanda...</span>
+    </div>
+  `;
+
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.onload = function() {
+    evaluateMarkerQuality(img);
+  };
+  img.onerror = function() {
+    indicator.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+        <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-main); text-transform: uppercase;">Vuforia Tracking</span>
+        <span style="font-size: 0.7rem; color: var(--pastel-mint); font-weight: 600;">Terverifikasi (Online)</span>
+      </div>
+      <p style="font-size: 0.72rem; color: var(--text-dim); line-height: 1.4; margin: 4px 0 0 0;">Evaluasi instan & visualisasi titik fitur didukung lewat unggah berkas komputer/lokal untuk menghindari pemblokiran CORS.</p>
+    `;
+  };
+  img.src = url;
 }
 
 mediaUrlInput?.addEventListener("input", (e) => updatePreview(e.target.value));
@@ -517,8 +946,17 @@ function renderTable(data) {
 async function fetchData() {
   try {
     if (tableBody) {
-      tableBody.innerHTML =
-        '<tr><td colspan="6" style="text-align: center; padding: 3rem;"><div class="loading-spinner"></div><p style="margin-top: 1rem; color: var(--text-dim)">Memuat data...</p></td></tr>';
+      tableBody.innerHTML = Array(4).fill(0).map(() => `
+        <tr class="skeleton-row">
+          <td style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 1rem;"><div class="skeleton-box" style="width: 48px; height: 48px; border-radius: 10px;"></div></td>
+          <td style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 1rem;"><div class="skeleton-box" style="width: 120px;"></div></td>
+          <td style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 1rem;"><div class="skeleton-box" style="width: 180px;"></div></td>
+          <td style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 1rem;"><div class="skeleton-box" style="width: 80px; border-radius: 100px;"></div></td>
+          <td style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 1rem;"><div class="skeleton-box" style="width: 140px;"></div></td>
+          <td style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 1rem;"><div class="skeleton-box" style="width: 100px;"></div></td>
+          ${currentRole !== 'member' ? '<td style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 1rem;"><div class="skeleton-box" style="width: 60px;"></div></td>' : ''}
+        </tr>
+      `).join('');
     }
 
     const { data, error } = await supabase
@@ -540,7 +978,33 @@ async function fetchData() {
 // --- ANALYTICS ---
 let scansChart = null;
 
-async function fetchAnalytics() {
+window.updateScanTimeframe = function(timeframe, btnElement) {
+  // Update button active state
+  document.querySelectorAll('.time-filter-btn').forEach(btn => btn.classList.remove('active'));
+  btnElement.classList.add('active');
+
+  // Update Title and Subtitle
+  const title = document.getElementById('scan-activity-title');
+  const desc = document.getElementById('scan-activity-desc');
+  
+  if (title && desc) {
+    if (timeframe === 'weekly') {
+      title.innerText = 'Weekly Scan Activity';
+      desc.innerText = 'Tren interaksi pengunjung dalam 7 hari terakhir.';
+    } else if (timeframe === 'monthly') {
+      title.innerText = 'Monthly Scan Activity';
+      desc.innerText = 'Tren interaksi pengunjung selama 30 hari terakhir.';
+    } else if (timeframe === 'alltime') {
+      title.innerText = 'All-Time Scan Activity';
+      desc.innerText = 'Akumulasi seluruh interaksi pengunjung dari awal.';
+    }
+  }
+  
+  // Trigger a re-fetch of chart data with the new timeframe
+  fetchAnalytics(timeframe);
+};
+
+async function fetchAnalytics(timeframe = 'weekly') {
   try {
     // Show loading state for popular locations table
     const popBody = document.getElementById('popular-locations-body');
@@ -555,34 +1019,79 @@ async function fetchAnalytics() {
     document.getElementById('stat-active-locations').innerText = activeLocations || 0;
     document.getElementById('stat-total-admins').innerText = totalAdmins || 0;
 
-    // 2. Fetch Chart Data (Last 7 Days)
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setHours(0, 0, 0, 0);
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    // 2. Fetch Chart Data Based on Timeframe
+    let startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+    let query = supabase.from('scans').select('scanned_at');
     
-    const { data: scansData, error: scansError } = await supabase
-      .from('scans')
-      .select('scanned_at')
-      .gte('scanned_at', sevenDaysAgo.toISOString());
-
-    if (scansError) throw scansError;
-
-    const dailyData = {};
-    const labels = [];
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(sevenDaysAgo);
-      d.setDate(d.getDate() + i);
-      const label = d.toLocaleDateString('id-ID', { weekday: 'short' });
-      labels.push(label);
-      dailyData[label] = 0;
+    if (timeframe === 'weekly') {
+      startDate.setDate(startDate.getDate() - 6);
+      query = query.gte('scanned_at', startDate.toISOString());
+    } else if (timeframe === 'monthly') {
+      startDate.setDate(startDate.getDate() - 29); // 30 days including today
+      query = query.gte('scanned_at', startDate.toISOString());
     }
 
-    scansData.forEach(s => {
-      const label = new Date(s.scanned_at).toLocaleDateString('id-ID', { weekday: 'short' });
-      if (dailyData[label] !== undefined) dailyData[label]++;
-    });
+    const { data: scansData, error: scansError } = await query;
+    if (scansError) throw scansError;
 
-    renderScansChart(labels, labels.map(l => dailyData[l]));
+    let chartData = {};
+    let labels = [];
+
+    if (timeframe === 'weekly') {
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(startDate);
+        d.setDate(d.getDate() + i);
+        const label = d.toLocaleDateString('id-ID', { weekday: 'short' });
+        labels.push(label);
+        chartData[label] = 0;
+      }
+      scansData.forEach(s => {
+        const label = new Date(s.scanned_at).toLocaleDateString('id-ID', { weekday: 'short' });
+        if (chartData[label] !== undefined) chartData[label]++;
+      });
+    } else if (timeframe === 'monthly') {
+      for (let i = 0; i < 30; i++) {
+        const d = new Date(startDate);
+        d.setDate(d.getDate() + i);
+        const label = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        labels.push(label);
+        chartData[label] = 0;
+      }
+      scansData.forEach(s => {
+        const label = new Date(s.scanned_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        if (chartData[label] !== undefined) chartData[label]++;
+      });
+    } else if (timeframe === 'alltime') {
+      const monthlyMap = {};
+      scansData.forEach(s => {
+        const d = new Date(s.scanned_at);
+        // Format YYYY-MM for correct chronological sorting
+        const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        if (!monthlyMap[monthKey]) monthlyMap[monthKey] = 0;
+        monthlyMap[monthKey]++;
+      });
+      
+      const sortedKeys = Object.keys(monthlyMap).sort();
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
+      
+      sortedKeys.forEach(k => {
+        const [year, month] = k.split('-');
+        const labelName = `${monthNames[parseInt(month) - 1]} ${year}`;
+        labels.push(labelName);
+        chartData[labelName] = monthlyMap[k];
+      });
+
+      // Default fallback if database is completely empty
+      if (labels.length === 0) {
+        const today = new Date();
+        const fallbackLabel = `${monthNames[today.getMonth()]} ${today.getFullYear()}`;
+        labels.push(fallbackLabel);
+        chartData[fallbackLabel] = 0;
+      }
+    }
+
+    renderScansChart(labels, labels.map(l => chartData[l]));
 
     // 3. Category Distribution Chart
     if (wisataData.length === 0) {
@@ -628,6 +1137,32 @@ function renderCategoryChart(labels, data) {
   if (!ctx) return;
   if (categoryChart) categoryChart.destroy();
 
+  const total = data.reduce((a, b) => a + b, 0);
+
+  const centerTextPlugin = {
+    id: 'centerText',
+    beforeDraw: function(chart) {
+      const width = chart.width, height = chart.height, ctx = chart.ctx;
+      ctx.restore();
+      const fontSize = (height / 114).toFixed(2);
+      ctx.font = "bold " + fontSize + "em Outfit, sans-serif";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#f3f4f6";
+      const text = total.toString(),
+          textX = Math.round((width - ctx.measureText(text).width) / 2),
+          textY = height / 2.2;
+      ctx.fillText(text, textX, textY);
+      
+      ctx.font = (fontSize / 2.5).toFixed(2) + "em Outfit, sans-serif";
+      ctx.fillStyle = "#8e939e";
+      const label = "Total",
+          labelX = Math.round((width - ctx.measureText(label).width) / 2),
+          labelY = height / 2.2 + (fontSize * 16);
+      ctx.fillText(label, labelX, labelY);
+      ctx.save();
+    }
+  };
+
   categoryChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
@@ -635,7 +1170,7 @@ function renderCategoryChart(labels, data) {
       datasets: [{
         data: data,
         backgroundColor: [
-          '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'
+          '#bbf7d0', '#e9d5ff', '#fed7aa', '#bfdbfe', '#fecaca', '#d4fc34'
         ],
         borderWidth: 0,
         hoverOffset: 15
@@ -649,20 +1184,21 @@ function renderCategoryChart(labels, data) {
         legend: {
           position: 'bottom',
           labels: {
-            color: '#999',
+            color: '#8e939e',
             padding: 20,
             usePointStyle: true,
             font: { size: 11 }
           }
         },
         tooltip: {
-          backgroundColor: '#1a1a1a',
+          backgroundColor: '#141519',
           padding: 12,
           cornerRadius: 8,
           displayColors: true
         }
       }
-    }
+    },
+    plugins: [centerTextPlugin]
   });
 }
 
@@ -674,8 +1210,8 @@ function renderScansChart(labels, data) {
 
   // Create Gradient
   const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-  gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
-  gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+  gradient.addColorStop(0, 'rgba(191, 219, 254, 0.4)'); // Pastel Blue
+  gradient.addColorStop(1, 'rgba(191, 219, 254, 0)');
 
   scansChart = new Chart(ctx, {
     type: 'line',
@@ -684,18 +1220,18 @@ function renderScansChart(labels, data) {
       datasets: [{
         label: 'Jumlah Scan',
         data: data,
-        borderColor: '#3b82f6',
+        borderColor: '#bfdbfe', // Pastel Blue
         backgroundColor: gradient,
-        borderWidth: 3,
+        borderWidth: 4,
         tension: 0.4,
         fill: true,
-        pointBackgroundColor: '#3b82f6',
-        pointBorderColor: '#fff',
+        pointBackgroundColor: '#bbf7d0', // Pastel Mint
+        pointBorderColor: '#141519',
         pointBorderWidth: 2,
-        pointRadius: 4,
-        pointHoverRadius: 7,
-        pointHoverBackgroundColor: '#3b82f6',
-        pointHoverBorderColor: '#fff',
+        pointRadius: 0,
+        pointHoverRadius: 8,
+        pointHoverBackgroundColor: '#bbf7d0',
+        pointHoverBorderColor: '#141519',
         pointHoverBorderWidth: 3
       }]
     },
@@ -709,11 +1245,11 @@ function renderScansChart(labels, data) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#1a1a1a',
+          backgroundColor: '#141519',
           titleFont: { size: 13, weight: 'bold' },
           padding: 14,
           cornerRadius: 10,
-          borderColor: 'rgba(255,255,255,0.1)',
+          borderColor: 'rgba(255,255,255,0.05)',
           borderWidth: 1,
           displayColors: false,
           callbacks: {
@@ -725,11 +1261,11 @@ function renderScansChart(labels, data) {
         y: {
           beginAtZero: true,
           grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
-          ticks: { color: '#666', font: { size: 11 }, stepSize: 1 }
+          ticks: { color: '#8e939e', font: { size: 11 }, stepSize: 1 }
         },
         x: {
           grid: { display: false },
-          ticks: { color: '#666', font: { size: 11 } }
+          ticks: { color: '#8e939e', font: { size: 11 } }
         }
       }
     }
@@ -751,11 +1287,11 @@ function renderPopularLocations(data) {
     <tr>
       <td style="font-weight: 600; color: #fff;">${item.nama}</td>
       <td><span class="badge badge-${item.type}">${item.type}</span></td>
-      <td style="font-weight: 700; color: var(--accent); font-size: 1.125rem;">${item.scan_count}</td>
+      <td style="font-weight: 700; color: var(--text-main); font-size: 1.125rem;">${item.scan_count}</td>
       <td>
         <div style="display: flex; align-items: center; gap: 12px;">
           <div class="popularity-bar-container" style="flex: 1;">
-            <div class="popularity-bar" style="width: ${(item.scan_count / maxScan) * 100}%"></div>
+            <div class="popularity-bar" style="width: ${(item.scan_count / maxScan) * 100}%; background: linear-gradient(90deg, var(--pastel-mint), var(--pastel-blue));"></div>
           </div>
           <span style="font-size: 0.75rem; color: var(--text-dim); min-width: 30px; text-align: right;">
             ${Math.round((item.scan_count / maxScan) * 100)}%
@@ -1181,14 +1717,21 @@ function renderAdmins(filter = "") {
       .map(
         (item) => `
       <tr>
-        <td style="font-weight: 600; color: var(--primary)">${item.username || "-"}</td>
+        <td>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(233, 213, 255, 0.05); border: 1.5px solid var(--pastel-lavender); box-shadow: 0 0 10px rgba(233, 213, 255, 0.15); display: flex; align-items: center; justify-content: center; color: var(--pastel-lavender); font-weight: 700; font-size: 0.9rem; text-transform: uppercase;">
+              ${(item.username || "A").charAt(0)}
+            </div>
+            <span style="font-weight: 600; color: white">${item.username || "-"}</span>
+          </div>
+        </td>
         <td style="font-weight: 500">${item.email || "-"}</td>
         <td>
           <span class="badge role-${item.role || "admin"}">
             ${(item.role || "admin").toUpperCase()}
           </span>
         </td>
-        <td style="color: var(--text-dim); font-size: 0.813rem;">
+        <td style="color: var(--pastel-peach); font-family: var(--font-mono); font-size: 0.813rem;">
           ${new Date(item.created_at).toLocaleDateString("id-ID", {
             day: "2-digit",
             month: "short",
@@ -1946,3 +2489,444 @@ btnDownloadQr?.addEventListener('click', async () => {
         showToast('Gagal mendownload QR', 'error');
     }
 });
+
+// --- EXPORT ANALYTICS REPORTS ---
+
+// PDF Export (Structured formal business report using jsPDF and jspdf-autotable)
+window.exportDashboardPDF = async function() {
+  // 1. Identify active timeframe from dashboard buttons
+  const activeBtn = document.querySelector('.time-filter-btn.active');
+  const timeframe = activeBtn ? activeBtn.getAttribute('onclick').match(/'([^']+)'/)[1] : 'weekly';
+  
+  let rangeText = "";
+  if (timeframe === 'weekly') {
+    rangeText = "Mingguan (7 Hari Terakhir)";
+  } else if (timeframe === 'monthly') {
+    rangeText = "Bulanan (30 Hari Terakhir)";
+  } else {
+    rangeText = "Semua Waktu (All-Time)";
+  }
+
+  showToast(`Menyiapkan data laporan PDF periode ${timeframe}...`, "info");
+
+  try {
+    // 2. Fetch all scans from Supabase to filter precisely
+    const { data: scans, error } = await supabase
+      .from('scans')
+      .select('id, scanned_at, wisata(id, nama, type)')
+      .order('scanned_at', { ascending: false });
+
+    if (error) throw error;
+
+    if (!scans || scans.length === 0) {
+      showToast("Tidak ada data scan untuk diekspor", "warning");
+      return;
+    }
+
+    // 3. Filter data by date range
+    let cutoff = null;
+    if (timeframe === 'weekly') {
+      cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 7);
+    } else if (timeframe === 'monthly') {
+      cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 30);
+    }
+
+    const filteredScans = scans.filter(s => {
+      if (!cutoff) return true;
+      return new Date(s.scanned_at) >= cutoff;
+    });
+
+    // 4. Calculate stats & popular destinations for this range
+    const destinationCounts = {};
+    filteredScans.forEach(s => {
+      if (s.wisata) {
+        const id = s.wisata.id;
+        const nama = s.wisata.nama;
+        const type = s.wisata.type;
+        if (!destinationCounts[id]) {
+          destinationCounts[id] = { nama, type, count: 0 };
+        }
+        destinationCounts[id].count++;
+      }
+    });
+
+    const topDestinations = Object.values(destinationCounts)
+      .sort((a, b) => b.count - a.count);
+
+    const activeSpotsCount = Object.keys(destinationCounts).length;
+    const totalAdmins = document.getElementById('stat-total-admins')?.innerText || '0';
+
+    // 5. Initialize jsPDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4'); // Portrait, A4 size
+    const pageWidth = 210;
+
+    // PAGE 1: HEADER & EXECUTIVE SUMMARY
+    // Deep slate top border accent
+    doc.setFillColor(30, 41, 59);
+    doc.rect(0, 0, pageWidth, 8, 'F');
+
+    // Platform Logo & Subtitle
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(30, 41, 59);
+    doc.text("D'JASWITA AR", 14, 25);
+
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(100, 110, 120);
+    doc.text("SISTEM MANAJEMEN INFORMASI PARIWISATA & AR", 14, 30);
+
+    // Decorative line divider
+    doc.setDrawColor(220, 225, 230);
+    doc.setLineWidth(0.5);
+    doc.line(14, 34, 196, 34);
+
+    // Document Details
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(15, 23, 42);
+    doc.text("LAPORAN ANALISIS INTERAKSI PENGUNJUNG", 14, 44);
+
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(9.5);
+    doc.setTextColor(70, 80, 90);
+    
+    // Detailed Metadata Table Box style
+    doc.text(`Periode Laporan : ${rangeText}`, 14, 51);
+    doc.text(`Tanggal Cetak   : ${new Date().toLocaleString('id-ID')}`, 14, 56);
+    doc.text(`Dicetak Oleh    : Administrator WebAdmin`, 14, 61);
+
+    // EXECUTIVE SUMMARY TABLE
+    doc.autoTable({
+      startY: 68,
+      head: [['Metrik Ringkasan Laporan', 'Nilai Tercatat']],
+      body: [
+        ['Total Scan Pengunjung (Engagement)', `${filteredScans.length} kali scan`],
+        ['Destinasi Aktif Di-scan (Active Spots)', `${activeSpotsCount} lokasi aktif`],
+        ['Administrator Terverifikasi (Verified Admins)', `${totalAdmins} user`]
+      ],
+      theme: 'striped',
+      headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+      styles: { fontSize: 9.5, cellPadding: 5 },
+      margin: { left: 14, right: 14 }
+    });
+
+    // TOP DESTINATIONS TABLE
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(30, 41, 59);
+    doc.text("DAFTAR DESTINASI TERPOPULER (ENGAGEMENT TERTINGGI)", 14, doc.lastAutoTable.finalY + 12);
+
+    const topDestRows = topDestinations.slice(0, 10).map((item, idx) => {
+      const maxCount = topDestinations[0]?.count || 1;
+      const pct = Math.round((item.count / maxCount) * 100);
+      return [idx + 1, item.nama, item.type, `${item.count} scan`, `${pct}%`];
+    });
+
+    doc.autoTable({
+      startY: doc.lastAutoTable.finalY + 16,
+      head: [['Peringkat', 'Nama Destinasi Wisata', 'Kategori', 'Total Scan', 'Kontribusi Popularitas']],
+      body: topDestRows.length > 0 ? topDestRows : [['-', 'Belum ada data interaksi di periode ini', '-', '-', '-']],
+      theme: 'grid',
+      headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+      styles: { fontSize: 9, cellPadding: 4 },
+      margin: { left: 14, right: 14 }
+    });
+
+    // PAGE 2: DETAILED TRANSACTION LOGS
+    doc.addPage();
+    
+    // Header for Page 2
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(30, 41, 59);
+    doc.text("LOG RINCIAN RIWAYAT INTERAKSI SCAN", 14, 20);
+
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(100, 110, 120);
+    doc.text(`Rincian log scan aktif periode: ${rangeText} | Total: ${filteredScans.length} data`, 14, 25);
+
+    const logRows = filteredScans.map((s, idx) => {
+      const scanTime = new Date(s.scanned_at).toLocaleString('id-ID');
+      const name = s.wisata ? s.wisata.nama : 'Destinasi Dihapus';
+      const type = s.wisata ? s.wisata.type : 'N/A';
+      return [idx + 1, s.id, scanTime, name, type];
+    });
+
+    doc.autoTable({
+      startY: 30,
+      head: [['No', 'ID Scan', 'Waktu Pindai (Scan)', 'Nama Destinasi Wisata', 'Kategori']],
+      body: logRows.length > 0 ? logRows : [['-', 'Belum ada data scan', '-', '-', '-']],
+      theme: 'striped',
+      headStyles: { fillColor: [71, 85, 105], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8.5 },
+      styles: { fontSize: 8, cellPadding: 3.5 },
+      margin: { left: 14, right: 14 }
+    });
+
+    // Signature Block at the bottom of the table
+    const finalY = doc.lastAutoTable.finalY || 30;
+    const footerY = finalY + 20;
+
+    if (footerY < 260) {
+      drawSignature(doc, footerY);
+    } else {
+      doc.addPage();
+      drawSignature(doc, 30);
+    }
+
+    function drawSignature(doc, y) {
+      doc.setFont("Helvetica", "normal");
+      doc.setFontSize(9.5);
+      doc.setTextColor(30, 41, 59);
+      doc.text("Mengetahui,", 138, y);
+      doc.text("Administrator D'Jaswita AR WebAdmin", 138, y + 5);
+      
+      // Signature line
+      doc.setDrawColor(180, 185, 195);
+      doc.line(138, y + 25, 190, y + 25);
+      
+      doc.setFontSize(8.5);
+      doc.setTextColor(120, 130, 140);
+      doc.text("Sistem Verifikasi Digital Laporan", 138, y + 29);
+    }
+
+    // Save and download PDF
+    doc.save(`DjaswitaAR_Laporan_Analisis_${timeframe}_${Date.now()}.pdf`);
+    showToast("PDF Laporan resmi berhasil diunduh!", "success");
+
+  } catch (err) {
+    console.error("PDF generation failed:", err);
+    showToast("Gagal menghasilkan PDF Laporan: " + err.message, "error");
+  }
+};
+
+// CSV / Styled Excel Export (Excel compatible structured report with full styling and auto-borders)
+window.exportDashboardCSV = async function() {
+  const activeBtn = document.querySelector('.time-filter-btn.active');
+  const timeframe = activeBtn ? activeBtn.getAttribute('onclick').match(/'([^']+)'/)[1] : 'weekly';
+  
+  let rangeText = "";
+  if (timeframe === 'weekly') {
+    rangeText = "Mingguan (7 Hari Terakhir)";
+  } else if (timeframe === 'monthly') {
+    rangeText = "Bulanan (30 Hari Terakhir)";
+  } else {
+    rangeText = "Semua Waktu (All-Time)";
+  }
+
+  showToast(`Mengekstrak spreadsheet ber-style periode ${timeframe}...`, "info");
+  
+  try {
+    const { data: scans, error } = await supabase
+      .from('scans')
+      .select('id, scanned_at, wisata(id, nama, type)')
+      .order('scanned_at', { ascending: false });
+
+    if (error) throw error;
+
+    if (!scans || scans.length === 0) {
+      showToast("Tidak ada data scan untuk diekspor", "warning");
+      return;
+    }
+
+    // Filter by Date Range
+    let cutoff = null;
+    if (timeframe === 'weekly') {
+      cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 7);
+    } else if (timeframe === 'monthly') {
+      cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 30);
+    }
+
+    const filteredScans = scans.filter(s => {
+      if (!cutoff) return true;
+      return new Date(s.scanned_at) >= cutoff;
+    });
+
+    // Grouping Top Destinations
+    const destinationCounts = {};
+    filteredScans.forEach(s => {
+      if (s.wisata) {
+        const id = s.wisata.id;
+        const nama = s.wisata.nama;
+        const type = s.wisata.type;
+        if (!destinationCounts[id]) {
+          destinationCounts[id] = { nama, type, count: 0 };
+        }
+        destinationCounts[id].count++;
+      }
+    });
+
+    const topDestinations = Object.values(destinationCounts)
+      .sort((a, b) => b.count - a.count);
+
+    const activeSpotsCount = Object.keys(destinationCounts).length;
+    const totalAdmins = document.getElementById('stat-total-admins')?.innerText || '0';
+
+    // Build premium XML/HTML-based styled spreadsheet
+    let excelContent = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; color: #1e293b; }
+        table { border-collapse: collapse; margin-bottom: 24px; }
+        td, th { border: 1px solid #cbd5e1; padding: 8px 12px; font-size: 10pt; text-align: left; }
+        th { background-color: #1e293b; color: #ffffff; font-weight: bold; font-size: 10pt; }
+        .title-cell { font-size: 16pt; font-weight: bold; color: #0f172a; border: none; height: 40px; }
+        .subtitle-cell { font-size: 9.5pt; color: #64748b; border: none; height: 25px; }
+        .section-header { background-color: #475569; color: #ffffff; font-weight: bold; font-size: 11pt; padding: 10px; text-align: center; }
+        .metrics-label { background-color: #f8fafc; font-weight: bold; width: 320px; }
+        .metrics-value { font-weight: normal; }
+        .rank-col { text-align: center; font-weight: bold; width: 80px; }
+        .number-col { text-align: right; width: 110px; }
+        .date-col { width: 180px; }
+        .id-col { width: 220px; }
+        .name-col { width: 260px; }
+        .type-col { width: 140px; }
+      </style>
+    </head>
+    <body>
+      <!-- Document Header -->
+      <table>
+        <tr>
+          <td colspan="5" class="title-cell">LAPORAN ANALISIS INTERAKSI PENGUNJUNG AR - D'JASWITA AR</td>
+        </tr>
+        <tr>
+          <td colspan="5" class="subtitle-cell">
+            Periode Laporan: ${rangeText} | 
+            Tanggal Cetak: ${new Date().toLocaleString('id-ID')} | 
+            Status: Resmi WebAdmin Export
+          </td>
+        </tr>
+      </table>
+
+      <!-- Spacer table for clean gap -->
+      <table style="border: none; margin: 0; padding: 0;">
+        <tr style="border: none; height: 16px;">
+          <td style="border: none; height: 16px;" colspan="5"></td>
+        </tr>
+      </table>
+
+      <!-- 1. Executive Summary Table -->
+      <table>
+        <tr>
+          <th colspan="2" class="section-header">=== RINGKASAN METRIK STATISTIK ===</th>
+        </tr>
+        <tr>
+          <td class="metrics-label">Total Scan Pengunjung (Engagement)</td>
+          <td class="metrics-value">${filteredScans.length} kali scan</td>
+        </tr>
+        <tr>
+          <td class="metrics-label">Destinasi Aktif Di-scan (Active Spots)</td>
+          <td class="metrics-value">${activeSpotsCount} lokasi aktif</td>
+        </tr>
+        <tr>
+          <td class="metrics-label">Administrator Terverifikasi (Verified Admins)</td>
+          <td class="metrics-value">${totalAdmins} user</td>
+        </tr>
+      </table>
+
+      <!-- Spacer table for clean gap -->
+      <table style="border: none; margin: 0; padding: 0;">
+        <tr style="border: none; height: 16px;">
+          <td style="border: none; height: 16px;" colspan="5"></td>
+        </tr>
+      </table>
+
+      <!-- 2. Top Destinations Table -->
+      <table>
+        <tr>
+          <th colspan="5" class="section-header">=== DAFTAR SEPULUH DESTINASI TERPOPULER ===</th>
+        </tr>
+        <tr>
+          <th class="rank-col">Peringkat</th>
+          <th class="name-col">Nama Destinasi Wisata</th>
+          <th class="type-col">Kategori Wisata</th>
+          <th class="number-col">Total Scan</th>
+          <th class="number-col">Popularitas</th>
+        </tr>
+    `;
+
+    topDestinations.slice(0, 10).forEach((item, idx) => {
+      const maxCount = topDestinations[0]?.count || 1;
+      const pct = Math.round((item.count / maxCount) * 100);
+      excelContent += `
+        <tr>
+          <td class="rank-col">${idx + 1}</td>
+          <td>${item.nama}</td>
+          <td>${item.type}</td>
+          <td class="number-col">${item.count} scan</td>
+          <td class="number-col">${pct}%</td>
+        </tr>
+      `;
+    });
+
+    excelContent += `
+      </table>
+
+      <!-- Spacer table for clean gap -->
+      <table style="border: none; margin: 0; padding: 0;">
+        <tr style="border: none; height: 16px;">
+          <td style="border: none; height: 16px;" colspan="5"></td>
+        </tr>
+      </table>
+
+      <!-- 3. Detailed Scan Logs Table -->
+      <table>
+        <tr>
+          <th colspan="5" class="section-header">=== DETAIL LOG RIWAYAT INTERAKSI SCAN PENGUNJUNG ===</th>
+        </tr>
+        <tr>
+          <th class="rank-col">No</th>
+          <th class="id-col">ID Scan</th>
+          <th class="date-col">Waktu Pindai (Scan)</th>
+          <th class="name-col">Nama Destinasi Wisata</th>
+          <th class="type-col">Kategori</th>
+        </tr>
+    `;
+
+    filteredScans.forEach((s, idx) => {
+      const scanTime = new Date(s.scanned_at).toLocaleString('id-ID');
+      const name = s.wisata ? s.wisata.nama : 'Destinasi Dihapus';
+      const type = s.wisata ? s.wisata.type : 'N/A';
+      excelContent += `
+        <tr>
+          <td class="rank-col">${idx + 1}</td>
+          <td>${s.id}</td>
+          <td>${scanTime}</td>
+          <td>${name}</td>
+          <td>${type}</td>
+        </tr>
+      `;
+    });
+
+    excelContent += `
+      </table>
+    </body>
+    </html>
+    `;
+
+    const blob = new Blob([excelContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `DjaswitaAR_Spreadsheet_Laporan_${timeframe}_${Date.now()}.xls`;
+    document.body.appendChild(link);
+    link.click();
+    
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    showToast("Excel Laporan ber-style premium berhasil diunduh!", "success");
+  } catch (err) {
+    console.error("Excel generation failed:", err);
+    showToast("Gagal mengekspor Excel Laporan: " + err.message, "error");
+  }
+};

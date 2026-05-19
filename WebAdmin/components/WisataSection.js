@@ -122,7 +122,7 @@ export const WisataSection = () => `
 
         <div class="form-group">
           <label>Marker Image</label>
-          <div style="display: flex; gap: 10px">
+          <div class="upload-zone">
             <input
               type="text"
               id="f-marker-url"
@@ -133,13 +133,14 @@ export const WisataSection = () => `
               type="button"
               class="btn btn-secondary"
               onclick="document.getElementById('f-marker-file').click()"
+              style="white-space: nowrap"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
               Browse
             </button>
           </div>
           <small class="text-hint"
-            >Gambar ini digunakan Vuforia untuk deteksi (tidak tampil di slide). Rekomendasi: 1080x1350 (4:5).</small
+            >Gambar ini digunakan Vuforia untuk deteksi (tidak tampil di slide). Rekomendasi: 1080x1350 (4:5) & <span style="color: var(--pastel-peach); font-weight: 700;">Tracking Quality Minimal ★★★ (3 Bintang)</span>.</small
           >
           <div
             class="preview-container"
@@ -148,12 +149,15 @@ export const WisataSection = () => `
           >
             <span class="preview-placeholder">Belum ada marker</span>
           </div>
+          <div id="marker-quality-indicator" style="display: none; margin-top: 8px; padding: 12px; border-radius: 10px; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); flex-direction: column; gap: 6px; transition: all 0.3s ease;">
+            <!-- Will be dynamically populated via main.js -->
+          </div>
         </div>
 
         <!-- Video Section (Always Visible) -->
         <div class="form-group">
           <label for="f-video-url">Link Video</label>
-          <div style="display: flex; gap: 10px">
+          <div class="upload-zone">
             <input
               type="text"
               id="f-video-url"
@@ -169,6 +173,7 @@ export const WisataSection = () => `
               type="button"
               class="btn btn-secondary"
               onclick="document.getElementById('f-video-file').click()"
+              style="white-space: nowrap"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
               Upload
@@ -205,7 +210,7 @@ export const WisataSection = () => `
         <div id="section-slides-content">
           <div class="form-group">
             <label>Slide Images (KONTEN CAROUSEL)</label>
-            <div style="display: flex; gap: 10px">
+            <div class="upload-zone">
               <input
                 type="text"
                 id="f-media-url"
@@ -221,6 +226,7 @@ export const WisataSection = () => `
                 type="button"
                 class="btn btn-secondary"
                 onclick="document.getElementById('f-media-file').click()"
+                style="white-space: nowrap"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                 Upload
@@ -243,7 +249,7 @@ export const WisataSection = () => `
             
             <div class="form-group" style="margin-bottom: 1.5rem;">
               <label>Model File (.GLB)</label>
-              <div style="display: flex; gap: 10px">
+              <div class="upload-zone">
                 <input
                   type="text"
                   id="f-model-url"
@@ -280,39 +286,39 @@ export const WisataSection = () => `
             <div class="form-section-title" style="display: flex; align-items: center;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"></path><path d="M9 21H3v-6"></path><path d="M21 3l-7 7"></path><path d="M3 21l7-7"></path></svg>
               <span>Transform Settings</span>
-              <button type="button" class="btn btn-secondary" onclick="reset3DTransform()" style="margin-left: auto; padding: 4px 10px; font-size: 0.7rem; border-radius: 8px; height: auto; min-height: 0;">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 4px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+              <button type="button" class="btn btn-ghost" onclick="reset3DTransform()" style="margin-left: auto; padding: 4px 10px; font-size: 0.75rem; border-radius: 8px; height: auto; min-height: 0; color: var(--pastel-lavender); border: 1px solid rgba(233, 213, 255, 0.2);">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 4px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
                 Reset Default
               </button>
             </div>
             <div class="transform-grid">
               <div class="transform-item">
-                <label title="Ukuran Model">
+                <label title="Ukuran Model" style="color: var(--pastel-coral); font-family: var(--font-mono);">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 8V4h4"></path><path d="M16 4h4v4"></path><path d="M20 16v4h-4"></path><path d="M4 16v4h4"></path></svg>
-                  Scale
+                  X: SCALE
                 </label>
-                <input type="number" id="f-model-scale" step="0.0001" value="1.0" />
+                <input type="number" id="f-model-scale" step="0.0001" value="1.0" style="font-family: var(--font-mono); color: var(--pastel-coral); border-color: rgba(254, 178, 178, 0.2);" />
               </div>
               <div class="transform-item">
-                <label title="Rotasi Sumbu Y">
+                <label title="Rotasi Sumbu Y" style="color: var(--pastel-mint); font-family: var(--font-mono);">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>
-                  Rotation
+                  Y: ROTATION
                 </label>
-                <input type="number" id="f-model-rot-y" step="1" value="0" />
+                <input type="number" id="f-model-rot-y" step="1" value="0" style="font-family: var(--font-mono); color: var(--pastel-mint); border-color: rgba(187, 247, 208, 0.2);" />
               </div>
               <div class="transform-item">
-                <label title="Posisi Atas/Bawah">
+                <label title="Posisi Atas/Bawah" style="color: var(--pastel-mint); font-family: var(--font-mono);">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="7 13 12 18 17 13"></polyline><polyline points="7 6 12 11 17 6"></polyline></svg>
-                  Pos Y
+                  Y: POSITION
                 </label>
-                <input type="number" id="f-model-pos-y" step="0.0001" value="0" />
+                <input type="number" id="f-model-pos-y" step="0.0001" value="0" style="font-family: var(--font-mono); color: var(--pastel-mint); border-color: rgba(187, 247, 208, 0.2);" />
               </div>
               <div class="transform-item">
-                <label title="Posisi Depan/Belakang">
+                <label title="Posisi Depan/Belakang" style="color: var(--pastel-blue); font-family: var(--font-mono);">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="13 17 18 12 13 7"></polyline><polyline points="6 17 11 12 6 7"></polyline></svg>
-                  Pos Z
+                  Z: POSITION
                 </label>
-                <input type="number" id="f-model-pos-z" step="0.0001" value="0.0192" />
+                <input type="number" id="f-model-pos-z" step="0.0001" value="0.0192" style="font-family: var(--font-mono); color: var(--pastel-blue); border-color: rgba(191, 219, 254, 0.2);" />
               </div>
             </div>
             <p class="text-hint" style="margin-top: 1.25rem; opacity: 0.6; font-style: italic;">
@@ -330,130 +336,5 @@ export const WisataSection = () => `
       </form>
     </div>
   </div>
-
-  <!-- Delete Confirmation Modal (Moved from index.html) -->
-  <div id="modal-delete" class="modal-overlay">
-    <div class="modal-content" style="max-width: 400px; text-align: center">
-      <div
-        style="
-          width: 64px;
-          height: 64px;
-          background: rgba(239, 68, 68, 0.1);
-          color: var(--danger);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin: 0 auto 1.5rem;
-        "
-      >
-        <svg
-          width="32"
-          height="32"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <polyline points="3 6 5 6 21 6"></polyline>
-          <path
-            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-          ></path>
-        </svg>
-      </div>
-      <h2 id="delete-modal-title" style="margin-bottom: 0.75rem">
-        Hapus Data?
-      </h2>
-      <p
-        id="delete-modal-desc"
-        style="color: var(--text-dim); margin-bottom: 1.5rem"
-      >
-        Data ini akan dihapus secara permanen dari database. Tindakan ini
-        tidak dapat dibatalkan.
-      </p>
-      <div
-        id="hard-delete-option"
-        style="
-          margin-bottom: 2rem;
-          display: flex;
-          align-items: flex-start;
-          gap: 12px;
-          text-align: left;
-          background: rgba(239, 68, 68, 0.05);
-          border: 1px solid rgba(239, 68, 68, 0.2);
-          padding: 14px;
-          border-radius: 12px;
-          transition: all 0.2s;
-        "
-      >
-        <div style="margin-top: 2px">
-          <input
-            type="checkbox"
-            id="check-hard-delete"
-            style="
-              width: 20px;
-              height: 20px;
-              cursor: pointer;
-              accent-color: var(--danger);
-            "
-          />
-        </div>
-        <label for="check-hard-delete" style="cursor: pointer; flex: 1">
-          <div
-            style="
-              display: flex;
-              align-items: center;
-              gap: 6px;
-              font-weight: 700;
-              font-size: 0.875rem;
-              color: var(--danger);
-              margin-bottom: 2px;
-            "
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="3"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path
-                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
-              ></path>
-              <line x1="12" y1="9" x2="12" y2="13"></line>
-              <line x1="12" y1="17" x2="12.01" y2="17"></line>
-            </svg>
-            Pembersihan Total
-          </div>
-          <div
-            style="
-              font-size: 0.75rem;
-              color: var(--text-dim);
-              opacity: 0.9;
-              line-height: 1.4;
-            "
-          >
-            Hapus permanen semua file gambar & video dari Storage server.
-          </div>
-        </label>
-      </div>
-      <div style="display: flex; gap: 12px; justify-content: stretch">
-        <button id="btn-delete-cancel" class="btn btn-ghost" style="flex: 1">
-          Batal
-        </button>
-        <button
-          id="btn-delete-confirm"
-          class="btn btn-danger"
-          style="flex: 1"
-        >
-          Hapus
-        </button>
-      </div>
-    </div>
   </div>
 `;
