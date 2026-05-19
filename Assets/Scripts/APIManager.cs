@@ -94,7 +94,7 @@ public class APIManager : MonoBehaviour
     /// <summary>
     /// Fetches AR target data from Supabase based on the marker ID.
     /// </summary>
-    public IEnumerator GetWisataById(string markerId, Action<WisataData> onSuccess, Action<string> onError)
+    public IEnumerator GetWisataById(string markerId, Action<ARTargetData> onSuccess, Action<string> onError)
     {
         while (!isInitialized) yield return null;
 
@@ -110,7 +110,7 @@ public class APIManager : MonoBehaviour
             if (request.result == UnityWebRequest.Result.Success)
             {
                 string json = request.downloadHandler.text;
-                WisataData[] dataArray = JsonHelper.FromJson<WisataData>(json);
+                ARTargetData[] dataArray = JsonHelper.FromJson<ARTargetData>(json);
 
                 if (dataArray != null && dataArray.Length > 0) onSuccess?.Invoke(dataArray[0]);
                 else onError?.Invoke("Data not found for marker: " + markerId);
@@ -125,7 +125,7 @@ public class APIManager : MonoBehaviour
     /// <summary>
     /// Fetches all AR targets from Supabase.
     /// </summary>
-    public IEnumerator GetAllWisata(Action<WisataData[]> onSuccess, Action<string> onError)
+    public IEnumerator GetAllWisata(Action<ARTargetData[]> onSuccess, Action<string> onError)
     {
         while (!isInitialized) yield return null;
 
@@ -141,7 +141,7 @@ public class APIManager : MonoBehaviour
             if (request.result == UnityWebRequest.Result.Success)
             {
                 string json = request.downloadHandler.text;
-                WisataData[] dataArray = JsonHelper.FromJson<WisataData>(json);
+                ARTargetData[] dataArray = JsonHelper.FromJson<ARTargetData>(json);
                 onSuccess?.Invoke(dataArray);
             }
             else

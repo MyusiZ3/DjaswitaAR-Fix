@@ -1,7 +1,7 @@
 using System;
 
 [Serializable]
-public class WisataData
+public class ARTargetData
 {
     public string id;
     public string nama;

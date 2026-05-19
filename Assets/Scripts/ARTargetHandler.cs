@@ -60,7 +60,7 @@ public class ARTargetHandler : MonoBehaviour
     [Tooltip("Sisi terpanjang model akan di-scale ke ukuran ini (dalam Unity unit / meter)")]
     public float targetModelSize = 0.15f;
 
-    private WisataData mData;
+    private ARTargetData mData;
     private bool mIsInitialized = false;
     private string[] mImageUrls;
     private int mCurrentImageIndex = 0;
@@ -164,7 +164,7 @@ public class ARTargetHandler : MonoBehaviour
         rect.localPosition -= deltaPosition;
     }
 
-    private void UpdateUI(WisataData data)
+    private void UpdateUI(ARTargetData data)
     {
         // Jangan matikan loadingPanel di sini jika kita tahu akan load 3D nanti
         if (mainCanvas) mainCanvas.SetActive(true);
@@ -609,7 +609,7 @@ public class ARTargetHandler : MonoBehaviour
         }
     }
 
-    public void Initialize(WisataData data)
+    public void Initialize(ARTargetData data)
     {
         mData = data;
         mIsInitialized = true;

@@ -178,7 +178,7 @@ public class DynamicMarkerManager : MonoBehaviour
         );
     }
 
-    private IEnumerator CreateRuntimeTarget(WisataData data)
+    private IEnumerator CreateRuntimeTarget(ARTargetData data)
     {
         Debug.Log($"[DynamicMarker] Creating target for: {data.nama}");
 
