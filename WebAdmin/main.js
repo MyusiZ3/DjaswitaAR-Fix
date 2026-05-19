@@ -1320,7 +1320,7 @@ form?.addEventListener("submit", async (e) => {
   const formData = {
     id: document.getElementById("f-id").value,
     nama: document.getElementById("f-nama").value,
-    type: document.getElementById("f-type").value,
+    type: document.getElementById("f-type").value === "lainnya" ? document.getElementById("f-type-custom").value.trim().toLowerCase() : document.getElementById("f-type").value,
     deskripsi: document.getElementById("f-deskripsi").value,
     harga: document.getElementById("f-harga").value === "Free" ? "Free" : parseRupiah(document.getElementById("f-harga").value).toString(),
     booking_url: document.getElementById("f-booking_url").value,
@@ -2024,7 +2024,24 @@ async function editItem(id) {
     document.getElementById("f-id").value = data.id;
     document.getElementById("f-id").disabled = true;
     document.getElementById("f-nama").value = data.nama;
-    document.getElementById("f-type").value = data.type;
+    const knownTypes = ['wisata', 'kuliner', 'event', 'unit_bisnis'];
+    const otherTypeContainer = document.getElementById("other-type-container");
+    const fTypeCustom = document.getElementById("f-type-custom");
+    if (knownTypes.includes(data.type)) {
+        document.getElementById("f-type").value = data.type;
+        if (otherTypeContainer) otherTypeContainer.style.display = "none";
+        if (fTypeCustom) {
+            fTypeCustom.value = "";
+            fTypeCustom.required = false;
+        }
+    } else {
+        document.getElementById("f-type").value = "lainnya";
+        if (otherTypeContainer) otherTypeContainer.style.display = "block";
+        if (fTypeCustom) {
+            fTypeCustom.value = data.type || "";
+            fTypeCustom.required = true;
+        }
+    }
     document.getElementById("f-deskripsi").value = data.deskripsi;
     document.getElementById("f-harga").value = data.harga === "Free" ? "Free" : formatRupiah(data.harga || "");
     document.getElementById("f-booking_url").value = data.booking_url || "";
@@ -2072,7 +2089,7 @@ async function editItem(id) {
     isEditing = true;
     editingId = id;
     modal.classList.add("active");
-    document.getElementById("modal-title").innerText = "Edit Lokasi";
+    document.getElementById("modal-title").innerText = "Edit AR Marker";
   }
 }
 
@@ -2195,7 +2212,7 @@ btnDeleteConfirm?.addEventListener("click", async () => {
 
 btnAdd?.addEventListener("click", () => {
   modal.classList.add("active");
-  document.getElementById("modal-title").innerText = "Tambah Lokasi Baru";
+  document.getElementById("modal-title").innerText = "Tambah AR Marker Baru";
 });
 
 function closeModal() {
@@ -2204,6 +2221,15 @@ function closeModal() {
   if (document.getElementById("f-target-layout")) document.getElementById("f-target-layout").value = "mask";
   const eventDateGroup = document.getElementById("event-date-group");
   if (eventDateGroup) eventDateGroup.style.display = 'none';
+  
+  const otherTypeContainer = document.getElementById("other-type-container");
+  const fTypeCustom = document.getElementById("f-type-custom");
+  if (otherTypeContainer) otherTypeContainer.style.display = "none";
+  if (fTypeCustom) {
+    fTypeCustom.required = false;
+    fTypeCustom.value = "";
+  }
+
   updatePreview("");
   updateMarkerPreview("");
   update3DPreview("");
@@ -2337,6 +2363,20 @@ typeInput?.addEventListener("change", (e) => {
       eventDateGroup.style.display = "grid";
     } else {
       eventDateGroup.style.display = "none";
+    }
+  }
+
+  const otherTypeContainer = document.getElementById("other-type-container");
+  const fTypeCustom = document.getElementById("f-type-custom");
+  if (otherTypeContainer && fTypeCustom) {
+    if (e.target.value === "lainnya") {
+      otherTypeContainer.style.display = "block";
+      fTypeCustom.required = true;
+      fTypeCustom.focus();
+    } else {
+      otherTypeContainer.style.display = "none";
+      fTypeCustom.required = false;
+      fTypeCustom.value = "";
     }
   }
 });
@@ -2608,7 +2648,7 @@ window.exportDashboardPDF = async function() {
       head: [['Metrik Ringkasan Laporan', 'Nilai Tercatat']],
       body: [
         ['Total Scan Pengunjung (Engagement)', `${filteredScans.length} kali scan`],
-        ['Destinasi Aktif Di-scan (Active Spots)', `${activeSpotsCount} lokasi aktif`],
+        ['Target AR Aktif Di-scan (Active Spots)', `${activeSpotsCount} target aktif`],
         ['Administrator Terverifikasi (Verified Admins)', `${totalAdmins} user`]
       ],
       theme: 'striped',
@@ -2621,7 +2661,7 @@ window.exportDashboardPDF = async function() {
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(11);
     doc.setTextColor(30, 41, 59);
-    doc.text("DAFTAR DESTINASI TERPOPULER (ENGAGEMENT TERTINGGI)", 14, doc.lastAutoTable.finalY + 12);
+    doc.text("DAFTAR TARGET AR TERPOPULER (ENGAGEMENT TERTINGGI)", 14, doc.lastAutoTable.finalY + 12);
 
     const topDestRows = topDestinations.slice(0, 10).map((item, idx) => {
       const maxCount = topDestinations[0]?.count || 1;
@@ -2827,7 +2867,7 @@ window.exportDashboardCSV = async function() {
         </tr>
         <tr>
           <td class="metrics-label">Target Aktif Di-scan (Active Spots)</td>
-          <td class="metrics-value">${activeSpotsCount} lokasi aktif</td>
+          <td class="metrics-value">${activeSpotsCount} target aktif</td>
         </tr>
         <tr>
           <td class="metrics-label">Administrator Terverifikasi (Verified Admins)</td>

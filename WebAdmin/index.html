@@ -2,9 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/png" href="image/logo_jwtAr.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Jawita Admin | AR Dashboard</title>
+    <title>D'Jaswita Admin | AR Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -12,7 +12,10 @@
       rel="stylesheet"
     />
     <!-- 3D Model Viewer Support -->
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+    <script
+      type="module"
+      src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"
+    ></script>
   </head>
 
   <body>
@@ -161,10 +164,11 @@
               stroke-linecap="round"
               stroke-linejoin="round"
             >
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-              <circle cx="12" cy="10" r="3"></circle>
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="6"></circle>
+              <circle cx="12" cy="12" r="2"></circle>
             </svg>
-            <span>AR Experiences</span>
+            <span>AR Markers</span>
           </div>
           <div class="nav-item" data-target="section-instructions">
             <svg
@@ -295,7 +299,7 @@
           </div>
         </div>
       </aside>
-        <main class="main-content">
+      <main class="main-content">
         <div id="section-dashboard" class="view-section active"></div>
         <div id="section-target" class="view-section"></div>
         <div id="section-settings" class="view-section"></div>
@@ -305,16 +309,34 @@
       </main>
     </div>
 
-
     <!-- Page Specific Modals are now moved to their respective component files (TargetSection, AdminsSection) -->
-
-
 
     <!-- Global Confirmation Modals -->
     <div class="modal-overlay" id="modal-confirm">
       <div class="modal-content" style="max-width: 400px; text-align: center">
-        <div style="width: 60px; height: 60px; background: rgba(244, 63, 94, 0.1); color: #f43f5e; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem">
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <div
+          style="
+            width: 60px;
+            height: 60px;
+            background: rgba(244, 63, 94, 0.1);
+            color: #f43f5e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+          "
+        >
+          <svg
+            width="30"
+            height="30"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
             <polyline points="16 17 21 12 16 7"></polyline>
             <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -453,7 +475,11 @@
           </label>
         </div>
         <div style="display: flex; gap: 12px; justify-content: stretch">
-          <button id="btn-delete-cancel" class="btn btn-secondary" style="flex: 1">
+          <button
+            id="btn-delete-cancel"
+            class="btn btn-secondary"
+            style="flex: 1"
+          >
             Batal
           </button>
           <button
