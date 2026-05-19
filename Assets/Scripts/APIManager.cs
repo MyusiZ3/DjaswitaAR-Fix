@@ -10,6 +10,7 @@ public class AppConfig
     public string id;
     public string supabase_url;
     public string supabase_key;
+    public string gdrive_api_key;
 }
 
 public class APIManager : MonoBehaviour
@@ -19,10 +20,12 @@ public class APIManager : MonoBehaviour
     [Header("Bootstrap Configuration (Master)")]
     [SerializeField] private string masterBaseUrl = "https://efjuwxlhfxpnlenxluus.supabase.co/rest/v1/";
     [SerializeField] private string masterApiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmanV3eGxoZnhwbmxlbnhsdXVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4MjM0NTUsImV4cCI6MjA5MjM5OTQ1NX0.qoiX_I4FnalEw6JuKw1VnO_F6h9klg2B_zbPYR_TKp0";
+    [SerializeField] private string masterGDriveApiKey = "AIzaSyCqOuvDt8stKiEzMq8d9eZVIIM1jbJjR14";
 
     [Header("Current Runtime Config")]
     public string activeBaseUrl;
     public string activeApiKey;
+    public string activeGDriveApiKey;
     public bool isInitialized = false;
 
     private void Awake()
@@ -61,8 +64,9 @@ public class APIManager : MonoBehaviour
                 AppConfig[] configs = JsonHelper.FromJson<AppConfig>(json);
                 if (configs != null && configs.Length > 0)
                 {
-                    activeBaseUrl = configs[0].supabase_url;
-                    activeApiKey = configs[0].supabase_key;
+                    activeBaseUrl = string.IsNullOrEmpty(configs[0].supabase_url) ? masterBaseUrl : configs[0].supabase_url;
+                    activeApiKey = string.IsNullOrEmpty(configs[0].supabase_key) ? masterApiKey : configs[0].supabase_key;
+                    activeGDriveApiKey = string.IsNullOrEmpty(configs[0].gdrive_api_key) ? masterGDriveApiKey : configs[0].gdrive_api_key;
                     
                     // Ensure URL ends with /rest/v1/
                     if (!activeBaseUrl.EndsWith("/rest/v1/"))
@@ -78,6 +82,7 @@ public class APIManager : MonoBehaviour
                     Debug.LogWarning("[APIManager] No config found in DB, using master defaults.");
                     activeBaseUrl = masterBaseUrl;
                     activeApiKey = masterApiKey;
+                    activeGDriveApiKey = masterGDriveApiKey;
                 }
             }
             else
@@ -85,6 +90,7 @@ public class APIManager : MonoBehaviour
                 Debug.LogError("[APIManager] Failed to fetch remote config: " + request.error);
                 activeBaseUrl = masterBaseUrl;
                 activeApiKey = masterApiKey;
+                activeGDriveApiKey = masterGDriveApiKey;
             }
         }
 
@@ -112,7 +118,11 @@ public class APIManager : MonoBehaviour
                 string json = request.downloadHandler.text;
                 WisataData[] dataArray = JsonHelper.FromJson<WisataData>(json);
 
-                if (dataArray != null && dataArray.Length > 0) onSuccess?.Invoke(dataArray[0]);
+                if (dataArray != null && dataArray.Length > 0)
+                {
+                    NormalizeGDriveUrls(dataArray[0]);
+                    onSuccess?.Invoke(dataArray[0]);
+                }
                 else onError?.Invoke("Data not found for marker: " + markerId);
             }
             else
@@ -142,6 +152,13 @@ public class APIManager : MonoBehaviour
             {
                 string json = request.downloadHandler.text;
                 WisataData[] dataArray = JsonHelper.FromJson<WisataData>(json);
+                if (dataArray != null)
+                {
+                    foreach (var data in dataArray)
+                    {
+                        NormalizeGDriveUrls(data);
+                    }
+                }
                 onSuccess?.Invoke(dataArray);
             }
             else
@@ -185,5 +202,40 @@ public class APIManager : MonoBehaviour
                 Debug.LogWarning($"[APIManager] Failed to log scan: {request.error}\nResponse: {request.downloadHandler.text}");
             }
         }
+    }
+
+    private void NormalizeGDriveUrls(WisataData data)
+    {
+        if (data == null) return;
+        
+        data.model_url = AppendGDriveExtension(data.model_url, ".glb");
+        data.video_url = AppendGDriveExtension(data.video_url, ".mp4");
+        
+        // Normalize slides urls too
+        if (!string.IsNullOrEmpty(data.slide_urls))
+        {
+            string[] slides = data.slide_urls.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < slides.Length; i++)
+            {
+                slides[i] = AppendGDriveExtension(slides[i].Trim(), ".png");
+            }
+            data.slide_urls = string.Join(",", slides);
+        }
+        
+        data.marker_url = AppendGDriveExtension(data.marker_url, ".png");
+    }
+
+    private string AppendGDriveExtension(string url, string defaultExt)
+    {
+        if (string.IsNullOrEmpty(url)) return url;
+        if (url.Contains("drive.google.com") || url.Contains("googleusercontent.com"))
+        {
+            if (!url.Contains("ext="))
+            {
+                string separator = url.Contains("?") ? "&" : "?";
+                return url + separator + "ext=" + defaultExt;
+            }
+        }
+        return url;
     }
 }
