@@ -26,4 +26,5 @@ public class ARTargetData
     public float model_pos_y;
     public float model_pos_z;
     public float model_rot_y;
+    public string target_layout;
 }

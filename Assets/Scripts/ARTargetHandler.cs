@@ -22,15 +22,26 @@ public class ARTargetHandler : MonoBehaviour
     public TextMeshProUGUI typeText;
     public TextMeshProUGUI durationText; // Unified field for dates
     public Button bookingButton;
-    public RawImage mediaDisplay;
+    
+    [Header("Layout Variant: Mask (Square)")]
+    public GameObject maskSlidesContainer;
+    public RawImage mediaDisplayMask;
+    public Button nextButtonMask;
+    public Button prevButtonMask;
+    public Transform dotContainerMask;
+
+    [Header("Layout Variant: Full (4:5)")]
+    public GameObject fullSlidesContainer;
+    public RawImage mediaDisplayFull;
+    public Button nextButtonFull;
+    public Button prevButtonFull;
+    public Transform dotContainerFull;
 
     [Header("Description Settings")]
     [SerializeField] public RectTransform descriptionContainer;
     [SerializeField] public float maxDescriptionHeight = 250f;
 
     [Header("Carousel & Video")]
-    public Button nextButton;
-    public Button prevButton;
     public UnityEngine.Video.VideoPlayer videoPlayer;
     public RawImage videoDisplay; 
     public GameObject videoMedia; 
@@ -42,13 +53,11 @@ public class ARTargetHandler : MonoBehaviour
 
     [Header("Carousel Dots")]
     public GameObject dotPrefab;
-    public Transform dotContainer;
     public Color activeDotColor = Color.white;
     public Color inactiveDotColor = new Color(1, 1, 1, 0.5f);
     private System.Collections.Generic.List<UnityEngine.UI.Image> mDots = new System.Collections.Generic.List<UnityEngine.UI.Image>();
 
     [Header("3D Model Settings")]
-    public GameObject slidesContainer; // Container for 2D UI elements
     public Transform modelContainer;   // Container for 3D model
     private GameObject mCurrentModel;
     private string mCurrentModelUrl;
@@ -74,10 +83,15 @@ public class ARTargetHandler : MonoBehaviour
     private void Start()
     {
         // Auto-find containers if not manually assigned
-        if (slidesContainer == null)
+        if (maskSlidesContainer == null)
         {
-            Transform sc = transform.Find("Slides_Container");
-            if (sc) slidesContainer = sc.gameObject;
+            Transform sc = transform.Find("Slides_Container_Mask");
+            if (sc) maskSlidesContainer = sc.gameObject;
+        }
+        if (fullSlidesContainer == null)
+        {
+            Transform sc = transform.Find("Slides_Container_Full");
+            if (sc) fullSlidesContainer = sc.gameObject;
         }
         if (modelContainer == null)
         {
@@ -96,11 +110,14 @@ public class ARTargetHandler : MonoBehaviour
             mObserverBehaviour.OnTargetStatusChanged += OnTargetStatusChanged;
         }
 
-        if (nextButton) nextButton.onClick.AddListener(ShowNextImage);
-        if (prevButton) prevButton.onClick.AddListener(ShowPrevImage);
+        if (nextButtonMask) nextButtonMask.onClick.AddListener(ShowNextImage);
+        if (prevButtonMask) prevButtonMask.onClick.AddListener(ShowPrevImage);
+        if (nextButtonFull) nextButtonFull.onClick.AddListener(ShowNextImage);
+        if (prevButtonFull) prevButtonFull.onClick.AddListener(ShowPrevImage);
 
         // Apply Rounded Corners programmatically only to specific displays
-        ApplyRoundedCorners(mediaDisplay != null ? mediaDisplay.gameObject : null);
+        ApplyRoundedCorners(mediaDisplayMask != null ? mediaDisplayMask.gameObject : null);
+        ApplyRoundedCorners(mediaDisplayFull != null ? mediaDisplayFull.gameObject : null);
         ApplyRoundedCorners(videoDisplay != null ? videoDisplay.gameObject : null);
 
         if (videoDisplay)
@@ -127,7 +144,8 @@ public class ARTargetHandler : MonoBehaviour
     private void OnValidate()
     {
         // Update radius existing without adding new components
-        UpdateRadius(mediaDisplay != null ? mediaDisplay.gameObject : null);
+        UpdateRadius(mediaDisplayMask != null ? mediaDisplayMask.gameObject : null);
+        UpdateRadius(mediaDisplayFull != null ? mediaDisplayFull.gameObject : null);
         UpdateRadius(videoDisplay != null ? videoDisplay.gameObject : null);
     }
 
@@ -245,19 +263,31 @@ public class ARTargetHandler : MonoBehaviour
 
         if (is3D)
         {
-            if (slidesContainer) slidesContainer.SetActive(false);
-            if (mediaDisplay) mediaDisplay.gameObject.SetActive(false);
-            if (nextButton) nextButton.gameObject.SetActive(false);
-            if (prevButton) prevButton.gameObject.SetActive(false);
-            if (dotContainer) dotContainer.gameObject.SetActive(false);
+            if (maskSlidesContainer) maskSlidesContainer.SetActive(false);
+            if (fullSlidesContainer) fullSlidesContainer.SetActive(false);
+            if (mediaDisplayMask) mediaDisplayMask.gameObject.SetActive(false);
+            if (mediaDisplayFull) mediaDisplayFull.gameObject.SetActive(false);
+            if (nextButtonMask) nextButtonMask.gameObject.SetActive(false);
+            if (prevButtonMask) prevButtonMask.gameObject.SetActive(false);
+            if (dotContainerMask) dotContainerMask.gameObject.SetActive(false);
+            if (nextButtonFull) nextButtonFull.gameObject.SetActive(false);
+            if (prevButtonFull) prevButtonFull.gameObject.SetActive(false);
+            if (dotContainerFull) dotContainerFull.gameObject.SetActive(false);
             
             Load3DModel();
         }
         else
         {
-            if (slidesContainer) slidesContainer.SetActive(true);
+            // Toggle active slide container based on layout
+            bool isFullLayout = (data.target_layout == "full");
+            if (maskSlidesContainer) maskSlidesContainer.SetActive(!isFullLayout);
+            if (fullSlidesContainer) fullSlidesContainer.SetActive(isFullLayout);
+
             if (modelContainer) modelContainer.gameObject.SetActive(false);
-            if (dotContainer) dotContainer.gameObject.SetActive(true);
+            
+            Transform activeDotContainer = isFullLayout ? dotContainerFull : dotContainerMask;
+            if (activeDotContainer) activeDotContainer.gameObject.SetActive(true);
+            
             ShowSlidesUI();
         }
     }
@@ -628,8 +658,10 @@ public class ARTargetHandler : MonoBehaviour
 
         if (mainCanvas) mainCanvas.SetActive(false);
         if (loadingPanel) loadingPanel.SetActive(false);
-        if (nextButton) nextButton.gameObject.SetActive(false);
-        if (prevButton) prevButton.gameObject.SetActive(false);
+        if (nextButtonMask) nextButtonMask.gameObject.SetActive(false);
+        if (prevButtonMask) prevButtonMask.gameObject.SetActive(false);
+        if (nextButtonFull) nextButtonFull.gameObject.SetActive(false);
+        if (prevButtonFull) prevButtonFull.gameObject.SetActive(false);
     }
 
     private void OnTargetStatusChanged(ObserverBehaviour behaviour, TargetStatus status)
@@ -715,7 +747,8 @@ public class ARTargetHandler : MonoBehaviour
         if (modelContainer) modelContainer.gameObject.SetActive(false);
         
         // Bersihkan tekstur agar tidak nyangkut memori/cache yang sudah di-destroy
-        if (mediaDisplay) mediaDisplay.texture = null;
+        if (mediaDisplayMask) mediaDisplayMask.texture = null;
+        if (mediaDisplayFull) mediaDisplayFull.texture = null;
 
         // Matikan container video
         if (videoMedia) videoMedia.SetActive(false);
@@ -849,18 +882,24 @@ public class ARTargetHandler : MonoBehaviour
         // Jangan matikan loadingPanel di sini karena DownloadImage akan menanganinya
         // if (loadingPanel) loadingPanel.SetActive(false); 
 
-        // Setup Dots
-        if (dotContainer != null && dotPrefab != null)
-        {
-            // Clear existing dots
-            foreach (Transform child in dotContainer) Destroy(child.gameObject);
-            mDots.Clear();
+        bool isFullLayout = (mData != null && mData.target_layout == "full");
+        Transform activeDotContainer = isFullLayout ? dotContainerFull : dotContainerMask;
+        Button activeNext = isFullLayout ? nextButtonFull : nextButtonMask;
+        Button activePrev = isFullLayout ? prevButtonFull : prevButtonMask;
 
+        // Clear existing dots in BOTH to ensure no duplicates lying around
+        if (dotContainerMask) foreach (Transform child in dotContainerMask) Destroy(child.gameObject);
+        if (dotContainerFull) foreach (Transform child in dotContainerFull) Destroy(child.gameObject);
+        mDots.Clear();
+
+        // Setup Dots in the active container
+        if (activeDotContainer != null && dotPrefab != null)
+        {
             if (mImageUrls != null && mImageUrls.Length > 1)
             {
                 for (int i = 0; i < mImageUrls.Length; i++)
                 {
-                    GameObject dot = Instantiate(dotPrefab, dotContainer);
+                    GameObject dot = Instantiate(dotPrefab, activeDotContainer);
                     UnityEngine.UI.Image dotImage = dot.GetComponent<UnityEngine.UI.Image>();
                     if (dotImage) mDots.Add(dotImage);
                 }
@@ -869,9 +908,10 @@ public class ARTargetHandler : MonoBehaviour
 
         bool hasMultipleImages = mImageUrls != null && mImageUrls.Length > 1;
         
-        if (mediaDisplay) mediaDisplay.gameObject.SetActive(true);
-        if (nextButton) nextButton.gameObject.SetActive(hasMultipleImages);
-        if (prevButton) prevButton.gameObject.SetActive(hasMultipleImages);
+        RawImage activeDisplay = isFullLayout ? mediaDisplayFull : mediaDisplayMask;
+        if (activeDisplay) activeDisplay.gameObject.SetActive(true);
+        if (activeNext) activeNext.gameObject.SetActive(hasMultipleImages);
+        if (activePrev) activePrev.gameObject.SetActive(hasMultipleImages);
         
         ShowImage(mCurrentImageIndex);
     }
@@ -931,10 +971,13 @@ public class ARTargetHandler : MonoBehaviour
         if (AssetCacheManager.IsCached(url) || AssetCacheManager.IsTextureInMemory(url))
         {
             Texture2D cachedTexture = AssetCacheManager.GetTexture(url);
-            if (mediaDisplay && cachedTexture != null)
+            bool isFullLayout = (mData != null && mData.target_layout == "full");
+            RawImage activeDisplay = isFullLayout ? mediaDisplayFull : mediaDisplayMask;
+
+            if (activeDisplay && cachedTexture != null)
             {
-                mediaDisplay.texture = cachedTexture;
-                AdjustAspectRatio(mediaDisplay, (float)cachedTexture.width / cachedTexture.height, true);
+                activeDisplay.texture = cachedTexture;
+                AdjustAspectRatio(activeDisplay, (float)cachedTexture.width / cachedTexture.height, true);
             }
             ToggleMediaLoadingIndicator(false);
             if (loadingPanel) loadingPanel.SetActive(false);
@@ -955,10 +998,13 @@ public class ARTargetHandler : MonoBehaviour
                 AssetCacheManager.SaveImage(url, data);
                 Texture2D texture = AssetCacheManager.GetTexture(url);
 
-                if (mediaDisplay && texture != null)
+                bool isFullLayout = (mData != null && mData.target_layout == "full");
+                RawImage activeDisplay = isFullLayout ? mediaDisplayFull : mediaDisplayMask;
+
+                if (activeDisplay && texture != null)
                 {
-                    mediaDisplay.texture = texture;
-                    AdjustAspectRatio(mediaDisplay, (float)texture.width / texture.height, true);
+                    activeDisplay.texture = texture;
+                    AdjustAspectRatio(activeDisplay, (float)texture.width / texture.height, true);
                 }
             }
             else
