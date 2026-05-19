@@ -207,6 +207,13 @@ export const TargetSection = () => `
 
         <!-- Image Slides Content Section -->
         <div id="section-slides-content">
+          <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label>Tipe Layout UI (Image Carousel)</label>
+            <select id="f-target-layout">
+              <option value="mask">Mask (Square)</option>
+              <option value="full">Full (4:5)</option>
+            </select>
+          </div>
           <div class="form-group">
             <label>Slide Images (KONTEN CAROUSEL)</label>
             <div class="upload-zone">

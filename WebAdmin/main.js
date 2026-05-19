@@ -1335,6 +1335,7 @@ form?.addEventListener("submit", async (e) => {
     model_rot_y: parseFloat(document.getElementById("f-model-rot-y").value) || 0,
     model_pos_y: parseFloat(document.getElementById("f-model-pos-y").value) || 0,
     model_pos_z: parseFloat(document.getElementById("f-model-pos-z").value) || 0.0192,
+    target_layout: document.getElementById("f-target-layout") ? document.getElementById("f-target-layout").value : 'mask',
   };
   const { error } = isEditing
     ? await supabase.from("ar_targets").update(formData).eq("id", editingId)
@@ -2030,6 +2031,7 @@ async function editItem(id) {
     document.getElementById("f-marker-url").value = data.marker_url || "";
     document.getElementById("f-media-url").value = data.slide_urls || "";
     document.getElementById("f-video-url").value = data.video_url || "";
+    if (document.getElementById("f-target-layout")) document.getElementById("f-target-layout").value = data.target_layout || "mask";
     
     // 3D Content Fields
     const contentType = data.main_content_type || 'image_slides';
@@ -2199,6 +2201,7 @@ btnAdd?.addEventListener("click", () => {
 function closeModal() {
   modal.classList.remove("active");
   form.reset();
+  if (document.getElementById("f-target-layout")) document.getElementById("f-target-layout").value = "mask";
   const eventDateGroup = document.getElementById("event-date-group");
   if (eventDateGroup) eventDateGroup.style.display = 'none';
   updatePreview("");
