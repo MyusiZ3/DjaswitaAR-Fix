@@ -100,11 +100,11 @@ public class APIManager : MonoBehaviour
     /// <summary>
     /// Fetches wisata data from Supabase based on the marker ID.
     /// </summary>
-    public IEnumerator GetWisataById(string markerId, Action<WisataData> onSuccess, Action<string> onError)
+    public IEnumerator GetTargetById(string markerId, Action<ARTargetData> onSuccess, Action<string> onError)
     {
         while (!isInitialized) yield return null;
 
-        string url = $"{activeBaseUrl}wisata?id=eq.{markerId}";
+        string url = $"{activeBaseUrl}ar_targets?id=eq.{markerId}";
 
         using (UnityWebRequest request = UnityWebRequest.Get(url))
         {
@@ -116,7 +116,7 @@ public class APIManager : MonoBehaviour
             if (request.result == UnityWebRequest.Result.Success)
             {
                 string json = request.downloadHandler.text;
-                WisataData[] dataArray = JsonHelper.FromJson<WisataData>(json);
+                ARTargetData[] dataArray = JsonHelper.FromJson<ARTargetData>(json);
 
                 if (dataArray != null && dataArray.Length > 0)
                 {
@@ -135,11 +135,11 @@ public class APIManager : MonoBehaviour
     /// <summary>
     /// Fetches all wisata data from Supabase.
     /// </summary>
-    public IEnumerator GetAllWisata(Action<WisataData[]> onSuccess, Action<string> onError)
+    public IEnumerator GetAllTargets(Action<ARTargetData[]> onSuccess, Action<string> onError)
     {
         while (!isInitialized) yield return null;
 
-        string url = activeBaseUrl + "wisata";
+        string url = activeBaseUrl + "ar_targets";
 
         using (UnityWebRequest request = UnityWebRequest.Get(url))
         {
@@ -151,7 +151,7 @@ public class APIManager : MonoBehaviour
             if (request.result == UnityWebRequest.Result.Success)
             {
                 string json = request.downloadHandler.text;
-                WisataData[] dataArray = JsonHelper.FromJson<WisataData>(json);
+                ARTargetData[] dataArray = JsonHelper.FromJson<ARTargetData>(json);
                 if (dataArray != null)
                 {
                     foreach (var data in dataArray)
@@ -204,7 +204,7 @@ public class APIManager : MonoBehaviour
         }
     }
 
-    private void NormalizeGDriveUrls(WisataData data)
+    private void NormalizeGDriveUrls(ARTargetData data)
     {
         if (data == null) return;
         
