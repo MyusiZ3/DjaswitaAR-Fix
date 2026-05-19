@@ -157,7 +157,7 @@ public class DynamicMarkerManager : MonoBehaviour
     {
         Debug.Log("[DynamicMarker] Fetching data from Supabase...");
         
-        yield return APIManager.Instance.GetAllWisata(
+        yield return APIManager.Instance.GetAllTargets(
             (dataList) => {
                 // Pastikan kembali ke mode scan prompt jika berhasil
                 ShowScanPrompt();

@@ -5,7 +5,7 @@ public class ARTargetData
 {
     public string id;
     public string nama;
-    public string type; // wisata / event / trip
+    public string type; // target / event / trip
     public string deskripsi;
     public string harga;
     public string marker_url;

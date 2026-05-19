@@ -829,7 +829,7 @@ public class ARTargetHandler : MonoBehaviour
         if (string.IsNullOrEmpty(markerId)) yield break;
         if (loadingPanel) loadingPanel.SetActive(true);
 
-        yield return APIManager.Instance.GetWisataById(markerId, 
+        yield return APIManager.Instance.GetTargetById(markerId, 
             (data) => {
                 Initialize(data);
                 UpdateUI(data);

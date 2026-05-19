@@ -94,7 +94,7 @@ public class APIManager : MonoBehaviour
     /// <summary>
     /// Fetches AR target data from Supabase based on the marker ID.
     /// </summary>
-    public IEnumerator GetWisataById(string markerId, Action<ARTargetData> onSuccess, Action<string> onError)
+    public IEnumerator GetTargetById(string markerId, Action<ARTargetData> onSuccess, Action<string> onError)
     {
         while (!isInitialized) yield return null;
 
@@ -125,7 +125,7 @@ public class APIManager : MonoBehaviour
     /// <summary>
     /// Fetches all AR targets from Supabase.
     /// </summary>
-    public IEnumerator GetAllWisata(Action<ARTargetData[]> onSuccess, Action<string> onError)
+    public IEnumerator GetAllTargets(Action<ARTargetData[]> onSuccess, Action<string> onError)
     {
         while (!isInitialized) yield return null;
 
@@ -154,7 +154,7 @@ public class APIManager : MonoBehaviour
     /// <summary>
     /// Logs a scan event to Supabase.
     /// </summary>
-    public IEnumerator LogScan(string wisataId)
+    public IEnumerator LogScan(string targetId)
     {
         while (!isInitialized) yield return null;
 
@@ -162,7 +162,7 @@ public class APIManager : MonoBehaviour
         string deviceInfo = SystemInfo.deviceModel + " (" + SystemInfo.operatingSystem + ")";
         
         // Simple JSON object for POST
-        string jsonPayload = $"{{\"target_id\": \"{wisataId}\", \"device_info\": \"{deviceInfo}\"}}";
+        string jsonPayload = $"{{\"target_id\": \"{targetId}\", \"device_info\": \"{deviceInfo}\"}}";
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
 
         using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
@@ -178,7 +178,7 @@ public class APIManager : MonoBehaviour
 
             if (request.result == UnityWebRequest.Result.Success)
             {
-                Debug.Log($"[APIManager] Scan logged successfully for: {wisataId}");
+                Debug.Log($"[APIManager] Scan logged successfully for: {targetId}");
             }
             else
             {
