@@ -1,80 +1,92 @@
-# Jawita AR - Platform Manajemen Wisata Augmented Reality
+# Jawita AR - Platform Manajemen App Augmented Reality
 
-Proyek ini terdiri dari dua bagian utama: aplikasi mobile AR berbasis Unity dan dashboard admin berbasis web untuk pengelolaan data lokasi wisata secara real-time.
+Proyek ini terdiri dari dua bagian utama:
 
----
-
-## 1. Web Admin Dashboard
-
-Dashboard admin digunakan untuk mengelola data lokasi wisata, akun admin, serta pengaturan API Supabase yang digunakan oleh aplikasi Unity.
-
-### Prasyarat
-
-- Node.js (Versi 18 atau terbaru)
-- NPM (Package Manager)
-- Vite (Build Tool)
-
-### Persiapan Environment
-
-Buat file `.env` di dalam direktori `WebAdmin/` dan masukkan kredensial Supabase Anda:
-
-```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-```
-
-### Langkah Instalasi
-
-1. Buka terminal dan arahkan ke folder `WebAdmin`.
-2. Instal dependensi:
-    ```bash
-    npm install
-    ```
-3. Jalankan server lokal:
-    ```bash
-    npm run dev
-    ```
+1. **Unity AR Application (Unity 6 Core)**: Aplikasi mobile AR berbasis Unity untuk menampilkan konten AR dinamis di perangkat Android/iOS.
+2. **Web Admin Dashboard**: Dashboard admin berbasis web untuk pengelolaan data marker secara real-time yang terhubung ke database Supabase.
 
 ---
 
-## 2. Unity AR Application (Unity 6 Core)
+## 1. Web Admin Dashboard (CMS & Control Panel)
 
-Aplikasi Unity berfungsi untuk menampilkan konten AR dinamis. Project ini telah dioptimalkan untuk **Unity 6** menggunakan **Universal Render Pipeline (URP)**.
+Dashboard admin digunakan untuk mengelola data marker, memantau grafik engagement scan, mengontrol akun admin, serta melakukan sinkronisasi konfigurasi API Supabase untuk aplikasi Unity.
 
-### Prasyarat & Library Pihak Ketiga
+### A. Prasyarat Web Admin
 
-Project ini bergantung pada beberapa package eksternal. Pastikan Anda menginstalnya melalui Package Manager:
+- **Node.js** (Versi 18 atau terbaru)
+- **NPM** (Package Manager)
+- **Vite** (Build Tool - diinstal otomatis sebagai dependensi developer)
 
-1.  **Vuforia Engine (11.4.4)**
-    - Download: [Vuforia Developer Portal](https://developer.vuforia.com/downloads/sdk)
-2.  **glTFast (6.0.1)** - Untuk loading model 3D (GLB/glTF) secara runtime.
-    - Installation: Tambahkan Scoped Registry di `Project Settings > Package Manager`:
-      - Name: `OpenUPM`
-      - URL: `https://package.openupm.com`
-      - Scope: `com.unity.cloud.gltfast`
-    - Atau via Git URL: `https://github.com/atteneder/glTFast.git#v6.0.1`
-3.  **LottieUnity** - Untuk animasi UI berbasis JSON.
-    - Git URL: `https://github.com/p_v_v/LottieUnity.git`
-4.  **Newtonsoft JSON** (Sudah termasuk dalam Unity core/Unity 6).
+### B. Langkah Instalasi dan Menjalankan Web Admin
 
-### Fitur Utama Skrip
-
-- **AssetCacheManager**: Sistem caching tunggal untuk gambar, video, dan model 3D. Aset yang sudah di-download akan disimpan di `Application.persistentDataPath`.
-- **ARTargetHandler (Auto-Normalize)**: Model 3D akan secara otomatis disesuaikan ukurannya ke skala yang seragam (default 0.15 Unity units).
-- **Delayed Hide Logic**: Toleransi tracking hilang selama beberapa detik untuk menangani kamera yang buram.
-
-### Konfigurasi API
-
-1. Buka project Unity.
-2. Cari file `APIManager.cs` di `Assets/Scripts/`.
-3. Masukkan `masterBaseUrl` dan `masterApiKey` dari Supabase Anda.
+1. Buka terminal atau Command Prompt pada komputer Anda.
+2. Arahkan ke folder `WebAdmin/` di dalam direktori root project Anda:
+   ```bash
+   cd WebAdmin
+   ```
+3. Pasang/instal seluruh paket dependensi yang dibutuhkan oleh project dengan menjalankan perintah berikut:
+   ```bash
+   npm install
+   ```
+4. Jalankan server pengembangan lokal (local development server) untuk melihat tampilan web secara real-time:
+   ```bash
+   npm run dev
+   ```
+5. Buka web browser pilihan Anda (Google Chrome, Microsoft Edge, dll.) lalu kunjungi alamat URL lokal yang tercantum di terminal Anda (biasanya `http://localhost:5173`).
 
 ---
 
-## 3. Supabase Setup Guide (Backend)
+## 2. Setup Supabase Backend (Jika Belum Ada / Dari Awal)
+
+Supabase berfungsi sebagai Backend-as-a-Service (BaaS) yang menyediakan database relasional PostgreSQL, otentikasi admin, dan Cloud Storage untuk menyimpan gambar marker, video panduan, serta model 3D GLB secara online.
+
+Apabila Anda belum memiliki project Supabase yang dikonfigurasi untuk Jawita AR, ikuti petunjuk mendetail di bawah ini:
+
+### A. Membuat Project Supabase Baru
+
+1. Kunjungi situs resmi **[Supabase](https://supabase.com)** dan buat akun (bisa mendaftar menggunakan akun GitHub).
+2. Di dalam Dashboard utama Supabase, klik tombol **New Project** (atau **Create Project**).
+3. Lengkapi formulir pembuatan project baru dengan rincian berikut:
+   - **Organization**: Pilih nama organisasi default Anda.
+   - **Project Name**: Isi dengan nama proyek, misalnya `Jawita AR`.
+   - **Database Password**: Buat kata sandi database yang aman, pastikan untuk menyalin atau mencatat kata sandi ini.
+   - **Region**: Pilih lokasi server terdekat dengan pengguna Anda (direkomendasikan memilih **Singapore** / `ap-southeast-1` untuk performa terbaik dan latensi terendah dari Indonesia).
+   - **Pricing Plan**: Pilih opsi **Free** (Gratis).
+4. Klik **Create new project**. Supabase memerlukan waktu beberapa menit untuk menyiapkan infrastruktur database dan server API untuk project Anda.
+
+### B. Mendapatkan Supabase URL dan Anon Key
+
+Setelah project baru Anda aktif dan siap digunakan:
+
+1. Masuk ke halaman dashboard project Supabase Anda.
+2. Lihat pada menu navigasi vertikal di sisi kiri, klik ikon roda gigi **Project Settings** (biasanya terletak di bagian paling bawah).
+3. Di dalam menu Settings, pilih tab **API**.
+4. Di halaman API Settings, cari bagian **Project URL** dan **Project API Keys**:
+   - **Project URL (Supabase URL)**: Cari kolom **URL** (formatnya berupa `https://xxxx.supabase.co`). Klik tombol **Copy** untuk menyalin nilainya. URL ini digunakan sebagai penunjuk server API Supabase Anda.
+   - **Project API Keys (Anon Key)**: Cari baris API Key yang bertipe **anon public** (bukan `service_role`). Nilainya berupa string JWT yang sangat panjang. Klik tombol **Copy** untuk menyalin kunci publik ini.
+5. Simpan kedua string tersebut untuk digunakan di konfigurasi berkas `.env` dan kode Unity.
+
+### C. Konfigurasi Environment (`.env`)
+
+1. Buka teks editor Anda, lalu periksa file bernama `.env` di dalam folder `WebAdmin/`.
+2. Jika file `.env` tersebut belum ada di dalam folder `WebAdmin/`, buatlah sebuah file baru berformat text dan namai `.env` (tanpa ekstensi `.txt` di belakangnya).
+3. Tuliskan kredensial API Supabase yang telah Anda salin sebelumnya dengan format persis seperti di bawah ini:
+   ```env
+   VITE_SUPABASE_URL=https://your-project-id.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-long-anon-jwt-key
+   ```
+   > [!IMPORTANT]
+   > Gantilah `https://your-project-id.supabase.co` dengan **Project URL** asli milik Anda, dan gantilah `your-long-anon-jwt-key` dengan **anon public key** asli Anda dari Supabase. Pastikan tidak ada spasi di sekitar tanda sama dengan (`=`).
+
+---
+
+## 3. Konfigurasi Database Supabase (Langkah Wajib)
+
+Setelah project Supabase berhasil dibuat, database dan media storage harus disiapkan agar sesuai dengan struktur data yang digunakan oleh Web Admin dan aplikasi Unity.
 
 ### A. SQL Schema & Tables
-Jalankan script ini di **SQL Editor** Supabase untuk membuat semua tabel yang diperlukan:
+
+Jalankan script SQL di bawah ini di bagian **SQL Editor** pada Dashboard Supabase Anda (klik **New Query**, paste script berikut, lalu klik **Run**):
 
 ```sql
 -- 1. Table: wisata
@@ -137,7 +149,8 @@ CREATE TABLE app_settings_logs (
 ```
 
 ### B. Auth Triggers & Functions
-Jalankan ini agar pendaftaran user otomatis membuat profile:
+
+Jalankan query ini di SQL Editor untuk mengatur agar setiap kali admin baru terdaftar di auth Supabase, baris profilnya secara otomatis dibuat di tabel `profiles`:
 
 ```sql
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -162,26 +175,79 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 ```
 
 ### C. Row Level Security (RLS)
-Aktifkan RLS di setiap tabel dan jalankan kebijakan ini:
 
-| Tabel | Policy Name | Target Role | Permission |
-| :--- | :--- | :--- | :--- |
-| **wisata** | Public Read | All (Anon) | `SELECT` |
-| **wisata** | Admin CRUD | Authenticated | `ALL` |
-| **profiles** | View Profiles | Authenticated | `SELECT` |
-| **scans** | Anon Insert | All (Anon) | `INSERT` |
-| **app_settings** | Unity Fetch | All (Anon) | `SELECT` |
+Aktifkan fitur **Row Level Security (RLS)** pada setiap tabel yang dibuat dan konfigurasikan policy/kebijakan berikut:
+
+| Tabel            | Policy Name   | Target Role   | Permission | Keterangan / Deskripsi                                             |
+| :--------------- | :------------ | :------------ | :--------- | :----------------------------------------------------------------- |
+| **wisata**       | Public Read   | All (Anon)    | `SELECT`   | Memungkinkan aplikasi Unity & Web membaca data marker              |
+| **wisata**       | Admin CRUD    | Authenticated | `ALL`      | Memungkinkan admin yang terotentikasi mengelola data marker        |
+| **profiles**     | View Profiles | Authenticated | `SELECT`   | Hanya admin terdaftar yang dapat melihat detail profil admin lain  |
+| **scans**        | Anon Insert   | All (Anon)    | `INSERT`   | Aplikasi Unity dapat mencatat tracking data scan tanpa perlu login |
+| **app_settings** | Unity Fetch   | All (Anon)    | `SELECT`   | Aplikasi Unity dapat menarik info konfigurasi URL/Key terpusat     |
 
 ### D. Storage Configuration
-1. Buat bucket baru bernama: `wisata-media` (Public).
-2. Tambahkan folder: `uploads/`, `markers/`, `videos/`, `models/`.
-3. Atur Policy Storage agar user `authenticated` bisa upload/delete.
+
+1. Buka menu **Storage** pada panel navigasi kiri di Dashboard Supabase.
+2. Klik tombol **Create Bucket** (atau **New Bucket**) untuk membuat penampung file publik baru.
+3. Masukkan parameter-parameter berikut:
+   - **Bucket Name**: `wisata-media`
+   - **Public Bucket**: **Aktifkan** (pastikan posisinya _Public_ agar file GLB, marker, dan video dapat memiliki tautan unduh publik yang valid untuk Unity).
+4. Buat folder di dalam bucket `wisata-media` untuk menyusun file Anda secara rapi:
+   - `uploads/`
+   - `markers/`
+   - `videos/`
+   - `models/`
+5. Konfigurasikan **Storage Policies** agar user yang berstatus **authenticated** (admin yang login ke Web Admin) memiliki akses penuh untuk `INSERT`, `UPDATE`, dan `DELETE` file di dalam bucket `wisata-media`.
 
 ---
 
-## Fitur Unggulan & Optimasi
+## 4. Unity AR Application (Unity 6 Core)
 
-- **Unified Caching**: Mendukung caching untuk file `.glb`, `.mp4`, dan gambar.
-- **Robust Tracking**: Sistem pelacakan AR yang toleran terhadap blur (Delayed Hide).
-- **Real-time Update**: Perubahan data di web langsung berdampak pada aplikasi Unity.
-- **Auto-Normalize**: Penyeragaman ukuran model 3D secara otomatis.
+Aplikasi Unity berfungsi untuk menampilkan konten AR secara dinamis berdasarkan data marker & model 3D yang diambil dari server database Supabase. Project ini dioptimalkan penuh untuk **Unity 6** menggunakan **Universal Render Pipeline (URP)**.
+
+### A. Prasyarat & Library Pihak Ketiga
+
+Project ini bergantung pada library pihak ketiga. Silakan instal paket-paket berikut melalui Unity Package Manager (UPM):
+
+1. **Vuforia Engine (11.4.4)**
+   - Unduh SDK resmi dan import paketnya dari: [Vuforia Developer Portal](https://developer.vuforia.com/downloads/sdk)
+2. **glTFast (6.0.1)** - Digunakan untuk memuat model 3D berekstensi GLB/glTF secara runtime.
+   - Buka menu `Project Settings > Package Manager`, tambahkan registry OpenUPM berikut:
+     - Name: `OpenUPM`
+     - URL: `https://package.openupm.com`
+     - Scope: `com.unity.cloud.gltfast`
+   - _Alternatif:_ Instal via Git URL di Package Manager: `https://github.com/atteneder/glTFast.git#v6.0.1`
+3. **LottieUnity** - Untuk memutar file JSON animasi lottie pada layar transisi offline UI.
+   - Git URL: `https://github.com/p_v_v/LottieUnity.git`
+4. **Newtonsoft JSON** (Sudah tersemat secara bawaan di dalam Unity 6 core).
+
+### B. Konfigurasi API
+
+Agar Unity dapat menarik data marker dari database Supabase:
+
+1. Buka project Unity menggunakan Unity Hub / Unity Editor 6.
+2. Di panel Project, temukan berkas skrip bernama `APIManager.cs` di dalam folder `Assets/Scripts/`.
+3. Buka berkas tersebut dan perbarui variabel `masterBaseUrl` dan `masterApiKey` dengan kredensial Supabase milik Anda:
+   ```csharp
+   // Ganti dengan kredensial API Supabase yang valid
+   private string masterBaseUrl = "https://your-project-id.supabase.co";
+   private string masterApiKey = "your-long-anon-jwt-key";
+   ```
+   > [!NOTE]
+   > Nilai `masterBaseUrl` diisi dengan string **Project URL** dan `masterApiKey` diisi dengan string **anon public API Key** yang Anda peroleh dari Dashboard Supabase sebelumnya.
+
+### C. Fitur Utama Skrip Unity
+
+- **AssetCacheManager**: Sistem manajemen cache tunggal yang mengunduh gambar, video, dan model 3D, lalu menyimpannya secara lokal di dalam folder `Application.persistentDataPath` di handphone. Aset tidak perlu diunduh berulang kali sehingga sangat menghemat konsumsi kuota data internet pengguna.
+- **ARTargetHandler (Auto-Normalize)**: Kode ini secara dinamis menghitung batas bounding box model 3D GLB yang baru saja diunduh, lalu melakukan normalisasi ukuran ke skala standar yang seragam (default: `0.15` unit Unity). Hal ini menjamin model 3D berukuran stabil saat menempel pada marker target.
+- **Delayed Hide Logic**: Memberikan waktu toleransi beberapa detik ketika kamera kehilangan pandangan dari marker AR sebelum menonaktifkan objek 3D. Menghindari gangguan visual (objek berkedip hilang-timbul) ketika kamera goyang atau terhalang sesaat.
+
+---
+
+## 5. Fitur Unggulan & Optimasi Sistem
+
+- **Unified Caching**: Mendukung caching luring pintar untuk file berukuran besar seperti `.glb`, `.mp4` (video), dan gambar.
+- **Robust Tracking**: Sistem pelacakan AR dengan penanganan buffering visual (Delayed Hide) untuk kenyamanan pengalaman pengguna.
+- **Real-time Synchronization**: Setiap perubahan data , file marker, maupun model 3D di dashboard WebAdmin secara otomatis akan langsung termuat saat marker dipindai oleh aplikasi Unity.
+- **Auto-Normalize Size**: Penyetelan otomatis proporsi visual objek 3D secara runtime sehingga developer tidak perlu menyamakan skala mentah model di Blender/perangkat lunak modeling 3D.
