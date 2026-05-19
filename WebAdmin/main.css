@@ -488,6 +488,10 @@ tr:last-child td {
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
+  /* Default styling for manually typed custom categories */
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-main);
 }
 
 .badge-wisata {
@@ -504,6 +508,21 @@ tr:last-child td {
   background: rgba(191, 219, 254, 0.1); /* Pastel Blue */
   border: 1px solid rgba(191, 219, 254, 0.2);
   color: var(--pastel-blue);
+}
+.badge-kuliner {
+  background: rgba(253, 164, 175, 0.1); /* Pastel Coral */
+  border: 1px solid rgba(253, 164, 175, 0.2);
+  color: var(--pastel-coral);
+}
+.badge-unit_bisnis {
+  background: rgba(196, 181, 253, 0.1); /* Pastel Violet */
+  border: 1px solid rgba(196, 181, 253, 0.2);
+  color: var(--pastel-lavender);
+}
+.badge-lainnya {
+  background: rgba(226, 232, 240, 0.1); /* Slate */
+  border: 1px solid rgba(226, 232, 240, 0.2);
+  color: #e2e8f0;
 }
 
 /* Role Badges */

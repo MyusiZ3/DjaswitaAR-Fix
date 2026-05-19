@@ -249,6 +249,72 @@ let currentMarkerImg = null;
 let currentMarkerCorners = [];
 let showMarkerFeatures = true;
 
+// Active Config Censoring globals
+let activeConfigData = null;
+let isConfigUnlocked = false;
+
+function maskValue(val, type) {
+  if (!val) return "Belum diatur";
+  if (type === "url") {
+    try {
+      const url = new URL(val);
+      const hostParts = url.hostname.split('.');
+      if (hostParts.length > 1) {
+        return `${url.protocol}//••••••••.${hostParts.slice(1).join('.')}`;
+      }
+    } catch (e) {}
+    return "https://••••••••.supabase.co";
+  }
+  
+  if (type === "key") {
+    if (val.length > 12) {
+      return val.slice(0, 8) + "••••••••••••••••••••••••";
+    }
+    return "••••••••••••••••";
+  }
+  
+  return "••••••••••••••••";
+}
+
+function renderActiveConfig() {
+  if (!activeConfigData) return;
+  const urlDisplay = document.getElementById("current-url-display");
+  const keyDisplay = document.getElementById("current-key-display");
+  const gdriveKeyDisplay = document.getElementById("current-gdrive-key-display");
+  
+  const unlockBtn = document.getElementById("btn-unlock-config");
+  const unlockIcon = document.getElementById("unlock-config-icon");
+  const unlockText = document.getElementById("unlock-config-text");
+
+  if (isConfigUnlocked) {
+    if (urlDisplay) urlDisplay.innerText = activeConfigData.supabase_url || "Belum diatur";
+    if (keyDisplay) keyDisplay.innerText = activeConfigData.supabase_key || "Belum diatur";
+    if (gdriveKeyDisplay) gdriveKeyDisplay.innerText = activeConfigData.gdrive_api_key || "Belum diatur";
+    
+    if (unlockBtn) {
+      unlockBtn.style.color = "var(--danger)";
+      unlockBtn.style.borderColor = "rgba(239, 68, 68, 0.2)";
+    }
+    if (unlockText) unlockText.innerText = "Sembunyikan";
+    if (unlockIcon) {
+      unlockIcon.innerHTML = `<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path>`;
+    }
+  } else {
+    if (urlDisplay) urlDisplay.innerText = maskValue(activeConfigData.supabase_url, "url");
+    if (keyDisplay) keyDisplay.innerText = maskValue(activeConfigData.supabase_key, "key");
+    if (gdriveKeyDisplay) gdriveKeyDisplay.innerText = maskValue(activeConfigData.gdrive_api_key, "key");
+    
+    if (unlockBtn) {
+      unlockBtn.style.color = "var(--text-dim)";
+      unlockBtn.style.borderColor = "var(--glass-border)";
+    }
+    if (unlockText) unlockText.innerText = "Tampilkan";
+    if (unlockIcon) {
+      unlockIcon.innerHTML = `<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>`;
+    }
+  }
+}
+
 function updateMarkerPreview(url) {
   if (!markerPreviewBox) return;
   if (url && url.trim() !== "") {
@@ -908,7 +974,7 @@ function renderTable(data) {
         <td><img src="${item.slide_urls ? item.slide_urls.split(",")[0] : (item.marker_url || "")}" class="media-thumbnail" onerror="this.src=''"></td>
         <td style="font-family: monospace; color: var(--primary)">${item.id}</td>
         <td style="font-weight: 600">${item.nama}</td>
-        <td><span class="badge badge-${item.type}">${item.type}</span></td>
+        <td><span class="badge badge-${item.type}">${item.type.replace(/_/g, ' ')}</span></td>
         <td style="font-size: 0.85rem; color: var(--text-dim);">
           ${item.start_date ? `<span>${item.start_date}</span>` : ""}
           ${item.start_date && item.end_date ? " - " : ""}
@@ -1099,12 +1165,41 @@ async function fetchAnalytics(timeframe = 'weekly') {
       targetData = wData || [];
     }
 
-    const categories = {};
+    const categories = {
+      'Wisata': 0,
+      'Kuliner': 0,
+      'Event': 0,
+      'Unit Bisnis': 0,
+      'Lainnya': 0
+    };
+    
     targetData.forEach(w => {
-      const cat = w.type || 'Lainnya';
-      categories[cat] = (categories[cat] || 0) + 1;
+      let rawCat = (w.type || 'lainnya').toLowerCase().trim().replace(/_/g, ' ');
+      
+      if (rawCat === 'wisata') {
+        categories['Wisata'] += 1;
+      } else if (rawCat === 'kuliner') {
+        categories['Kuliner'] += 1;
+      } else if (rawCat === 'event') {
+        categories['Event'] += 1;
+      } else if (rawCat === 'unit bisnis') {
+        categories['Unit Bisnis'] += 1;
+      } else {
+        categories['Lainnya'] += 1;
+      }
     });
-    renderCategoryChart(Object.keys(categories), Object.values(categories));
+
+    const filteredLabels = [];
+    const filteredData = [];
+    
+    Object.keys(categories).forEach(key => {
+      if (categories[key] > 0) {
+        filteredLabels.push(key);
+        filteredData.push(categories[key]);
+      }
+    });
+
+    renderCategoryChart(filteredLabels, filteredData);
 
     // 4. Fetch Popular Locations
     const { data: popData, error: popError } = await supabase
@@ -1142,23 +1237,37 @@ function renderCategoryChart(labels, data) {
   const centerTextPlugin = {
     id: 'centerText',
     beforeDraw: function(chart) {
-      const width = chart.width, height = chart.height, ctx = chart.ctx;
-      ctx.restore();
-      const fontSize = (height / 114).toFixed(2);
-      ctx.font = "bold " + fontSize + "em Outfit, sans-serif";
-      ctx.textBaseline = "middle";
-      ctx.fillStyle = "#f3f4f6";
-      const text = total.toString(),
-          textX = Math.round((width - ctx.measureText(text).width) / 2),
-          textY = height / 2.2;
-      ctx.fillText(text, textX, textY);
+      const ctx = chart.ctx;
+      const chartArea = chart.chartArea;
+      if (!chartArea) return;
       
-      ctx.font = (fontSize / 2.5).toFixed(2) + "em Outfit, sans-serif";
+      const centerX = (chartArea.left + chartArea.right) / 2;
+      const centerY = (chartArea.top + chartArea.bottom) / 2;
+      
+      ctx.restore();
+      
+      // Calculate responsive font size based on chartArea height
+      const chartHeight = chartArea.bottom - chartArea.top;
+      const fontSize = (chartHeight / 120).toFixed(2);
+      
+      // Setup horizontal alignment to center
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      
+      // Render Total Number
+      ctx.font = "bold " + fontSize + "em Outfit, sans-serif";
+      ctx.fillStyle = "#f3f4f6";
+      const text = total.toString();
+      const textY = centerY - 6; // Move slightly up to accommodate the label below
+      ctx.fillText(text, centerX, textY);
+      
+      // Render "Total" Label
+      ctx.font = (fontSize / 2.3).toFixed(2) + "em Outfit, sans-serif";
       ctx.fillStyle = "#8e939e";
-      const label = "Total",
-          labelX = Math.round((width - ctx.measureText(label).width) / 2),
-          labelY = height / 2.2 + (fontSize * 16);
-      ctx.fillText(label, labelX, labelY);
+      const label = "Total";
+      const labelY = centerY + 18; // Move down below the number
+      ctx.fillText(label, centerX, labelY);
+      
       ctx.save();
     }
   };
@@ -1286,7 +1395,7 @@ function renderPopularLocations(data) {
   tbody.innerHTML = data.slice(0, 5).map(item => `
     <tr>
       <td style="font-weight: 600; color: #fff;">${item.nama}</td>
-      <td><span class="badge badge-${item.type}">${item.type}</span></td>
+      <td><span class="badge badge-${item.type}">${item.type.replace(/_/g, ' ')}</span></td>
       <td style="font-weight: 700; color: var(--text-main); font-size: 1.125rem;">${item.scan_count}</td>
       <td>
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -1359,17 +1468,8 @@ async function fetchAppSettings() {
     .single();
 
   if (!error && data) {
-    // Inputs are kept empty for a cleaner UI as requested by user
-    
-    // Fill display fields
-    const urlDisplay = document.getElementById("current-url-display");
-    const keyDisplay = document.getElementById("current-key-display");
-    
-    if (urlDisplay) urlDisplay.innerText = data.supabase_url;
-    if (keyDisplay) {
-      // Show full key in display (readonly) but masked in logs
-      keyDisplay.innerText = data.supabase_key;
-    }
+    activeConfigData = data;
+    renderActiveConfig();
     
     // Update Canva Link
     const canvaInput = document.getElementById("f-canva-url");
@@ -1410,7 +1510,7 @@ async function renderAppSettingsLogs() {
     if (error) throw error;
 
     if (!data || data.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-dim);">Belum ada riwayat perubahan.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-dim);">Belum ada riwayat perubahan.</td></tr>`;
       return;
     }
 
@@ -1422,11 +1522,15 @@ async function renderAppSettingsLogs() {
         <td style="font-weight: 500;">${log.admin_email}</td>
         <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
           <div style="font-size: 0.75rem; color: var(--text-dim); text-decoration: line-through;">${log.old_url || '-'}</div>
-          <div style="color: var(--success); font-size: 0.8rem;">${log.new_url}</div>
+          <div style="color: var(--success); font-size: 0.8rem;">${log.new_url || '-'}</div>
         </td>
         <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
           <div style="font-size: 0.75rem; color: var(--text-dim); text-decoration: line-through;">***${log.old_key?.slice(-8) || 'none'}</div>
-          <div style="color: var(--success); font-size: 0.8rem;">***${log.new_key?.slice(-8)}</div>
+          <div style="color: var(--success); font-size: 0.8rem;">***${log.new_key?.slice(-8) || 'none'}</div>
+        </td>
+        <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <div style="font-size: 0.75rem; color: var(--text-dim); text-decoration: line-through;">***${log.old_gdrive_key?.slice(-8) || 'none'}</div>
+          <div style="color: var(--success); font-size: 0.8rem;">***${log.new_gdrive_key?.slice(-8) || 'none'}</div>
         </td>
       </tr>
     `).join("");
@@ -1435,8 +1539,18 @@ async function renderAppSettingsLogs() {
   }
 }
 
+let currentSettingsFormSubmit = null;
+
 settingsForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
+  currentSettingsFormSubmit = "supabase";
+  modalSettingsConfirm.classList.add("active");
+});
+
+const gdriveSettingsForm = document.getElementById("gdrive-settings-form");
+gdriveSettingsForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  currentSettingsFormSubmit = "gdrive";
   modalSettingsConfirm.classList.add("active");
 });
 
@@ -1447,6 +1561,14 @@ btnSettingsCancel?.addEventListener("click", () => {
 btnSettingsConfirm?.addEventListener("click", async () => {
   modalSettingsConfirm.classList.remove("active");
   
+  if (currentSettingsFormSubmit === "supabase") {
+    await saveSupabaseConfig();
+  } else if (currentSettingsFormSubmit === "gdrive") {
+    await saveGDriveConfig();
+  }
+});
+
+async function saveSupabaseConfig() {
   const btn = document.getElementById("btn-save-settings");
   const originalText = btn.innerText;
 
@@ -1456,54 +1578,108 @@ btnSettingsConfirm?.addEventListener("click", async () => {
   const newUrl = document.getElementById("s-url").value;
   const newKey = document.getElementById("s-key").value;
 
-  const updateData = {};
-  if (newUrl) updateData.supabase_url = newUrl;
-  if (newKey) updateData.supabase_key = newKey;
-
-  if (Object.keys(updateData).length === 0) {
+  if (!newUrl && !newKey) {
     showToast("Tidak ada perubahan yang diisi.", "info");
+    btn.disabled = false;
+    btn.innerText = originalText;
     return;
   }
 
   try {
-    // 1. Get current values for logging
     const { data: current } = await supabase
       .from("app_settings")
       .select("*")
       .eq("id", "current_config")
       .single();
 
-    // 2. Update settings
-    const { error: updateError } = await supabase.from("app_settings").upsert({
+    const upsertPayload = {
       id: "current_config",
-      supabase_url: newUrl,
-      supabase_key: newKey,
       updated_at: new Date().toISOString(),
-    });
+      supabase_url: newUrl || current?.supabase_url,
+      supabase_key: newKey || current?.supabase_key,
+      gdrive_api_key: current?.gdrive_api_key
+    };
+    const { error: updateError } = await supabase.from("app_settings").upsert(upsertPayload);
 
     if (updateError) throw updateError;
 
-    // 3. Log the change
     const { data: { user } } = await supabase.auth.getUser();
     await supabase.from("app_settings_logs").insert({
       admin_email: user.email,
       old_url: current?.supabase_url || 'empty',
-      new_url: newUrl,
+      new_url: newUrl || current?.supabase_url,
       old_key: current?.supabase_key || 'empty',
-      new_key: newKey
+      new_key: newKey || current?.supabase_key
     });
 
-    showToast("Pengaturan aplikasi berhasil diperbarui.", "success");
+    showToast("Konfigurasi Supabase berhasil diperbarui.", "success");
     settingsForm.reset();
     fetchAppSettings();
   } catch (err) {
     console.error(err);
-    showToast("Gagal memperbarui pengaturan", "error");
+    showToast("Gagal memperbarui konfigurasi Supabase", "error");
   } finally {
     btn.disabled = false;
     btn.innerText = originalText;
   }
-});
+}
+
+async function saveGDriveConfig() {
+  const btn = document.getElementById("btn-save-gdrive");
+  const originalText = btn.innerText;
+
+  btn.disabled = true;
+  btn.innerText = "Menyimpan...";
+
+  const newGdriveKey = document.getElementById("s-gdrive-key")?.value;
+
+  if (!newGdriveKey) {
+    showToast("Masukkan API Key Google Drive.", "info");
+    btn.disabled = false;
+    btn.innerText = originalText;
+    return;
+  }
+
+  try {
+    const { data: current } = await supabase
+      .from("app_settings")
+      .select("*")
+      .eq("id", "current_config")
+      .single();
+
+    const upsertPayload = {
+      id: "current_config",
+      updated_at: new Date().toISOString(),
+      supabase_url: current?.supabase_url,
+      supabase_key: current?.supabase_key,
+      gdrive_api_key: newGdriveKey
+    };
+    const { error: updateError } = await supabase.from("app_settings").upsert(upsertPayload);
+
+    if (updateError) throw updateError;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    await supabase.from("app_settings_logs").insert({
+      admin_email: user.email,
+      old_url: current?.supabase_url || 'empty',
+      new_url: current?.supabase_url,
+      old_key: current?.supabase_key || 'empty',
+      new_key: current?.supabase_key,
+      old_gdrive_key: current?.gdrive_api_key || 'empty',
+      new_gdrive_key: newGdriveKey
+    });
+
+    showToast("Google Drive API Key berhasil diperbarui.", "success");
+    document.getElementById("gdrive-settings-form")?.reset();
+    fetchAppSettings();
+  } catch (err) {
+    console.error(err);
+    showToast("Gagal memperbarui Google Drive API Key", "error");
+  } finally {
+    btn.disabled = false;
+    btn.innerText = originalText;
+  }
+}
 
 document.getElementById("th-sort-time")?.addEventListener("click", () => {
   logsSortAsc = !logsSortAsc;
@@ -1625,6 +1801,32 @@ async function cleanupOrphanedFiles() {
   }
 }
 
+let heartbeatInterval = null;
+
+async function checkDbHeartbeat() {
+  const dot = document.querySelector("#db-heartbeat .heartbeat-dot");
+  const text = document.querySelector("#db-heartbeat .heartbeat-text");
+  if (!dot || !text) return;
+
+  try {
+    const start = performance.now();
+    const { error } = await supabase.from("app_settings").select("id").limit(1);
+    const duration = Math.round(performance.now() - start);
+
+    if (error) throw error;
+
+    dot.style.background = "#10b981";
+    dot.style.boxShadow = "0 0 8px #10b981";
+    text.innerText = `Connected (${duration}ms)`;
+    text.style.color = "#10b981";
+  } catch (err) {
+    dot.style.background = "#ef4444";
+    dot.style.boxShadow = "0 0 8px #ef4444";
+    text.innerText = "Disconnected";
+    text.style.color = "#ef4444";
+  }
+}
+
 function setupSettingsListeners() {
     const btnCleanup = document.getElementById("btn-cleanup-storage");
     const modalCleanup = document.getElementById("modal-cleanup-confirm");
@@ -1649,6 +1851,135 @@ function setupSettingsListeners() {
           if (modalCleanup) modalCleanup.classList.remove("active");
         };
     }
+
+    // Toggle Password Visibility
+    document.querySelectorAll(".toggle-password").forEach(btn => {
+        btn.onclick = () => {
+            const targetId = btn.getAttribute("data-target");
+            const input = document.getElementById(targetId);
+            if (input) {
+                const isPassword = input.getAttribute("type") === "password";
+                input.setAttribute("type", isPassword ? "text" : "password");
+                btn.style.color = isPassword ? "var(--pastel-blue)" : "var(--text-dim)";
+            }
+        };
+    });
+
+    // Unlock Config logic
+    const btnUnlockConfig = document.getElementById("btn-unlock-config");
+    const modalUnlockConfig = document.getElementById("modal-unlock-config");
+    const btnUnlockCancel = document.getElementById("btn-unlock-cancel");
+    const formUnlockConfig = document.getElementById("unlock-config-form");
+    const inputUnlockPassword = document.getElementById("unlock-password");
+
+    const closeUnlockModal = () => {
+      if (modalUnlockConfig) modalUnlockConfig.classList.remove("active");
+      if (formUnlockConfig) formUnlockConfig.reset();
+    };
+
+    if (btnUnlockConfig) {
+      btnUnlockConfig.onclick = () => {
+        if (isConfigUnlocked) {
+          isConfigUnlocked = false;
+          renderActiveConfig();
+          showToast("Konfigurasi Aktif disensor kembali.", "info");
+        } else {
+          if (modalUnlockConfig) modalUnlockConfig.classList.add("active");
+          if (inputUnlockPassword) setTimeout(() => inputUnlockPassword.focus(), 150);
+        }
+      };
+    }
+
+    if (btnUnlockCancel) {
+      btnUnlockCancel.onclick = closeUnlockModal;
+    }
+
+    if (formUnlockConfig) {
+      formUnlockConfig.onsubmit = async (e) => {
+        e.preventDefault();
+        const password = inputUnlockPassword.value;
+        const btnConfirm = document.getElementById("btn-unlock-confirm");
+        const originalText = btnConfirm ? btnConfirm.innerText : "Verifikasi";
+
+        if (btnConfirm) {
+          btnConfirm.disabled = true;
+          btnConfirm.innerText = "Memverifikasi...";
+        }
+
+        try {
+          const sessionData = await supabase.auth.getSession();
+          const email = sessionData?.data?.session?.user?.email;
+
+          if (!email) throw new Error("Sesi pengguna tidak aktif.");
+
+          const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+          if (error) {
+            showToast("Kata sandi yang Anda masukkan salah!", "error");
+          } else {
+            isConfigUnlocked = true;
+            renderActiveConfig();
+            closeUnlockModal();
+            showToast("Verifikasi berhasil! Sensor dibuka.", "success");
+
+            setTimeout(() => {
+              if (isConfigUnlocked) {
+                isConfigUnlocked = false;
+                renderActiveConfig();
+                showToast("Konfigurasi Aktif disensor kembali otomatis.", "info");
+              }
+            }, 30000);
+          }
+        } catch (err) {
+          console.error("Verification error:", err);
+          showToast("Terjadi kesalahan saat memverifikasi: " + err.message, "error");
+        } finally {
+          if (btnConfirm) {
+            btnConfirm.disabled = false;
+            btnConfirm.innerText = originalText;
+          }
+        }
+      };
+    }
+
+    // Guide Tab Switching
+    document.querySelectorAll(".guide-tab").forEach(tab => {
+        tab.onclick = () => {
+            const guide = tab.getAttribute("data-guide");
+            
+            // Toggle active class on buttons
+            document.querySelectorAll(".guide-tab").forEach(t => {
+                t.classList.remove("active");
+                t.style.color = "var(--text-dim)";
+                t.style.background = "none";
+            });
+            tab.classList.add("active");
+            tab.style.color = "#fff";
+            tab.style.background = "rgba(255, 255, 255, 0.08)";
+
+            // Toggle active content
+            document.querySelectorAll(".guide-tab-content").forEach(content => {
+                content.style.display = "none";
+            });
+            const activeContent = document.getElementById(`guide-content-${guide}`);
+            if (activeContent) {
+                activeContent.style.display = "block";
+            }
+        };
+    });
+
+    // DB Heartbeat Connection
+    checkDbHeartbeat();
+    if (heartbeatInterval) clearInterval(heartbeatInterval);
+    heartbeatInterval = setInterval(() => {
+        const activeSection = localStorage.getItem('activeSection');
+        if (activeSection === "section-settings") {
+            checkDbHeartbeat();
+        } else {
+            clearInterval(heartbeatInterval);
+            heartbeatInterval = null;
+        }
+    }, 10000);
 }
 
 // --- ADMIN CRUD (SUPERADMIN ONLY) ---
@@ -2006,12 +2337,24 @@ function fixStreamingUrl(url) {
   return url;
 }
 
+function checkGDriveVideoUrl(url) {
+  const badge = document.getElementById("gdrive-detector-badge");
+  if (!badge) return;
+
+  if (url && (url.includes("drive.google.com") || url.includes("google.com/uc?id="))) {
+    badge.style.display = "flex";
+  } else {
+    badge.style.display = "none";
+  }
+}
+
 videoUrlInput?.addEventListener("input", (e) => {
   const originalUrl = e.target.value;
   const fixedUrl = fixStreamingUrl(originalUrl);
   if (fixedUrl !== originalUrl) {
     videoUrlInput.value = fixedUrl;
   }
+  checkGDriveVideoUrl(videoUrlInput.value);
 });
 
 async function editItem(id) {
@@ -2048,6 +2391,7 @@ async function editItem(id) {
     document.getElementById("f-marker-url").value = data.marker_url || "";
     document.getElementById("f-media-url").value = data.slide_urls || "";
     document.getElementById("f-video-url").value = data.video_url || "";
+    checkGDriveVideoUrl(data.video_url || "");
     if (document.getElementById("f-target-layout")) document.getElementById("f-target-layout").value = data.target_layout || "mask";
     
     // 3D Content Fields
@@ -2233,6 +2577,9 @@ function closeModal() {
   updatePreview("");
   updateMarkerPreview("");
   update3DPreview("");
+
+  const gdriveBadge = document.getElementById("gdrive-detector-badge");
+  if (gdriveBadge) gdriveBadge.style.display = "none";
 
   isEditing = false;
   editingId = null;

@@ -83,7 +83,7 @@ export const TargetSection = () => `
 
         <div id="other-type-container" class="form-group" style="display: none;">
           <label>Custom Category Name</label>
-          <input type="text" id="f-type-custom" placeholder="Ketik nama kategori baru..." />
+          <input type="text" id="f-type-custom" placeholder="Ketik nama kategori baru (maks 11 kar)..." maxlength="11" />
         </div>
 
         <!-- Location Dates -->
@@ -183,6 +183,10 @@ export const TargetSection = () => `
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
               Upload
             </button>
+          </div>
+          <div id="gdrive-detector-badge" style="display: none; align-items: center; gap: 6px; font-size: 0.75rem; color: #10b981; margin-top: 6px; font-weight: 500; transition: all 0.3s ease;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            <span>Google Drive API Bypass Active (Dukungan streaming file besar)</span>
           </div>
           <small class="text-hint">Format .MP4. Max 60MB. Video ini akan tampil saat marker discan.</small>
         </div>

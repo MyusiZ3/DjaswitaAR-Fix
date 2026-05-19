@@ -18,7 +18,7 @@ export const AboutSection = () => `
         <div>
           <h2 style="margin-bottom: 1.5rem; color: var(--text-main); font-size: 2rem">D'Jaswita AR Project</h2>
           <p style="color: var(--text-dim); line-height: 1.8; margin-bottom: 2.5rem; font-size: 1rem; text-align: justify;">
-            D'Jaswita AR adalah platform Augmented Reality (AR) modern yang dirancang untuk merevolusi pengalaman pariwisata. Dengan menggabungkan teknologi tracking marker yang presisi dan dashboard manajemen data yang intuitif, D'Jaswita AR memungkinkan pengelola lokasi untuk memberikan informasi interaktif kepada user.
+            D'Jaswita AR adalah platform Augmented Reality (AR) modern yang dirancang untuk merevolusi penyampaian informasi interaktif dan visualisasi konten secara real-time. Dengan menggabungkan teknologi tracking marker yang presisi dan dashboard manajemen data yang intuitif, D'Jaswita AR memungkinkan administrator untuk menyajikan aset 3D, video, dan informasi dinamis secara instan kepada pengguna.
           </p>
           <p style="color: var(--pastel-blue); font-size: 0.9rem; font-weight: 500; padding: 1.25rem; background: rgba(191, 219, 254, 0.03); border-radius: 12px; border: 1px solid rgba(191, 219, 254, 0.1); border-left: 4px solid var(--pastel-blue); margin-bottom: 2.5rem; display: flex; align-items: flex-start; gap: 12px; text-align: justify;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px">

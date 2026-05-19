@@ -7,11 +7,17 @@ export const SettingsSection = () => `
   </header>
 
   <div class="card" style="margin-top: 1rem">
-    <div class="card-header">
-      <h3>Konfigurasi Koneksi Supabase</h3>
-      <p style="font-size: 0.875rem; color: var(--text-dim)">
-        Atur endpoint dan API Key untuk Unity
-      </p>
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h3>Konfigurasi Koneksi Supabase</h3>
+        <p style="font-size: 0.875rem; color: var(--text-dim)">
+          Atur endpoint dan API Key untuk Unity
+        </p>
+      </div>
+      <div id="db-heartbeat" style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 500; background: rgba(255,255,255,0.02); padding: 6px 12px; border-radius: 100px; border: 1px solid var(--glass-border);">
+        <span class="heartbeat-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; display: inline-block; box-shadow: 0 0 8px #94a3b8; transition: all 0.3s ease;"></span>
+        <span class="heartbeat-text" style="color: var(--text-dim);">Checking connection...</span>
+      </div>
     </div>
 
     <div
@@ -34,8 +40,8 @@ export const SettingsSection = () => `
           padding-right: 2rem;
         "
       >
-        <h4 style="color: var(--primary); margin-bottom: -0.5rem">
-          Perbarui Konfigurasi
+        <h4 style="color: var(--primary); margin-bottom: 0.5rem">
+          Perbarui Supabase
         </h4>
         <form
           id="settings-form"
@@ -47,20 +53,29 @@ export const SettingsSection = () => `
               type="url"
               id="s-url"
               placeholder="Contoh: https://xyz.supabase.co"
-              required
             />
-            <small class="text-hint">Masukkan URL utama (tanpa /rest/v1/).</small>
+            <small class="text-hint">Biarkan kosong jika tidak ingin mengubah URL.</small>
           </div>
           <div class="form-group">
             <label for="s-key">Supabase Secret Key (Service Role)</label>
-            <input
-              type="password"
-              id="s-key"
-              placeholder="Enter new secret key to update..."
-              required
-            />
+            <div style="position: relative; display: flex; align-items: center; width: 100%;">
+              <input
+                type="password"
+                id="s-key"
+                placeholder="Enter new secret key to update..."
+                style="padding-right: 2.5rem; width: 100%;"
+              />
+              <button 
+                type="button" 
+                class="toggle-password" 
+                data-target="s-key"
+                style="position: absolute; right: 10px; background: none; border: none; color: var(--text-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px;"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
+            <small class="text-hint">Biarkan kosong jika tidak ingin mengubah Key.</small>
           </div>
-
 
           <div style="display: flex; justify-content: flex-end">
             <button
@@ -69,7 +84,48 @@ export const SettingsSection = () => `
               id="btn-save-settings"
               style="width: 100%"
             >
-              Simpan Perubahan
+              Simpan Supabase
+            </button>
+          </div>
+        </form>
+
+        <hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1.5rem 0;" />
+
+        <h4 style="color: var(--primary); margin-bottom: 0.5rem">
+          Perbarui Google Drive
+        </h4>
+        <form
+          id="gdrive-settings-form"
+          style="display: flex; flex-direction: column; gap: 1.25rem"
+        >
+          <div class="form-group">
+            <label for="s-gdrive-key">Google Drive API Key (Opsional)</label>
+            <div style="position: relative; display: flex; align-items: center; width: 100%;">
+              <input
+                type="password"
+                id="s-gdrive-key"
+                placeholder="Enter GDrive API Key (Optional)..."
+                style="padding-right: 2.5rem; width: 100%;"
+              />
+              <button 
+                type="button" 
+                class="toggle-password" 
+                data-target="s-gdrive-key"
+                style="position: absolute; right: 10px; background: none; border: none; color: var(--text-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px;"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
+            <small class="text-hint">Diperlukan untuk streaming video langsung dari GDrive.</small>
+          </div>
+          <div style="display: flex; justify-content: flex-end">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              id="btn-save-gdrive"
+              style="width: 100%"
+            >
+              Simpan Google Drive
             </button>
           </div>
         </form>
@@ -77,9 +133,20 @@ export const SettingsSection = () => `
 
       <!-- RIGHT: Current Active Config -->
       <div style="display: flex; flex-direction: column; gap: 1.5rem">
-        <h4 style="color: var(--success); margin-bottom: -0.5rem">
-          Konfigurasi Aktif
-        </h4>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h4 style="color: var(--success); margin: 0;">
+            Konfigurasi Aktif
+          </h4>
+          <button 
+            type="button" 
+            id="btn-unlock-config" 
+            class="btn btn-ghost" 
+            style="padding: 4px 10px; font-size: 0.72rem; display: flex; align-items: center; gap: 6px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.02); height: 26px; border-radius: 6px; cursor: pointer; color: var(--text-dim);"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="unlock-config-icon"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            <span id="unlock-config-text">Tampilkan</span>
+          </button>
+        </div>
         <div
           style="
             background: rgba(0, 0, 0, 0.2);
@@ -97,6 +164,22 @@ export const SettingsSection = () => `
                 font-size: 0.85rem;
                 color: var(--text-main);
                 word-break: break-all;
+                background: rgba(255, 255, 255, 0.05);
+                padding: 8px;
+                border-radius: 6px;
+              "
+            >
+              Memuat...
+            </div>
+          </div>
+          <div style="margin-bottom: 1rem">
+            <label style="margin-bottom: 4px">GDrive API Key Saat Ini:</label>
+            <div
+              id="current-gdrive-key-display"
+              style="
+                font-family: monospace;
+                font-size: 0.85rem;
+                color: var(--text-dim);
                 background: rgba(255, 255, 255, 0.05);
                 padding: 8px;
                 border-radius: 6px;
@@ -142,6 +225,56 @@ export const SettingsSection = () => `
             Data di sebelah kanan adalah yang sedang dibaca oleh
             aplikasi Unity melalui sistem Bootstrap.
           </p>
+        </div>
+
+        <!-- Guide Section -->
+        <div
+          style="
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+          "
+        >
+          <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+            <h4 style="color: var(--pastel-peach); margin: 0; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+              Panduan Kredensial
+            </h4>
+            <div style="display: flex; background: rgba(0,0,0,0.2); padding: 2px; border-radius: 6px; border: 1px solid var(--glass-border);">
+              <button type="button" class="guide-tab active" data-guide="supabase" style="background: rgba(255, 255, 255, 0.08); border: none; color: #fff; padding: 4px 10px; font-size: 0.68rem; border-radius: 4px; cursor: pointer; font-weight: 500; transition: all 0.2s ease;">Supabase</button>
+              <button type="button" class="guide-tab" data-guide="gdrive" style="background: none; border: none; color: var(--text-dim); padding: 4px 10px; font-size: 0.68rem; border-radius: 4px; cursor: pointer; font-weight: 500; transition: all 0.2s ease;">GDrive</button>
+            </div>
+          </div>
+
+          <!-- Guide Content: Supabase -->
+          <div id="guide-content-supabase" class="guide-tab-content" style="display: block; animation: fadeIn 0.3s ease;">
+            <ol style="margin: 0; padding-left: 1.2rem; font-size: 0.78rem; color: var(--text-dim); display: flex; flex-direction: column; gap: 8px; line-height: 1.5;">
+              <li>Masuk ke <strong>Supabase Dashboard</strong> (<a href="https://supabase.com" target="_blank" style="color: var(--pastel-blue); text-decoration: none;">supabase.com</a>).</li>
+              <li>Pilih proyek Anda, lalu klik ikon **Settings** (gigi roda) di sidebar kiri bawah.</li>
+              <li>Masuk ke menu <strong>API</strong> di bawah Project Settings.</li>
+              <li>Di bagian <strong>Project API Keys</strong>:
+                <br/>• Salin <strong>Project URL</strong> untuk dimasukkan ke kolom URL.
+                <br/>• Salin <strong>service_role</strong> (Secret Key) untuk kolom Secret Key.
+              </li>
+              <li><span style="color: var(--pastel-coral); font-weight: 600;">⚠ PENTING:</span> Jangan pernah membagikan <strong>service_role</strong> key ke publik karena memiliki akses bypass RLS.</li>
+            </ol>
+          </div>
+
+          <!-- Guide Content: GDrive -->
+          <div id="guide-content-gdrive" class="guide-tab-content" style="display: none; animation: fadeIn 0.3s ease;">
+            <ol style="margin: 0; padding-left: 1.2rem; font-size: 0.78rem; color: var(--text-dim); display: flex; flex-direction: column; gap: 8px; line-height: 1.5;">
+              <li>Masuk ke <strong>Google Cloud Console</strong> (<a href="https://console.cloud.google.com" target="_blank" style="color: var(--pastel-blue); text-decoration: none;">console.cloud.google.com</a>).</li>
+              <li>Pilih proyek Anda, lalu cari dan aktifkan <strong>Google Drive API</strong> di API Library.</li>
+              <li>Masuk ke menu **APIs & Services** > **Credentials**.</li>
+              <li>Klik **Create Credentials** > pilih <strong>API Key</strong>.</li>
+              <li>Salin API Key yang berhasil dibuat untuk dimasukkan ke kolom GDrive API Key.</li>
+              <li>Pastikan file video di GDrive Anda disetel **"Siapa saja yang memiliki link dapat melihat"** (Public View) agar API bypass dapat membacanya di Unity.</li>
+            </ol>
+          </div>
         </div>
       </div>
     </div>
@@ -212,12 +345,13 @@ export const SettingsSection = () => `
             <th>Admin</th>
             <th>Perubahan URL</th>
             <th>Perubahan Key</th>
+            <th>Perubahan GDrive Key</th>
           </tr>
         </thead>
         <tbody id="settings-logs-body">
           <tr>
             <td
-              colspan="4"
+              colspan="5"
               style="
                 text-align: center;
                 padding: 2rem;
@@ -352,6 +486,65 @@ export const SettingsSection = () => `
           Ya, Bersihkan
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal: Unlock Config Password Verification -->
+  <div class="modal-overlay" id="modal-unlock-config">
+    <div class="modal-card" style="max-width: 400px; text-align: center; padding: 2rem;">
+      <div
+        style="
+          width: 56px;
+          height: 56px;
+          background: rgba(59, 130, 246, 0.1);
+          color: var(--primary);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 1.5rem;
+          border: 1px solid rgba(59, 130, 246, 0.2);
+        "
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
+      <h3 style="margin-bottom: 0.5rem; color: var(--text-main);">Verifikasi Keamanan</h3>
+      <p style="color: var(--text-dim); margin-bottom: 1.5rem; font-size: 0.85rem; line-height: 1.5;">
+        Masukkan kata sandi akun Anda untuk membuka sensor Konfigurasi Aktif.
+      </p>
+      <form id="unlock-config-form" style="display: flex; flex-direction: column; gap: 1rem;">
+        <div class="form-group" style="text-align: left; margin: 0;">
+          <label for="unlock-password" style="font-size: 0.8rem; margin-bottom: 6px;">Kata Sandi</label>
+          <input 
+            type="password" 
+            id="unlock-password" 
+            placeholder="Masukkan kata sandi..." 
+            required 
+            style="width: 100%;"
+          />
+        </div>
+        <div style="display: flex; gap: 12px; margin-top: 0.5rem;">
+          <button
+            id="btn-unlock-cancel"
+            class="btn btn-ghost"
+            style="flex: 1"
+            type="button"
+          >
+            Batal
+          </button>
+          <button
+            id="btn-unlock-confirm"
+            class="btn btn-primary"
+            style="flex: 1"
+            type="submit"
+          >
+            Verifikasi
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 `;
