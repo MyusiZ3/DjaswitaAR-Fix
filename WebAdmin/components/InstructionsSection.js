@@ -132,21 +132,31 @@ export const InstructionsSection = () => `
       Aturan Layout Penting (Wajib Dipatuhi)
     </h3>
     <p style="color: var(--text-dim); margin-bottom: 1.5rem; font-size: 0.95rem;">Agar posisi objek AR di Unity tetap presisi (tidak melayang/geser), perhatikan aturan berikut:</p>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
       <div style="background: rgba(0, 0, 0, 0.2); padding: 1.25rem; border-radius: 12px;">
         <h4 style="color: white; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--pastel-coral)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-          JANGAN DIUBAH
+          JANGAN DIUBAH (Mask - Square)
         </h4>
         <ul style="color: var(--text-dim); padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.6;">
-          <li><b>Posisi & Ukuran Gambar Utama:</b> Bingkai foto di bagian atas sudah dipas-kan dengan sistem. Jangan digeser atau diubah skalanya.</li>
+          <li><b>Bingkai Foto Square (Atas):</b> Bingkai masking kotak di bagian atas sudah presisi. Jangan digeser, di-scale, atau diubah setingan maskingnya.</li>
+          <li><b>Tombol Bawah Tengah:</b> Tombol berbentuk pil di bawah adalah anchor untuk tombol virtual. <b>Jangan dipindah posisinya</b>.</li>
+        </ul>
+      </div>
+      <div style="background: rgba(0, 0, 0, 0.2); padding: 1.25rem; border-radius: 12px;">
+        <h4 style="color: white; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--pastel-coral)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+          JANGAN DIUBAH (Full - 4:5)
+        </h4>
+        <ul style="color: var(--text-dim); padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.6;">
+          <li><b>Bingkai Foto Full 4:5 (Tengah):</b> Area gambar menutupi penuh rasio 4:5. Jangan digeser atau diubah skalanya agar posisinya tetap presisi dengan marker fisik.</li>
           <li><b>Tombol Bawah Tengah:</b> Tombol berbentuk pil di bawah adalah anchor untuk tombol virtual. <b>Jangan dipindah posisinya</b>.</li>
         </ul>
       </div>
       <div style="background: rgba(0, 0, 0, 0.2); padding: 1.25rem; border-radius: 12px;">
         <h4 style="color: white; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--pastel-mint)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-          BOLEH DIUBAH
+          BOLEH DIUBAH (Keduanya)
         </h4>
         <ul style="color: var(--text-dim); padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.6;">
           <li><b>Teks & Judul:</b> Nama lokasi, deskripsi, dan footer boleh diganti font, warna, atau dihapus.</li>
