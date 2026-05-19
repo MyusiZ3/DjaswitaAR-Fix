@@ -1,7 +1,7 @@
 export const TargetSection = () => `
   <header class="header">
     <div class="title-section">
-      <h1>Destinations List</h1>
+      <h1>AR Experience List</h1>
       <p>Kelola data marker dan hidupkan suasana dengan konten AR.</p>
     </div>
     <div style="display: flex; gap: 1rem; align-items: center">
@@ -17,7 +17,7 @@ export const TargetSection = () => `
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
-        New Location
+        New Experience
       </button>
     </div>
   </header>
@@ -28,7 +28,7 @@ export const TargetSection = () => `
         <tr>
           <th>Cover</th>
           <th>ID</th>
-          <th>Nama Lokasi</th>
+          <th>Nama Target / Experience</th>
           <th>Type</th>
           <th>Event Date</th>
           <th>Price</th>
@@ -45,7 +45,7 @@ export const TargetSection = () => `
     <div class="modal-content">
       <h2 id="modal-title">Create New Experience</h2>
       <p style="color: var(--text-dim); font-size: 0.875rem">
-        Isi detail di bawah untuk menambahkan destinasi AR baru.
+        Isi detail di bawah untuk menambahkan target AR baru.
       </p>
       <form id="target-form">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem">
@@ -60,7 +60,7 @@ export const TargetSection = () => `
             <small class="text-hint">Gunakan huruf kecil & strip (slug format).</small>
           </div>
           <div class="form-group">
-            <label>Destination Name</label>
+            <label>Experience Name</label>
             <input
               type="text"
               id="f-nama"
