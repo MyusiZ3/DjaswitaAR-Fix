@@ -76,8 +76,6 @@ public class ARTargetHandler : MonoBehaviour
     
     // Robust Scan Logging
     private bool mIsTargetPresent = false;
-    private float mLastScanTime = -100f;
-    private const float SCAN_COOLDOWN = 10f; // Minimal 30 detik sebelum log lagi
     private Coroutine mLostCoroutine;
 
     private void Start()
@@ -692,11 +690,9 @@ public class ARTargetHandler : MonoBehaviour
                 if (mIsInitialized) 
                 {
                     UpdateUI(mData);
-                    if (Time.time - mLastScanTime > SCAN_COOLDOWN)
+                    if (gameObject.activeInHierarchy)
                     {
-                        mLastScanTime = Time.time;
-                        if (gameObject.activeInHierarchy)
-                            StartCoroutine(APIManager.Instance.LogScan(mData.id));
+                        StartCoroutine(APIManager.Instance.LogScan(mData.id));
                     }
                 }
                 else 
@@ -790,13 +786,17 @@ public class ARTargetHandler : MonoBehaviour
                 {
                     // 2. Streaming langsung (Sambil simpan di background untuk scan berikutnya?)
                     // Untuk video besar, kita streaming dulu agar user tidak nunggu download.
-                    // Tapi scan berikutnya akan tetap download jika kita tidak simpan.
-                    // Kita akan simpan video hanya jika ukurannya masuk akal atau user scan sampai habis?
-                    // Untuk saat ini, kita biarkan streaming untuk video agar tidak lag di awal.
                     PrepareVideo(mData.video_url);
                     
-                    // Option: Download di background agar scan berikutnya cepat
-                    StartCoroutine(DownloadVideoToCache(mData.video_url));
+                    // Hanya unduh di latar belakang jika video BUKAN dari Google Drive (karena GDrive menggunakan live streaming hemat bandwidth)
+                    if (!mData.video_url.Contains("drive.google.com") && !mData.video_url.Contains("googleusercontent.com"))
+                    {
+                        StartCoroutine(DownloadVideoToCache(mData.video_url));
+                    }
+                    else
+                    {
+                        Debug.Log("[ARTargetHandler] Google Drive video detected: Streaming live directly (skipping background disk caching).");
+                    }
                 }
             }
             else
@@ -807,9 +807,36 @@ public class ARTargetHandler : MonoBehaviour
         }
     }
 
+    private string ProcessVideoUrl(string url)
+    {
+        if (string.IsNullOrEmpty(url)) return url;
+        
+        if (url.Contains("drive.google.com/file/d/"))
+        {
+            string[] parts = url.Split(new string[] { "/d/" }, System.StringSplitOptions.None);
+            if (parts.Length > 1)
+            {
+                string idPart = parts[1].Split('/')[0];
+                return $"https://www.googleapis.com/drive/v3/files/{idPart}?alt=media&key={APIManager.Instance.activeGDriveApiKey}";
+            }
+        }
+        else if (url.Contains("drive.google.com/open?id="))
+        {
+            string[] parts = url.Split(new string[] { "id=" }, System.StringSplitOptions.None);
+            if (parts.Length > 1)
+            {
+                string idPart = parts[1].Split('&')[0];
+                return $"https://www.googleapis.com/drive/v3/files/{idPart}?alt=media&key={APIManager.Instance.activeGDriveApiKey}";
+            }
+        }
+        
+        return url;
+    }
+
     private void PrepareVideo(string url)
     {
-        videoPlayer.url = url;
+        string finalUrl = ProcessVideoUrl(url);
+        videoPlayer.url = finalUrl;
         videoPlayer.isLooping = true;
         
         // Unsubscribe to avoid memory leaks and duplicate calls

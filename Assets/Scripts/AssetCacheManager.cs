@@ -154,30 +154,77 @@ public static class AssetCacheManager
     /// </summary>
     private static string GetFilePath(string url)
     {
-        // Normalisasi: Hapus query string (seperti ?v=1 atau ?token=...) agar hash tetap sama
+        if (string.IsNullOrEmpty(url)) return "";
+
         string cleanUrl = url;
-        if (url.Contains("?"))
+        string extension = "";
+
+        // Check if there is an explicit extension query parameter (e.g. &ext=mp4 or &ext=.glb)
+        if (url.Contains("ext="))
         {
-            cleanUrl = url.Split('?')[0];
+            System.Text.RegularExpressions.Match extMatch = System.Text.RegularExpressions.Regex.Match(url, @"ext=([^&]+)");
+            if (extMatch.Success)
+            {
+                extension = extMatch.Groups[1].Value.Trim().ToLower();
+                if (!extension.StartsWith(".")) extension = "." + extension;
+            }
+        }
+
+        // Process GDrive or regular URLs
+        if (url.Contains("drive.google.com") || url.Contains("googleusercontent.com"))
+        {
+            // GDrive URLs are unique by their 'id' parameter.
+            // Extract 'id' to create a unique hash.
+            System.Text.RegularExpressions.Match idMatch = System.Text.RegularExpressions.Regex.Match(url, @"id=([^&]+)");
+            if (idMatch.Success)
+            {
+                cleanUrl = "gdrive_" + idMatch.Groups[1].Value;
+            }
+            else
+            {
+                // Fallback: use full url if id is not found
+                cleanUrl = url;
+            }
+
+            // Default extension for GDrive if not explicitly set via 'ext=' query parameter
+            if (string.IsNullOrEmpty(extension))
+            {
+                extension = ".glb"; // Default fallback
+            }
+        }
+        else
+        {
+            // Standard URL: split by '?' to avoid cache misses on temporary tokens/version queries
+            if (url.Contains("?"))
+            {
+                cleanUrl = url.Split('?')[0];
+            }
+
+            // Get extension from Path if not explicitly set via 'ext='
+            if (string.IsNullOrEmpty(extension))
+            {
+                try
+                {
+                    string parsedExtension = Path.GetExtension(new Uri(cleanUrl).AbsolutePath);
+                    if (!string.IsNullOrEmpty(parsedExtension))
+                    {
+                        extension = parsedExtension;
+                    }
+                }
+                catch {}
+            }
+        }
+
+        // Final fallback extension
+        if (string.IsNullOrEmpty(extension))
+        {
+            extension = ".glb";
         }
 
         using (MD5 md5 = MD5.Create())
         {
             byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(cleanUrl));
             string fileName = BitConverter.ToString(hash).Replace("-", "").ToLower();
-            
-            string extension = ".glb"; // Default ke .glb agar glTFast tidak bingung saat membaca file
-            try
-            {
-                // Ambil ekstensi asli dari URL bersih
-                string parsedExtension = Path.GetExtension(new Uri(cleanUrl).AbsolutePath);
-                if (!string.IsNullOrEmpty(parsedExtension))
-                {
-                    extension = parsedExtension;
-                }
-            }
-            catch {}
-
             return Path.Combine(CacheDirectory, fileName + extension);
         }
     }
