@@ -1,4 +1,4 @@
-export const WisataSection = () => `
+export const TargetSection = () => `
   <header class="header">
     <div class="title-section">
       <h1>Destinations List</h1>
@@ -10,7 +10,7 @@ export const WisataSection = () => `
           <circle cx="11" cy="11" r="8"></circle>
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
-        <input type="text" id="search-wisata" placeholder="Cari nama wisata..." />
+        <input type="text" id="search-target" placeholder="Cari nama target..." />
       </div>
       <button class="btn btn-primary" id="btn-add">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -32,7 +32,7 @@ export const WisataSection = () => `
           <th>Type</th>
           <th>Event Date</th>
           <th>Price</th>
-          <th id="th-aksi-wisata">Aksi</th>
+          <th id="th-aksi-target">Aksi</th>
         </tr>
       </thead>
       <tbody id="data-table-body">
@@ -40,15 +40,14 @@ export const WisataSection = () => `
       </tbody>
     </table>
   </section>
-
-  <!-- Modal Form Wisata (Moved from index.html for modularity) -->
+  <!-- Modal Form Target -->
   <div class="modal-overlay" id="modal-form">
     <div class="modal-content">
       <h2 id="modal-title">Create New Experience</h2>
       <p style="color: var(--text-dim); font-size: 0.875rem">
         Isi detail di bawah untuk menambahkan destinasi AR baru.
       </p>
-      <form id="wisata-form">
+      <form id="target-form">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem">
           <div class="form-group">
             <label>Unique Spot ID</label>

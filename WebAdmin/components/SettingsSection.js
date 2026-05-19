@@ -151,7 +151,7 @@ export const SettingsSection = () => `
     <div class="card-header">
       <h3 style="color: var(--danger)">Storage Maintenance</h3>
       <p style="font-size: 0.875rem; color: var(--text-dim)">
-        Bersihkan file sampah (media/3D model) yang tidak terhubung ke data wisata manapun.
+        Bersihkan file sampah (media/3D model) yang tidak terhubung ke data target manapun.
       </p>
     </div>
     <div class="card-body" style="padding: 1.5rem">
@@ -159,7 +159,7 @@ export const SettingsSection = () => `
         <div style="flex: 1">
           <p style="font-size: 0.875rem; line-height: 1.5; color: var(--text-dim)">
             Sistem akan memindai seluruh isi bucket <strong>wisata-media</strong> dan membandingkannya dengan database. 
-            File yang tidak memiliki referensi di tabel <code>wisata</code> akan dihapus untuk menghemat ruang penyimpanan.
+            File yang tidak memiliki referensi di tabel <code>ar_targets</code> akan dihapus untuk menghemat ruang penyimpanan.
           </p>
           <div style="margin-top: 0.75rem; font-size: 0.75rem; color: var(--danger); opacity: 0.8;">
             *Hanya file yang berumur lebih dari 1 jam yang akan dibersihkan untuk menghindari penghapusan file yang sedang diupload.
@@ -330,7 +330,7 @@ export const SettingsSection = () => `
           line-height: 1.6;
         "
       >
-        Tindakan ini akan <b>menghapus permanen</b> semua file media yang tidak terhubung ke data wisata manapun. 
+        Tindakan ini akan <b>menghapus permanen</b> semua file media yang tidak terhubung ke data target manapun. 
         <br/><br/>
         <span style="font-size: 0.8rem; color: var(--danger)">*Hanya file yang berumur >1 jam yang akan dihapus.</span>
       </p>

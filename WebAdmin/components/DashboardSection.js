@@ -84,7 +84,7 @@ export const DashboardSection = () => `
     <div class="card">
       <div class="card-header">
         <h3>Category Distribution</h3>
-        <p style="font-size: 0.875rem; color: var(--text-dim)">Proporsi jenis destinasi wisata kamu.</p>
+        <p style="font-size: 0.875rem; color: var(--text-dim)">Proporsi jenis target AR kamu.</p>
       </div>
       <div style="padding: 1.5rem; height: 320px; display: flex; align-items: center; justify-content: center;">
         <canvas id="category-chart"></canvas>
@@ -94,14 +94,14 @@ export const DashboardSection = () => `
 
   <div class="card" style="margin-top: 1.5rem">
     <div class="card-header">
-      <h3>Top Destinations</h3>
-      <p style="font-size: 0.875rem; color: var(--text-dim)">Lokasi yang paling sering di-scan oleh pengunjung.</p>
+      <h3>Top Targets</h3>
+      <p style="font-size: 0.875rem; color: var(--text-dim)">Target AR yang paling sering di-scan oleh pengunjung.</p>
     </div>
     <div class="content-card" style="padding: 0; border: none; background: transparent; backdrop-filter: none;">
       <table style="margin: 0">
         <thead>
           <tr>
-            <th>Destination Name</th>
+            <th>Target Name</th>
             <th>Category</th>
             <th>Engagement</th>
             <th style="width: 200px">Popularity</th>

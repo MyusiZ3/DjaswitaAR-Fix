@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 
 // Components
 import { DashboardSection } from "./components/DashboardSection.js";
-import { WisataSection } from "./components/WisataSection.js";
+import { TargetSection } from "./components/TargetSection.js";
 import { InstructionsSection } from "./components/InstructionsSection.js";
 import { AdminsSection } from "./components/AdminsSection.js";
 import { SettingsSection } from "./components/SettingsSection.js";
@@ -12,7 +12,7 @@ import { AboutSection } from "./components/AboutSection.js";
 // Initial Component Injection
 const sections = {
   "section-dashboard": DashboardSection(),
-  "section-wisata": WisataSection(),
+  "section-target": TargetSection(),
   "section-instructions": InstructionsSection(),
   "section-admins": AdminsSection(),
   "section-settings": SettingsSection(),
@@ -47,7 +47,7 @@ const supabaseAux = createClient(SUPABASE_URL, SUPABASE_KEY, {
 // DOM Elements
 const tableBody = document.getElementById("data-table-body");
 const modal = document.getElementById("modal-form");
-const form = document.getElementById("wisata-form");
+const form = document.getElementById("target-form");
 const fType = document.getElementById('f-type');
 const eventDateGroup = document.getElementById('event-date-group');
 
@@ -61,7 +61,7 @@ const previewBox = document.getElementById("media-preview-box");
 const markerUrlInput = document.getElementById("f-marker-url");
 const markerPreviewBox = document.getElementById("marker-preview-box");
 const markerFileInput = document.getElementById("f-marker-file");
-const searchInput = document.getElementById("search-wisata");
+const searchInput = document.getElementById("search-target");
 const hargaInput = document.getElementById("f-harga");
 const modelUrlInput = document.getElementById("f-model-url");
 const modelFileInput = document.getElementById("f-model-file");
@@ -118,10 +118,10 @@ let editingId = null;
 let isAdminEditing = false;
 let editingAdminId = null;
 let currentRole = "admin";
-let wisataData = [];
+let targetData = [];
 let adminData = [];
 let idToDelete = null;
-let deleteType = null; // 'wisata' or 'admin'
+let deleteType = null; // 'target' or 'admin'
 
 // Prevents redundant fetches on tab focus (Supabase onAuthStateChange triggers)
 let isInitialized = false;
@@ -801,9 +801,9 @@ async function handleAuthState(session) {
       if (btnAdd) {
         btnAdd.style.display = (currentRole === "member") ? "none" : "flex";
       }
-      const thWisata = document.getElementById('th-aksi-wisata');
-      if (thWisata) {
-        thWisata.style.display = (currentRole === "member") ? "none" : "table-cell";
+      const thTarget = document.getElementById('th-aksi-target');
+      if (thTarget) {
+        thTarget.style.display = (currentRole === "member") ? "none" : "table-cell";
       }
 
       // Restore last section or default to dashboard
@@ -896,7 +896,7 @@ btnConfirmLogout?.addEventListener("click", async () => {
   }
 });
 
-// --- WISATA CRUD ---
+// --- TARGET CRUD ---
 function renderTable(data) {
   if (!tableBody) return;
 
@@ -939,7 +939,7 @@ function renderTable(data) {
       .querySelectorAll(".btn-delete")
       .forEach((b) => (b.onclick = () => deleteItem(b.dataset.id)));
   } else {
-    tableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 3rem; color: var(--text-dim);">${searchInput?.value ? "Data yang Anda cari tidak ditemukan." : "Belum ada data wisata. Silakan tambahkan data baru."}</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 3rem; color: var(--text-dim);">${searchInput?.value ? "Data yang Anda cari tidak ditemukan." : "Belum ada data target. Silakan tambahkan data baru."}</td></tr>`;
   }
 }
 
@@ -965,8 +965,8 @@ async function fetchData() {
       .order("nama", { ascending: true });
     if (error) throw error;
 
-    wisataData = data || [];
-    renderTable(wisataData);
+    targetData = data || [];
+    renderTable(targetData);
   } catch (error) {
     if (tableBody) {
       tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--danger);">Gagal memuat data: ${error.message}</td></tr>`;
@@ -1094,13 +1094,13 @@ async function fetchAnalytics(timeframe = 'weekly') {
     renderScansChart(labels, labels.map(l => chartData[l]));
 
     // 3. Category Distribution Chart
-    if (wisataData.length === 0) {
+    if (targetData.length === 0) {
       const { data: wData } = await supabase.from("ar_targets").select("*");
-      wisataData = wData || [];
+      targetData = wData || [];
     }
 
     const categories = {};
-    wisataData.forEach(w => {
+    targetData.forEach(w => {
       const cat = w.type || 'Lainnya';
       categories[cat] = (categories[cat] || 0) + 1;
     });
@@ -1118,7 +1118,7 @@ async function fetchAnalytics(timeframe = 'weekly') {
       counts[p.target_id] = (counts[p.target_id] || 0) + 1;
     });
 
-    const popularList = wisataData.map(w => ({
+    const popularList = targetData.map(w => ({
       ...w,
       scan_count: counts[w.id] || 0
     })).sort((a, b) => b.scan_count - a.scan_count);
@@ -1304,7 +1304,7 @@ function renderPopularLocations(data) {
 
 searchInput?.addEventListener("input", (e) => {
   const query = e.target.value.toLowerCase();
-  const filtered = wisataData.filter(
+  const filtered = targetData.filter(
     (item) =>
       (item.nama?.toLowerCase() || "").includes(query) ||
       (item.id?.toLowerCase() || "").includes(query) ||
@@ -1343,7 +1343,7 @@ form?.addEventListener("submit", async (e) => {
   if (error) {
     showToast("Error: " + error.message, "error");
   } else {
-    showToast("Data wisata berhasil disimpan.", "success");
+    showToast("Data target berhasil disimpan.", "success");
     closeModal();
     fetchData();
   }
@@ -1526,7 +1526,7 @@ async function cleanupOrphanedFiles() {
   
   try {
     // 1. Get all used URLs from database
-    const { data: wisata, error: dbError } = await supabase.from('ar_targets').select('slide_urls, marker_url, video_url, model_url');
+    const { data: dbTargets, error: dbError } = await supabase.from('ar_targets').select('slide_urls, marker_url, video_url, model_url');
     if (dbError) throw dbError;
 
     const usedPaths = new Set();
@@ -1537,7 +1537,7 @@ async function cleanupOrphanedFiles() {
       return parts.length > 1 ? parts[1].split('?')[0] : null;
     };
 
-    wisata.forEach(item => {
+    dbTargets.forEach(item => {
       if (item.marker_url) { const p = getPathFromUrl(item.marker_url); if (p) usedPaths.add(p); }
       if (item.video_url) { const p = getPathFromUrl(item.video_url); if (p) usedPaths.add(p); }
       if (item.model_url) { const p = getPathFromUrl(item.model_url); if (p) usedPaths.add(p); }
@@ -1666,7 +1666,7 @@ async function fetchAdmins() {
     if (navAdmins) navAdmins.style.display = "none";
     if (navSettings) navSettings.style.display = "none";
     if (document.getElementById("section-admins").classList.contains("active")) {
-      showSection("section-wisata");
+      showSection("section-target");
     }
     return;
   }
@@ -2076,7 +2076,7 @@ async function editItem(id) {
 
 async function deleteItem(id) {
   idToDelete = id;
-  deleteType = "wisata";
+  deleteType = "target";
 
   if (hardDeleteOption) {
     hardDeleteOption.style.display = "flex";
@@ -2086,10 +2086,10 @@ async function deleteItem(id) {
   const title = document.getElementById("delete-modal-title");
   const desc = document.getElementById("delete-modal-desc");
 
-  if (title) title.innerText = "Hapus Lokasi?";
+  if (title) title.innerText = "Hapus Target?";
   if (desc)
     desc.innerText =
-      "Data lokasi ini akan dihapus secara permanen dari database. Tindakan ini tidak dapat dibatalkan.";
+      "Data target ini akan dihapus secara permanen dari database. Tindakan ini tidak dapat dibatalkan.";
 
   if (modalDelete) modalDelete.classList.add("active");
 }
@@ -2110,7 +2110,7 @@ btnDeleteConfirm?.addEventListener("click", async () => {
       '<div class="loading-spinner" style="width: 14px; height: 14px; border-width: 2px;"></div> Menghapus...';
 
     // Handle hard delete (Storage cleanup)
-    if (deleteType === "wisata" && checkHardDelete?.checked) {
+    if (deleteType === "target" && checkHardDelete?.checked) {
       const { data: item } = await supabase
         .from("ar_targets")
         .select("slide_urls, marker_url, video_url, model_url")
@@ -2157,7 +2157,7 @@ btnDeleteConfirm?.addEventListener("click", async () => {
     }
 
     let error;
-    if (deleteType === "wisata") {
+    if (deleteType === "target") {
       const res = await supabase.from("ar_targets").delete().eq("id", idToDelete);
       error = res.error;
     } else {
@@ -2168,12 +2168,12 @@ btnDeleteConfirm?.addEventListener("click", async () => {
 
     if (!error) {
       showToast(
-        deleteType === "wisata"
-          ? "Lokasi berhasil dihapus permanen"
+        deleteType === "target"
+          ? "Target berhasil dihapus permanen"
           : "Akses admin dicabut",
         "success",
       );
-      if (deleteType === "wisata") fetchData();
+      if (deleteType === "target") fetchData();
       else fetchAdmins();
     } else {
       throw error;
@@ -2513,7 +2513,7 @@ window.exportDashboardPDF = async function() {
     // 2. Fetch all scans from Supabase to filter precisely
     const { data: scans, error } = await supabase
       .from('scans')
-      .select('id, scanned_at, wisata(id, nama, type)')
+      .select('id, scanned_at, ar_targets(id, nama, type)')
       .order('scanned_at', { ascending: false });
 
     if (error) throw error;
@@ -2541,10 +2541,10 @@ window.exportDashboardPDF = async function() {
     // 4. Calculate stats & popular destinations for this range
     const destinationCounts = {};
     filteredScans.forEach(s => {
-      if (s.wisata) {
-        const id = s.wisata.id;
-        const nama = s.wisata.nama;
-        const type = s.wisata.type;
+      if (s.ar_targets) {
+        const id = s.ar_targets.id;
+        const nama = s.ar_targets.nama;
+        const type = s.ar_targets.type;
         if (!destinationCounts[id]) {
           destinationCounts[id] = { nama, type, count: 0 };
         }
@@ -2577,7 +2577,7 @@ window.exportDashboardPDF = async function() {
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(100, 110, 120);
-    doc.text("SISTEM MANAJEMEN INFORMASI PARIWISATA & AR", 14, 30);
+    doc.text("SISTEM MANAJEMEN INFORMASI TARGET & AR", 14, 30);
 
     // Decorative line divider
     doc.setDrawColor(220, 225, 230);
@@ -2628,7 +2628,7 @@ window.exportDashboardPDF = async function() {
 
     doc.autoTable({
       startY: doc.lastAutoTable.finalY + 16,
-      head: [['Peringkat', 'Nama Destinasi Wisata', 'Kategori', 'Total Scan', 'Kontribusi Popularitas']],
+      head: [['Peringkat', 'Nama Target AR', 'Kategori', 'Total Scan', 'Kontribusi Popularitas']],
       body: topDestRows.length > 0 ? topDestRows : [['-', 'Belum ada data interaksi di periode ini', '-', '-', '-']],
       theme: 'grid',
       headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
@@ -2652,14 +2652,14 @@ window.exportDashboardPDF = async function() {
 
     const logRows = filteredScans.map((s, idx) => {
       const scanTime = new Date(s.scanned_at).toLocaleString('id-ID');
-      const name = s.wisata ? s.wisata.nama : 'Destinasi Dihapus';
-      const type = s.wisata ? s.wisata.type : 'N/A';
+      const name = s.ar_targets ? s.ar_targets.nama : 'Target Dihapus';
+      const type = s.ar_targets ? s.ar_targets.type : 'N/A';
       return [idx + 1, s.id, scanTime, name, type];
     });
 
     doc.autoTable({
       startY: 30,
-      head: [['No', 'ID Scan', 'Waktu Pindai (Scan)', 'Nama Destinasi Wisata', 'Kategori']],
+      head: [['No', 'ID Scan', 'Waktu Pindai (Scan)', 'Nama Target AR', 'Kategori']],
       body: logRows.length > 0 ? logRows : [['-', 'Belum ada data scan', '-', '-', '-']],
       theme: 'striped',
       headStyles: { fillColor: [71, 85, 105], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8.5 },
@@ -2723,7 +2723,7 @@ window.exportDashboardCSV = async function() {
   try {
     const { data: scans, error } = await supabase
       .from('scans')
-      .select('id, scanned_at, wisata(id, nama, type)')
+      .select('id, scanned_at, ar_targets(id, nama, type)')
       .order('scanned_at', { ascending: false });
 
     if (error) throw error;
@@ -2751,10 +2751,10 @@ window.exportDashboardCSV = async function() {
     // Grouping Top Destinations
     const destinationCounts = {};
     filteredScans.forEach(s => {
-      if (s.wisata) {
-        const id = s.wisata.id;
-        const nama = s.wisata.nama;
-        const type = s.wisata.type;
+      if (s.ar_targets) {
+        const id = s.ar_targets.id;
+        const nama = s.ar_targets.nama;
+        const type = s.ar_targets.type;
         if (!destinationCounts[id]) {
           destinationCounts[id] = { nama, type, count: 0 };
         }
@@ -2823,7 +2823,7 @@ window.exportDashboardCSV = async function() {
           <td class="metrics-value">${filteredScans.length} kali scan</td>
         </tr>
         <tr>
-          <td class="metrics-label">Destinasi Aktif Di-scan (Active Spots)</td>
+          <td class="metrics-label">Target Aktif Di-scan (Active Spots)</td>
           <td class="metrics-value">${activeSpotsCount} lokasi aktif</td>
         </tr>
         <tr>
@@ -2842,12 +2842,12 @@ window.exportDashboardCSV = async function() {
       <!-- 2. Top Destinations Table -->
       <table>
         <tr>
-          <th colspan="5" class="section-header">=== DAFTAR SEPULUH DESTINASI TERPOPULER ===</th>
+          <th colspan="5" class="section-header">=== DAFTAR SEPULUH TARGET TERPOPULER ===</th>
         </tr>
         <tr>
           <th class="rank-col">Peringkat</th>
-          <th class="name-col">Nama Destinasi Wisata</th>
-          <th class="type-col">Kategori Wisata</th>
+          <th class="name-col">Nama Target AR</th>
+          <th class="type-col">Kategori</th>
           <th class="number-col">Total Scan</th>
           <th class="number-col">Popularitas</th>
         </tr>
@@ -2886,15 +2886,15 @@ window.exportDashboardCSV = async function() {
           <th class="rank-col">No</th>
           <th class="id-col">ID Scan</th>
           <th class="date-col">Waktu Pindai (Scan)</th>
-          <th class="name-col">Nama Destinasi Wisata</th>
+          <th class="name-col">Nama Target AR</th>
           <th class="type-col">Kategori</th>
         </tr>
     `;
 
     filteredScans.forEach((s, idx) => {
       const scanTime = new Date(s.scanned_at).toLocaleString('id-ID');
-      const name = s.wisata ? s.wisata.nama : 'Destinasi Dihapus';
-      const type = s.wisata ? s.wisata.type : 'N/A';
+      const name = s.ar_targets ? s.ar_targets.nama : 'Target Dihapus';
+      const type = s.ar_targets ? s.ar_targets.type : 'N/A';
       excelContent += `
         <tr>
           <td class="rank-col">${idx + 1}</td>
