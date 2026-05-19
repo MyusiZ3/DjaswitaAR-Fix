@@ -179,7 +179,7 @@ public class APIManager : MonoBehaviour
         string deviceInfo = SystemInfo.deviceModel + " (" + SystemInfo.operatingSystem + ")";
         
         // Simple JSON object for POST
-        string jsonPayload = $"{{\"wisata_id\": \"{wisataId}\", \"device_info\": \"{deviceInfo}\"}}";
+        string jsonPayload = $"{{\"target_id\": \"{wisataId}\", \"device_info\": \"{deviceInfo}\"}}";
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
 
         using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
