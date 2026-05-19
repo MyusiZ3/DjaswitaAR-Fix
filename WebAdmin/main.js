@@ -960,7 +960,7 @@ async function fetchData() {
     }
 
     const { data, error } = await supabase
-      .from("wisata")
+      .from("ar_targets")
       .select("*")
       .order("nama", { ascending: true });
     if (error) throw error;
@@ -1012,7 +1012,7 @@ async function fetchAnalytics(timeframe = 'weekly') {
 
     // 1. Fetch Summary Stats
     const { count: totalScans } = await supabase.from('scans').select('*', { count: 'exact', head: true });
-    const { count: activeLocations } = await supabase.from('wisata').select('*', { count: 'exact', head: true });
+    const { count: activeLocations } = await supabase.from('ar_targets').select('*', { count: 'exact', head: true });
     const { count: totalAdmins } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
 
     document.getElementById('stat-total-scans').innerText = totalScans || 0;
@@ -1095,7 +1095,7 @@ async function fetchAnalytics(timeframe = 'weekly') {
 
     // 3. Category Distribution Chart
     if (wisataData.length === 0) {
-      const { data: wData } = await supabase.from("wisata").select("*");
+      const { data: wData } = await supabase.from("ar_targets").select("*");
       wisataData = wData || [];
     }
 
@@ -1109,13 +1109,13 @@ async function fetchAnalytics(timeframe = 'weekly') {
     // 4. Fetch Popular Locations
     const { data: popData, error: popError } = await supabase
       .from('scans')
-      .select('wisata_id');
+      .select('target_id');
     
     if (popError) throw popError;
 
     const counts = {};
     popData.forEach(p => {
-      counts[p.wisata_id] = (counts[p.wisata_id] || 0) + 1;
+      counts[p.target_id] = (counts[p.target_id] || 0) + 1;
     });
 
     const popularList = wisataData.map(w => ({
@@ -1337,8 +1337,8 @@ form?.addEventListener("submit", async (e) => {
     model_pos_z: parseFloat(document.getElementById("f-model-pos-z").value) || 0.0192,
   };
   const { error } = isEditing
-    ? await supabase.from("wisata").update(formData).eq("id", editingId)
-    : await supabase.from("wisata").insert([formData]);
+    ? await supabase.from("ar_targets").update(formData).eq("id", editingId)
+    : await supabase.from("ar_targets").insert([formData]);
 
   if (error) {
     showToast("Error: " + error.message, "error");
@@ -1526,7 +1526,7 @@ async function cleanupOrphanedFiles() {
   
   try {
     // 1. Get all used URLs from database
-    const { data: wisata, error: dbError } = await supabase.from('wisata').select('slide_urls, marker_url, video_url, model_url');
+    const { data: wisata, error: dbError } = await supabase.from('ar_targets').select('slide_urls, marker_url, video_url, model_url');
     if (dbError) throw dbError;
 
     const usedPaths = new Set();
@@ -2015,7 +2015,7 @@ videoUrlInput?.addEventListener("input", (e) => {
 
 async function editItem(id) {
   const { data, error } = await supabase
-    .from("wisata")
+    .from("ar_targets")
     .select("*")
     .eq("id", id)
     .single();
@@ -2112,7 +2112,7 @@ btnDeleteConfirm?.addEventListener("click", async () => {
     // Handle hard delete (Storage cleanup)
     if (deleteType === "wisata" && checkHardDelete?.checked) {
       const { data: item } = await supabase
-        .from("wisata")
+        .from("ar_targets")
         .select("slide_urls, marker_url, video_url, model_url")
         .eq("id", idToDelete)
         .single();
@@ -2158,7 +2158,7 @@ btnDeleteConfirm?.addEventListener("click", async () => {
 
     let error;
     if (deleteType === "wisata") {
-      const res = await supabase.from("wisata").delete().eq("id", idToDelete);
+      const res = await supabase.from("ar_targets").delete().eq("id", idToDelete);
       error = res.error;
     } else {
       // Menghapus user secara total dari auth.users dan profiles via SQL Function (RPC)

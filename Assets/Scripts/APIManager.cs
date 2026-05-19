@@ -92,13 +92,13 @@ public class APIManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Fetches wisata data from Supabase based on the marker ID.
+    /// Fetches AR target data from Supabase based on the marker ID.
     /// </summary>
     public IEnumerator GetWisataById(string markerId, Action<WisataData> onSuccess, Action<string> onError)
     {
         while (!isInitialized) yield return null;
 
-        string url = $"{activeBaseUrl}wisata?id=eq.{markerId}";
+        string url = $"{activeBaseUrl}ar_targets?id=eq.{markerId}";
 
         using (UnityWebRequest request = UnityWebRequest.Get(url))
         {
@@ -123,13 +123,13 @@ public class APIManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Fetches all wisata data from Supabase.
+    /// Fetches all AR targets from Supabase.
     /// </summary>
     public IEnumerator GetAllWisata(Action<WisataData[]> onSuccess, Action<string> onError)
     {
         while (!isInitialized) yield return null;
 
-        string url = activeBaseUrl + "wisata";
+        string url = activeBaseUrl + "ar_targets";
 
         using (UnityWebRequest request = UnityWebRequest.Get(url))
         {
@@ -162,7 +162,7 @@ public class APIManager : MonoBehaviour
         string deviceInfo = SystemInfo.deviceModel + " (" + SystemInfo.operatingSystem + ")";
         
         // Simple JSON object for POST
-        string jsonPayload = $"{{\"wisata_id\": \"{wisataId}\", \"device_info\": \"{deviceInfo}\"}}";
+        string jsonPayload = $"{{\"target_id\": \"{wisataId}\", \"device_info\": \"{deviceInfo}\"}}";
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
 
         using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
