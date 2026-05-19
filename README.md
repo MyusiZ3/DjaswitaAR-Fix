@@ -132,6 +132,7 @@ CREATE TABLE app_settings (
   id TEXT PRIMARY KEY DEFAULT 'current_config',
   supabase_url TEXT,
   supabase_key TEXT,
+  gdrive_api_key TEXT,
   canva_template_url TEXT,
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -144,6 +145,8 @@ CREATE TABLE app_settings_logs (
   new_url TEXT,
   old_key TEXT,
   new_key TEXT,
+  old_gdrive_key TEXT,
+  new_gdrive_key TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
@@ -228,14 +231,15 @@ Agar Unity dapat menarik data marker dari database Supabase:
 
 1. Buka project Unity menggunakan Unity Hub / Unity Editor 6.
 2. Di panel Project, temukan berkas skrip bernama `APIManager.cs` di dalam folder `Assets/Scripts/`.
-3. Buka berkas tersebut dan perbarui variabel `masterBaseUrl` dan `masterApiKey` dengan kredensial Supabase milik Anda:
+3. Buka berkas tersebut dan perbarui variabel konfigurasi *Master Fallback* dengan kredensial Supabase dan Google Drive milik Anda:
    ```csharp
-   // Ganti dengan kredensial API Supabase yang valid
+   // Ganti dengan kredensial API Supabase & GDrive yang valid
    private string masterBaseUrl = "https://your-project-id.supabase.co";
    private string masterApiKey = "your-long-anon-jwt-key";
+   private string masterGDriveApiKey = "your-gdrive-api-key";
    ```
    > [!NOTE]
-   > Nilai `masterBaseUrl` diisi dengan string **Project URL** dan `masterApiKey` diisi dengan string **anon public API Key** yang Anda peroleh dari Dashboard Supabase sebelumnya.
+   > Nilai `masterBaseUrl` dan `masterApiKey` diisi dengan kredensial dari Dashboard Supabase. Sedangkan `masterGDriveApiKey` adalah kunci API cadangan jika aplikasi gagal menarik konfigurasi dari tabel `app_settings`.
 
 ### C. Fitur Utama Skrip Unity
 
@@ -245,9 +249,14 @@ Agar Unity dapat menarik data marker dari database Supabase:
 
 ---
 
-## 5. Fitur Unggulan & Optimasi Sistem
+## 5. Fitur Unggulan & Optimasi Sistem (Terbaru)
 
-- **Unified Caching**: Mendukung caching luring pintar untuk file berukuran besar seperti `.glb`, `.mp4` (video), dan gambar.
-- **Robust Tracking**: Sistem pelacakan AR dengan penanganan buffering visual (Delayed Hide) untuk kenyamanan pengalaman pengguna.
-- **Real-time Synchronization**: Setiap perubahan data , file marker, maupun model 3D di dashboard WebAdmin secara otomatis akan langsung termuat saat marker dipindai oleh aplikasi Unity.
-- **Auto-Normalize Size**: Penyetelan otomatis proporsi visual objek 3D secara runtime sehingga developer tidak perlu menyamakan skala mentah model di Blender/perangkat lunak modeling 3D.
+- **Keamanan Konfigurasi Aktif (Masking & Verification):** Sistem perlindungan data kredensial API Supabase & GDrive di WebAdmin dengan penyensoran otomatis (*masking*), sistem verifikasi kata sandi admin untuk membuka kunci, serta fitur penguncian otomatis (*auto-lock* dalam 30 detik) demi mencegah kebocoran kunci API.
+- **Indikator Detak Jantung Koneksi (Database Heartbeat):** Dashboard dilengkapi dengan pemantau status koneksi Supabase secara *real-time* yang memberikan indikator visual hidup (*heartbeat status*) yang memberi tahu admin apabila database sedang terhubung atau terputus.
+- **Panduan Setup Kredensial Interaktif (Interactive API Guide):** Panduan terintegrasi berbasis tab di dashboard WebAdmin untuk mengedukasi administrator baru langkah-demi-langkah tentang cara mendapatkan API Key Supabase dan Google Drive secara mandiri.
+- **Optimasi Live Streaming Video GDrive (Bypass Cache):** Sistem klien Unity mendeteksi video Google Drive dan langsung memutarnya secara *live streaming* instan tanpa mendownload data biner besar (55MB+) ke cache lokal. Hal ini memotong waktu tunggu pemutaran menjadi nol dan mencegah lag/penurunan *frame rate* saat AR aktif.
+- **Isolasi Cache GDrive Unik (Anti Hash Collision):** Manajemen cache di Unity mengekstrak ID unik Google Drive dan menyematkan ekstensi yang tepat (.mp4, .glb, .png). Ini mencegah tabrakan cache antar berkas (*cache overlap*) dan melindungi mesin glTFast dari kerusakan pembacaan berkas (crash fatal).
+- **Log Analitik Berbasis Render Lifecycle (Robust Analytics):** Pencatatan frekuensi scan marker dihitung secara akurat berdasarkan kemunculan fisik target di kamera (`mIsTargetPresent`) menggantikan metode *cooldown* waktu (seperti 60 menit sebelumnya). Scan baru hanya dihitung jika target benar-benar hilang dari layar dan dipindai kembali.
+- **Pengelompokan Kategori Cerdas (Smart Category Chart):** Dashboard secara otomatis mengelompokkan kategori kustom yang diinput manual oleh admin ke dalam irisan **"Lainnya"** di diagram donat untuk menjaga kebersihan, tata letak, dan keindahan grafik analitik.
+- **Auto-Normalize Size:** Penyetelan otomatis proporsi visual objek 3D secara runtime menggunakan bounding box sehingga developer tidak perlu menyamakan skala mentah model di Blender/perangkat lunak modeling 3D.
+- **Unified Caching & Robust Tracking:** Sistem caching luring pintar untuk model 3D GLB, gambar slide, beserta penanganan buffering visual (*Delayed Hide*) agar objek tidak goyang atau hilang saat kamera terhalang sesaat.
