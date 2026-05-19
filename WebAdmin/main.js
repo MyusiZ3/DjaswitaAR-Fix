@@ -939,7 +939,7 @@ function renderTable(data) {
       .querySelectorAll(".btn-delete")
       .forEach((b) => (b.onclick = () => deleteItem(b.dataset.id)));
   } else {
-    tableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 3rem; color: var(--text-dim);">${searchInput?.value ? "Data yang Anda cari tidak ditemukan." : "Belum ada data target. Silakan tambahkan data baru."}</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 3rem; color: var(--text-dim);">${searchInput?.value ? "Data yang Anda cari tidak ditemukan." : "Belum ada data target. Silakan tambahkan data baru."}</td></tr>`;
   }
 }
 
