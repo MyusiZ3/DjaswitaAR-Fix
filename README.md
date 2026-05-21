@@ -35,7 +35,7 @@ Database kami menggunakan PostgreSQL yang dikonfigurasi secara efisien melalui S
     *   `nama` & `type`: Nama objek wisata dan kategorinya (wisata, edukasi, dll.).
     *   `deskripsi` & `harga`: Informasi detail untuk pengguna.
     *   `marker_url`, `glb_url`, `video_url`: Tautan publik file aset (gambar marker, model 3D, dan video panduan) yang disimpan di Storage Supabase atau Google Drive.
-    *   `booking_url`: Tautan eksternal untuk pembelian tiket objek wisata.
+    *   `contact_url`: Tautan eksternal untuk kontak / WhatsApp / website detail.
 *   **`scans` (Tabel Analitik / Engagement Tracking)**: Mencatat setiap kali pengguna memindai marker.
     *   `target_id`: Menghubungkan ke tabel `ar_targets`.
     *   `device_info`: Informasi tipe perangkat (Android/iOS) untuk analisis demografi teknis.
@@ -203,7 +203,7 @@ CREATE TABLE ar_targets (
   type TEXT DEFAULT 'wisata',
   deskripsi TEXT,
   harga NUMERIC DEFAULT 0,
-  booking_url TEXT,
+  contact_url TEXT,
   marker_url TEXT,
   slide_urls TEXT,
   video_url TEXT,
@@ -212,8 +212,8 @@ CREATE TABLE ar_targets (
   start_date DATE,
   end_date DATE,
   duration TEXT,
-  booking_start TIMESTAMPTZ,
-  booking_end TIMESTAMPTZ,
+  activity_start TIMESTAMPTZ,
+  activity_end TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -301,14 +301,47 @@ Aktifkan fitur **Row Level Security (RLS)** pada setiap tabel yang dibuat dan ko
 1. Buka menu **Storage** pada panel navigasi kiri di Dashboard Supabase.
 2. Klik tombol **Create Bucket** (atau **New Bucket**) untuk membuat penampung file publik baru.
 3. Masukkan parameter-parameter berikut:
-   - **Bucket Name**: `wisata-media`
+   - **Bucket Name**: `ar-media`
    - **Public Bucket**: **Aktifkan** (pastikan posisinya _Public_ agar file GLB, marker, dan video dapat memiliki tautan unduh publik yang valid untuk Unity).
-4. Buat folder di dalam bucket `wisata-media` untuk menyusun file Anda secara rapi:
+4. Buat folder di dalam bucket `ar-media` untuk menyusun file Anda secara rapi:
    - `uploads/`
    - `markers/`
    - `videos/`
    - `models/`
-5. Konfigurasikan **Storage Policies** agar user yang berstatus **authenticated** (admin yang login ke Web Admin) memiliki akses penuh untuk `INSERT`, `UPDATE`, dan `DELETE` file di dalam bucket `wisata-media`.
+5. **Konfigurasikan Storage Policies (RLS)** untuk mengamankan bucket `ar-media`. Ikuti langkah-langkah detail berikut:
+
+   a. **Kebijakan 1: Akses Baca Publik (Public Read)**
+      * *Catatan:* Karena bucket disetel sebagai **Public**, file secara otomatis dapat diunduh melalui URL publik. Namun, untuk memastikan izin baca di sisi RLS aman, Anda bisa menambahkan policy ini:
+      * Buka tab **Policies** pada menu Storage di Supabase.
+      * Pada bagian bucket `ar-media`, klik **New Policy**.
+      * Pilih **Get started quickly** (menggunakan template) atau **For full customization** (kustomisasi penuh).
+      * Jika memilih kustomisasi penuh, isi dengan konfigurasi berikut:
+        - **Policy Name**: `Public Read Access`
+        - **Allowed Operations**: Centang **SELECT** saja.
+        - **Target Roles**: Pilih `public` atau `anon` dan `authenticated`.
+        - **Condition (USING expression)**:
+          ```sql
+          bucket_id = 'ar-media'
+          ```
+      * Klik **Save Policy**.
+
+   b. **Kebijakan 2: Akses CRUD Admin Terautentikasi (Admin CRUD Access)**
+      * Langkah ini sangat penting agar admin yang login di Web Admin dapat mengunggah, memperbarui, dan menghapus file media.
+      * Pada bagian bucket `ar-media`, klik **New Policy** lagi.
+      * Pilih **For full customization** (buat policy kustom dari nol).
+      * Isi dengan konfigurasi berikut:
+        - **Policy Name**: `Admin CRUD Access`
+        - **Allowed Operations**: Centang **INSERT**, **UPDATE**, dan **DELETE** (atau pilih **ALL** jika ingin mencakup semuanya).
+        - **Target Roles**: Pilih **authenticated** (hanya pengguna yang login).
+        - **Condition (USING expression)**:
+          ```sql
+          bucket_id = 'ar-media'
+          ```
+        - **Condition (WITH CHECK expression)**:
+          ```sql
+          bucket_id = 'ar-media'
+          ```
+      * Klik **Save Policy**.
 
 ---
 

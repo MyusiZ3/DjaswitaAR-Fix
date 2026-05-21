@@ -302,7 +302,7 @@ export const SettingsSection = () => `
       <div style="display: flex; align-items: center; justify-content: space-between; gap: 2rem;">
         <div style="flex: 1">
           <p style="font-size: 0.875rem; line-height: 1.5; color: var(--text-dim)">
-            Sistem akan memindai seluruh isi bucket <strong>wisata-media</strong> dan membandingkannya dengan database. 
+            Sistem akan memindai seluruh isi bucket <strong>ar-media</strong> dan membandingkannya dengan database. 
             File yang tidak memiliki referensi di tabel <code>ar_targets</code> akan dihapus untuk menghemat ruang penyimpanan.
           </p>
           <div style="margin-top: 0.75rem; font-size: 0.75rem; color: var(--danger); opacity: 0.8;">

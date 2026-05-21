@@ -30,7 +30,7 @@ export const TargetSection = () => `
           <th>ID</th>
           <th>Nama Target / Marker</th>
           <th>Type</th>
-          <th>Event Date</th>
+          <th>Active Date</th>
           <th>Price</th>
           <th id="th-aksi-target">Aksi</th>
         </tr>
@@ -117,11 +117,11 @@ export const TargetSection = () => `
         </div>
 
         <div class="form-group">
-          <label>Link Pemesanan (WhatsApp/Web)</label>
+          <label>Link Kontak / Hubungi (WhatsApp/Web/Email)</label>
           <input
             type="url"
-            id="f-booking_url"
-            placeholder="https://wa.me/... atau link website"
+            id="f-contact_url"
+            placeholder="https://wa.me/... atau link website/email"
           />
         </div>
 
