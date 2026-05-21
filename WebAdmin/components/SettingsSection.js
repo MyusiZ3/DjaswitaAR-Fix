@@ -45,6 +45,7 @@ export const SettingsSection = () => `
         </h4>
         <form
           id="settings-form"
+          autocomplete="off"
           style="display: flex; flex-direction: column; gap: 1.25rem"
         >
           <div class="form-group">
@@ -52,6 +53,9 @@ export const SettingsSection = () => `
             <input
               type="url"
               id="s-url"
+              autocomplete="off"
+              readonly
+              onfocus="this.removeAttribute('readonly')"
               placeholder="Contoh: https://xyz.supabase.co"
             />
             <small class="text-hint">Biarkan kosong jika tidak ingin mengubah URL.</small>
@@ -62,6 +66,9 @@ export const SettingsSection = () => `
               <input
                 type="password"
                 id="s-key"
+                autocomplete="new-password"
+                readonly
+                onfocus="this.removeAttribute('readonly')"
                 placeholder="Enter new secret key to update..."
                 style="padding-right: 2.5rem; width: 100%;"
               />
@@ -96,6 +103,7 @@ export const SettingsSection = () => `
         </h4>
         <form
           id="gdrive-settings-form"
+          autocomplete="off"
           style="display: flex; flex-direction: column; gap: 1.25rem"
         >
           <div class="form-group">
@@ -104,6 +112,9 @@ export const SettingsSection = () => `
               <input
                 type="password"
                 id="s-gdrive-key"
+                autocomplete="new-password"
+                readonly
+                onfocus="this.removeAttribute('readonly')"
                 placeholder="Enter GDrive API Key (Optional)..."
                 style="padding-right: 2.5rem; width: 100%;"
               />
