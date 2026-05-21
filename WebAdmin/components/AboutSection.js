@@ -25,7 +25,7 @@ export const AboutSection = () => `
               <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
               <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
             </svg>
-            <span>Aplikasi ini dikembangkan sebagai output program magang 2 semester Program Studi <b>Teknologi Rekayasa Multimedia</b>, <b>Fakultas Ilmu Terapan</b>, <b>Telkom University</b>.</span>
+            <span>Aplikasi ini dikembangkan sebagai proyek TA/PA sekaligus output program magang 2 semester Program Studi <b>Teknologi Rekayasa Multimedia</b>, <b>Fakultas Ilmu Terapan</b>, <b>Telkom University</b>.</span>
           </p>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
             <div style="background: rgba(255, 255, 255, 0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--glass-border);">
