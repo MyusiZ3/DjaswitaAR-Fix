@@ -28,21 +28,27 @@ for (const [id, html] of Object.entries(sections)) {
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Fallback to warning if missing in build
-if (!SUPABASE_URL && import.meta.env.PROD) {
-  console.warn("VITE_SUPABASE_URL is not set in environment variables!");
-}
+let supabase;
+let supabaseAux;
+let initError = null;
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-// Client for signing up new admins without modifying current session
-const supabaseAux = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: {
-    persistSession: false,
-    autoRefreshToken: false,
-    detectSessionInUrl: false,
-    storageKey: 'jawita-aux-auth'
-  },
-});
+try {
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    throw new Error("VITE_SUPABASE_URL atau VITE_SUPABASE_ANON_KEY tidak ditemukan di environment variables.");
+  }
+  supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+  supabaseAux = createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+      storageKey: 'jawita-aux-auth'
+    },
+  });
+} catch (err) {
+  console.error("Initialization error:", err);
+  initError = err;
+}
 
 // DOM Elements
 const tableBody = document.getElementById("data-table-body");
@@ -2733,14 +2739,39 @@ searchAdminsInput?.addEventListener("input", (e) => {
   renderAdmins(e.target.value);
 });
 
-supabase.auth.onAuthStateChange((_event, session) => {
-  handleAuthState(session);
-});
+if (initError) {
+  const loader = document.getElementById("initial-loader");
+  if (loader) {
+    loader.innerHTML = `
+      <div style="background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.08); padding: 3rem; border-radius: 24px; max-width: 520px; width: 90%; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6); display: flex; flex-direction: column; align-items: center; gap: 1.5rem; animation: modalFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);">
+        <div style="width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.05)); border: 1.5px solid rgba(239, 68, 68, 0.5); display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 2.25rem; margin-bottom: 0.5rem; box-shadow: 0 0 20px rgba(239, 68, 68, 0.15);">⚠️</div>
+        <h3 style="font-family: 'Outfit', sans-serif; font-weight: 700; color: #fff; margin: 0; font-size: 1.5rem; letter-spacing: -0.025em; background: linear-gradient(to right, #fff, #cbd5e1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Koneksi Database Gagal</h3>
+        <p style="font-family: 'Inter', sans-serif; font-size: 0.925rem; color: #94a3b8; line-height: 1.6; margin: 0;">
+          Environment variables untuk Supabase (<code>VITE_SUPABASE_URL</code> dan <code>VITE_SUPABASE_ANON_KEY</code>) belum diatur di server hosting (Vercel).
+        </p>
+        <div style="text-align: left; background: rgba(0, 0, 0, 0.3); border-radius: 12px; padding: 1.25rem; width: 100%; border: 1px solid rgba(255, 255, 255, 0.05); font-family: 'Fira Code', monospace; font-size: 0.775rem; color: #f87171; overflow-x: auto; white-space: pre-wrap; word-break: break-all;">Error: ${initError.message}</div>
+        <div style="text-align: left; font-size: 0.85rem; color: #cbd5e1; line-height: 1.6; width: 100%; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 1.5rem;">
+          <strong style="color: #fff; display: block; margin-bottom: 0.5rem;">Cara Perbaikan di Vercel:</strong>
+          <ol style="margin: 0; padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <li>Buka dashboard <strong style="color: #6366f1;">Vercel</strong> &gt; pilih proyek Anda.</li>
+            <li>Masuk ke menu <strong>Settings</strong> &gt; <strong>Environment Variables</strong>.</li>
+            <li>Tambahkan <code>VITE_SUPABASE_URL</code> dan <code>VITE_SUPABASE_ANON_KEY</code> dengan nilai yang sesuai dari dashboard Supabase Anda.</li>
+            <li>Lakukan <strong>Redeploy</strong> proyek Anda agar konfigurasi baru berhasil di-compile oleh Vite.</li>
+          </ol>
+        </div>
+      </div>
+    `;
+  }
+} else {
+  supabase.auth.onAuthStateChange((_event, session) => {
+    handleAuthState(session);
+  });
 
-// Initial check
-supabase.auth.getSession().then((res) => {
-  handleAuthState(res.data?.session);
-});
+  // Initial check
+  supabase.auth.getSession().then((res) => {
+    handleAuthState(res.data?.session);
+  });
+}
 
 // --- CANVA MODAL LOGIC ---
 const modalCanva = document.getElementById('modal-canva');
