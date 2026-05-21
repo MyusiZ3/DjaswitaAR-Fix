@@ -7,7 +7,114 @@ Proyek ini terdiri dari dua bagian utama:
 
 ---
 
-## 1. Web Admin Dashboard (CMS & Control Panel)
+## 1. Arsitektur & Rancangan Sistem (System Architecture & Design)
+
+Jawita AR dirancang dengan arsitektur modern yang memisahkan antara pengelola data (CMS/Web Admin), jembatan data & penyimpanan cloud (Supabase BaaS), serta penampil konten interaktif (Unity Client). Pemisahan ini memastikan sistem tetap ringan, mudah dirawat, dan hemat kuota data internet saat dijalankan di perangkat mobile pengguna.
+
+### A. Cetak Biru Arsitektur (System Architecture Blueprint)
+
+Sistem Jawita AR terdiri dari tiga pilar utama yang saling terhubung secara real-time:
+
+1. **Web Admin Dashboard (CMS)**:
+   * **Teknologi**: HTML5, Vanilla JavaScript, CSS Premium, dan Vite.
+   * **Peran**: Menjadi pusat kendali bagi pemilik platform. Admin dapat memantau data analitik scan, mengelola data target AR (tambah/edit/hapus), serta memperbarui konfigurasi API key secara aman tanpa perlu menyentuh kode program.
+2. **Supabase (Backend-as-a-Service)**:
+   * **Peran**: Sebagai pusat data tunggal (*Single Source of Truth*). Supabase menyediakan database relasional PostgreSQL untuk menyimpan tabel targets dan log analitik, mengelola autentikasi admin, serta menyediakan Cloud Storage untuk menyimpan aset 3D (GLB), gambar marker, dan file video.
+3. **Unity Client App (Unity 6 Core)**:
+   * **Teknologi**: Unity 6, Universal Render Pipeline (URP), Vuforia Engine (AR), dan glTFast (3D Loader).
+   * **Peran**: Aplikasi mobile di tangan pengguna. Aplikasi ini mengunduh data marker dan model 3D secara dinamis di latar belakang, memindai brosur/marker cetak menggunakan kamera AR, dan merender objek 3D serta video interaktif secara presisi di layar ponsel.
+
+---
+
+### B. Struktur Basis Data Supabase (Database Schema)
+
+Database kami menggunakan PostgreSQL yang dikonfigurasi secara efisien melalui Supabase. Berikut adalah tabel-tabel utama yang menggerakkan platform Jawita AR:
+
+*   **`ar_targets` (Tabel Utama Target AR)**: Menyimpan semua data konten AR yang akan dirender di perangkat mobile.
+    *   `id`: Kode unik target (misal: `tangkuban-perahu`).
+    *   `nama` & `type`: Nama objek wisata dan kategorinya (wisata, edukasi, dll.).
+    *   `deskripsi` & `harga`: Informasi detail untuk pengguna.
+    *   `marker_url`, `glb_url`, `video_url`: Tautan publik file aset (gambar marker, model 3D, dan video panduan) yang disimpan di Storage Supabase atau Google Drive.
+    *   `booking_url`: Tautan eksternal untuk pembelian tiket objek wisata.
+*   **`scans` (Tabel Analitik / Engagement Tracking)**: Mencatat setiap kali pengguna memindai marker.
+    *   `target_id`: Menghubungkan ke tabel `ar_targets`.
+    *   `device_info`: Informasi tipe perangkat (Android/iOS) untuk analisis demografi teknis.
+    *   `scanned_at`: Waktu presisi pemindaian dilakukan.
+*   **`profiles` (Tabel Pengguna/Admin)**: Ekstensi dari sistem autentikasi Supabase untuk mengelola otorisasi akses dashboard.
+    *   `id`: UUID yang terhubung langsung dengan `auth.users` Supabase.
+    *   `username` & `email`: Identitas admin.
+    *   `role`: Hak akses admin (misal: `admin`, `superadmin`).
+*   **`app_settings` & `app_settings_logs` (Tabel Konfigurasi Global & Keamanan)**:
+    *   `app_settings` menyimpan kredensial API aktif (URL Supabase, Anon Key, Google Drive API Key) agar dapat ditarik secara dinamis oleh aplikasi Unity.
+    *   `app_settings_logs` mencatat riwayat perubahan kredensial API lengkap dengan email admin yang melakukan pembaruan untuk meminimalkan risiko kebocoran data.
+
+---
+
+### C. Daftar Kebutuhan Fitur (Feature Requirements)
+
+| Kategori | Fitur Utama | Kebutuhan Teknis |
+| :--- | :--- | :--- |
+| **Web Admin (CMS)** | **Dashboard Analitik** | Grafik donat kategori populer, diagram batang tren scan harian, total scan, dan rata-rata durasi. |
+| | **Manajemen Konten AR (CRUD)** | Form interaktif untuk menambah/mengedit data target AR, pengunggahan aset biner langsung ke Supabase Storage. |
+| | **Manajemen Kredensial Aman** | Sensor API key otomatis (*masking*), verifikasi kata sandi admin sebelum mengubah kredensial, dan fitur *auto-lock* otomatis dalam 30 detik. |
+| **Unity Client (AR App)**| **Dynamic Asset Caching** | Sistem penyimpanan luring (*caching*) lokal menggunakan skrip `AssetCacheManager` agar aset tidak perlu diunduh berulang kali. |
+| | **Runtime 3D Loading** | Penggunaan library `glTFast` untuk memuat dan merender model 3D (.glb) secara instan saat marker terdeteksi. |
+| | **Live Video Streaming** | Buffer instan dan pemutaran video langsung (*bypass cache*) untuk link video Google Drive tanpa perlu mengunduh berkas utuh. |
+| | **Auto-Normalization Size** | Skrip `ARTargetHandler` menghitung bounding box model 3D secara runtime dan menyesuaikan skala secara proporsional agar visualisasi stabil. |
+| | **Delayed Hide System** | Toleransi waktu 3 detik saat marker hilang dari kamera untuk mencegah objek berkedip/hilang-timbul secara mendadak. |
+
+---
+
+### D. Rancangan Sistem dalam Pengembangan (Future Roadmap)
+
+Untuk meningkatkan kenyamanan pengguna, platform ini sedang mempersiapkan beberapa pengembangan strategis:
+1. **Interaksi Multi-Marker & Manipulasi 3D**: Memungkinkan pengguna memindai beberapa marker sekaligus dalam satu layar dan melakukan interaksi langsung (memutar, memperbesar, dan menggeser model 3D menggunakan gestur sentuhan).
+2. **Peta GPS Interaktif Terintegrasi**: Menyediakan peta navigasi langsung di dalam aplikasi Unity maupun Web Admin untuk mempermudah pengguna mencari rute jalan menuju lokasi wisata fisik yang sedang dipindai.
+3. **Analitik Scan Berbasis Peta Panas (*Heatmap*)**: Menambahkan visualisasi peta sebaran lokasi scan pada Web Admin untuk melihat objek wisata mana yang paling sering dikunjungi secara geografis.
+
+---
+
+### E. Alur Kerja Aplikasi (App Flow & User Flow)
+
+Berikut adalah visualisasi alur perjalanan pengguna (*User Flow*) dan pertukaran data sistem (*App Flow*):
+
+#### 1. Alur Kerja Dashboard Web Admin (Web Admin Flow)
+```mermaid
+graph TD
+    A[Admin Membuka Dashboard] --> B{Apakah Sudah Login?}
+    B -- Tidak --> C[Halaman Login - Supabase Auth]
+    C --> D[Masukkan Email & Password]
+    D --> B
+    B -- Ya --> E[Dashboard Utama - Statistik Scan Real-Time]
+    E --> F[Kelola Target AR - CRUD Wisata]
+    E --> G[Pengaturan Kredensial - app_settings]
+    G --> H{Ubah Kredensial?}
+    H -- Ya --> I[Masukkan Password Admin untuk Verifikasi]
+    I -- Valid --> J[Simpan Perubahan & Catat di app_settings_logs]
+    I -- Tidak Valid --> K[Akses Ditolak / Tampilkan Error]
+```
+
+#### 2. Alur Kerja Aplikasi Mobile Unity (Unity App Flow)
+```mermaid
+graph TD
+    A[Pengguna Membuka Aplikasi] --> B{Koneksi Internet?}
+    B -- Online --> C[Tarik Pengaturan Kredensial Aktif dari app_settings Supabase]
+    B -- Offline --> D[Gunakan Master Fallback Config di APIManager.cs]
+    C & D --> E[Tarik Daftar Target AR Terbaru dari Tabel ar_targets]
+    E --> F[Bandingkan dengan Cache Lokal]
+    F -- Ada Aset Baru --> G[Unduh Aset ke Application.persistentDataPath]
+    F -- Aset Sudah Sesuai --> H[Gunakan Aset dari Cache Lokal]
+    G & H --> I[Kamera AR Siap Dipakai]
+    I --> J[Kamera Mendeteksi Marker Cetak]
+    J --> K[Vuforia Mengenali Target & glTFast Memuat Model 3D]
+    K --> L[Skrip ARTargetHandler Menormalkan Ukuran Objek 3D]
+    L --> M[Objek 3D / Video Ditampilkan Secara Stabil]
+    M --> N[Kirim Log Scan Baru ke Tabel scans di Supabase]
+```
+
+---
+
+## 2. Web Admin Dashboard (CMS & Control Panel)
 
 Dashboard admin digunakan untuk mengelola data marker, memantau grafik engagement scan, mengontrol akun admin, serta melakukan sinkronisasi konfigurasi API Supabase untuk aplikasi Unity.
 
@@ -36,7 +143,7 @@ Dashboard admin digunakan untuk mengelola data marker, memantau grafik engagemen
 
 ---
 
-## 2. Setup Supabase Backend (Jika Belum Ada / Dari Awal)
+## 3. Setup Supabase Backend (Jika Belum Ada / Dari Awal)
 
 Supabase berfungsi sebagai Backend-as-a-Service (BaaS) yang menyediakan database relasional PostgreSQL, otentikasi admin, dan Cloud Storage untuk menyimpan gambar marker, video panduan, serta model 3D GLB secara online.
 
@@ -80,7 +187,7 @@ Setelah project baru Anda aktif dan siap digunakan:
 
 ---
 
-## 3. Konfigurasi Database Supabase (Langkah Wajib)
+## 4. Konfigurasi Database Supabase (Langkah Wajib)
 
 Setelah project Supabase berhasil dibuat, database dan media storage harus disiapkan agar sesuai dengan struktur data yang digunakan oleh Web Admin dan aplikasi Unity.
 
@@ -205,7 +312,7 @@ Aktifkan fitur **Row Level Security (RLS)** pada setiap tabel yang dibuat dan ko
 
 ---
 
-## 4. Unity AR Application (Unity 6 Core)
+## 5. Unity AR Application (Unity 6 Core)
 
 Aplikasi Unity berfungsi untuk menampilkan konten AR secara dinamis berdasarkan data marker & model 3D yang diambil dari server database Supabase. Project ini dioptimalkan penuh untuk **Unity 6** menggunakan **Universal Render Pipeline (URP)**.
 
@@ -249,7 +356,7 @@ Agar Unity dapat menarik data marker dari database Supabase:
 
 ---
 
-## 5. Fitur Unggulan & Optimasi Sistem (Terbaru)
+## 6. Fitur Unggulan & Optimasi Sistem (Terbaru)
 
 - **Keamanan Konfigurasi Aktif (Masking & Verification):** Sistem perlindungan data kredensial API Supabase & GDrive di WebAdmin dengan penyensoran otomatis (*masking*), sistem verifikasi kata sandi admin untuk membuka kunci, serta fitur penguncian otomatis (*auto-lock* dalam 30 detik) demi mencegah kebocoran kunci API.
 - **Indikator Detak Jantung Koneksi (Database Heartbeat):** Dashboard dilengkapi dengan pemantau status koneksi Supabase secara *real-time* yang memberikan indikator visual hidup (*heartbeat status*) yang memberi tahu admin apabila database sedang terhubung atau terputus.
