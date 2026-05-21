@@ -12,12 +12,12 @@ public class ARTargetData
     public string slide_urls;
     public string video_url;
     public string media_type; // image / video
-    public string booking_url;
+    public string contact_url;
     public string start_date;
     public string end_date;
     public string duration;
-    public string booking_start;
-    public string booking_end;
+    public string activity_start;
+    public string activity_end;
 
     // 3D Model support
     public string main_content_type; // image_slides / 3d_model

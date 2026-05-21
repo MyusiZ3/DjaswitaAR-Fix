@@ -542,7 +542,7 @@ GameObject:
   - component: {fileID: 7777499157222954197}
   - component: {fileID: 7835030735233710618}
   m_Layer: 0
-  m_Name: btn_buy
+  m_Name: btn_contact
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5131,7 +5131,7 @@ MonoBehaviour:
   priceText: {fileID: 2651326140808996765}
   typeText: {fileID: 8053856405989038645}
   durationText: {fileID: 2702448847526620077}
-  bookingButton: {fileID: 7835030735233710618}
+  contactButton: {fileID: 7835030735233710618}
   maskSlidesContainer: {fileID: 4729153420508047417}
   mediaDisplayMask: {fileID: 4139504233797416323}
   nextButtonMask: {fileID: 1586370863222976743}
@@ -6457,7 +6457,7 @@ MonoBehaviour:
   priceText: {fileID: 5105878092601126900}
   typeText: {fileID: 1915521838718645492}
   durationText: {fileID: 4652929474522497982}
-  bookingButton: {fileID: 6557147366147846720}
+  contactButton: {fileID: 6557147366147846720}
   maskSlidesContainer: {fileID: 0}
   mediaDisplayMask: {fileID: 0}
   nextButtonMask: {fileID: 0}
