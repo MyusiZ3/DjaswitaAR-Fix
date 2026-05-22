@@ -158,25 +158,64 @@ graph TD
 ```
 
 #### 2. Alur Kerja Aplikasi Mobile Unity (Unity App Flow)
+
+Aplikasi Unity bekerja secara dinamis dan adaptif dengan membagi penanganan konten menjadi beberapa jalur berdasarkan tipe aset yang dikonfigurasi di Web Admin, didukung oleh sistem penyimpanan cache mandiri untuk efisiensi performa perangkat.
+
 ```mermaid
 graph TD
     A[Pengguna Membuka Aplikasi] --> B{Koneksi Internet?}
-    B -- Tidak --> C[Tampilkan UI Overlay Tanpa Koneksi / Blokir Akses]
+    
+    %% Alur Offline
+    B -- Tidak --> C[Tampilkan UI Overlay 'Tidak Ada Internet' & Blokir Inisialisasi]
+    
+    %% Alur Online
     B -- Ya --> D[Tarik Kredensial Kunci dari app_settings Supabase]
     D --> E[Tarik Daftar Target AR Terbaru dari Tabel ar_targets]
-    E --> F[Bandingkan dengan Cache Lokal]
-    F -- Ada Aset Baru/Berubah --> G[Unduh Aset Baru ke Cache Lokal]
-    F -- Aset Sudah Sesuai --> H[Gunakan Aset dari Cache Lokal]
-    G & H --> I[Kamera AR Siap Digunakan]
-    I --> J[Kamera Mendeteksi Marker Cetak]
-    J --> K[Vuforia Mengenali Target]
-    K --> L{Tipe Konten Target?}
-    L -- Model 3D GLB --> M[glTFast Memuat Model 3D ke Layar]
-    M --> N[Skrip ARTargetHandler Menormalkan Ukuran 3D]
-    N --> P[Konten AR Ditampilkan Secara Stabil]
-    L -- 2D Media Carousel/Video --> O[Tampilkan Panel Media Slider / Video Live Stream]
-    O --> P
-    P --> Q[Kirim Log Scan Baru ke Tabel scans di Supabase]
+    E --> F{Cek File Marker di Cache Lokal?}
+    
+    %% Caching System
+    F -- Belum Ada --> G[Unduh Marker & Simpan ke Cache Disk]
+    G --> G1[Sistem LRU Eviction Berjalan: Batas Disk 500MB & RAM 12-Image]
+    F -- Sudah Ada --> H[Muat Marker Langsung dari Cache Lokal]
+    
+    G1 & H --> I[DynamicMarkerManager Membuat Target Vuforia di Runtime]
+    I --> J[Kamera Aktif & Menampilkan Scan Prompt: Arahkan Kamera ke Marker]
+    
+    %% Deteksi & Render
+    J --> K[Vuforia Mengenali Target & Memicu Status TRACKED]
+    K --> K1[APIManager Mengirimkan Log Scan Baru ke Tabel scans]
+    
+    %% Metadata & Rendering Konten
+    K1 --> L[ARTargetHandler Menampilkan Metadata Teks: Nama, Deskripsi Auto-Height, Harga Terformat, Durasi, & Hubungi WA/URL]
+    L --> M{Tipe Konten Utama?}
+    
+    %% Cabang 3D Model
+    M -- 3d_model GLB --> N{Cek File GLB di Cache Disk?}
+    N -- Belum Ada --> N1[Unduh GLB & Simpan ke Cache Disk]
+    N -- Sudah Ada --> N2[Muat GLB via File Path Cache]
+    N1 & N2 --> O[glTFast Memuat Model 3D ke Layar]
+    O --> O1[ARTargetHandler Menjalankan Auto-Normalize Bounds Size]
+    O1 --> O2[Model Tampil Secara Stabil dengan Kontrol Rotasi & Skala ModelInteraction]
+    
+    %% Cabang 2D Carousel
+    M -- carousel / slide 2D --> P[Muat Urutan Gambar Slide dari Cache]
+    P --> P1[Tampilkan Slider RawImage dengan Titik Indikator & Navigasi Next/Prev]
+    
+    %% Pemutar Video Tambahan (Berjalan Paralel jika ada video_url)
+    L --> V{Apakah Ada video_url?}
+    V -- Ya --> V1{Sumber Video dari Google Drive?}
+    V1 -- Ya --> V2[Live Streaming Video Secara Langsung untuk Menghemat Disk Space]
+    V1 -- Tidak --> V3{Cek Video di Cache?}
+    V3 -- Belum Ada --> V4[Streaming Video & Unduh di Latar Belakang ke Cache Disk]
+    V3 -- Sudah Ada --> V5[Putar Video Langsung dari File Path Cache]
+    V2 & V4 & V5 --> V6[Tampilkan Pemutar Video & Dukung Ketukan Layar Play/Pause]
+    V -- Tidak --> V7[Matikan Kontainer Pemutar Video]
+    
+    %% Tracking Lost
+    O2 & P1 & V6 --> T[Kamera Kehilangan Fokus dari Marker]
+    T --> T1[Tunggu trackingLossDelay = 0.5s untuk Mengatasi Blur / Guncangan]
+    T1 --> T2[ImmediateHide: Stop Video, Kosongkan Memori Tekstur, Sembunyikan UI, Reset Rotasi Model]
+    T2 --> J
 ```
 
 ### F. Struktur Direktori Proyek (Project Directory Map)
