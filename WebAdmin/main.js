@@ -1438,7 +1438,7 @@ form?.addEventListener("submit", async (e) => {
     type: document.getElementById("f-type").value === "lainnya" ? document.getElementById("f-type-custom").value.trim().toLowerCase() : document.getElementById("f-type").value,
     deskripsi: document.getElementById("f-deskripsi").value,
     harga: document.getElementById("f-harga").value === "Free" ? "Free" : parseRupiah(document.getElementById("f-harga").value).toString(),
-    booking_url: document.getElementById("f-booking_url").value,
+    contact_url: document.getElementById("f-contact_url").value,
     marker_url: document.getElementById("f-marker-url").value,
     slide_urls: document.getElementById("f-media-url").value,
     video_url: document.getElementById("f-video-url").value,
@@ -1549,28 +1549,97 @@ let currentSettingsFormSubmit = null;
 
 settingsForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
+  const urlVal = document.getElementById("s-url")?.value?.trim() || "";
+  const keyVal = document.getElementById("s-key")?.value?.trim() || "";
+  
+  if (!urlVal && !keyVal) {
+    showToast("Silakan isi URL atau Secret Key yang ingin diperbarui!", "error");
+    return;
+  }
+  
   currentSettingsFormSubmit = "supabase";
+  const passwordInput = document.getElementById("settings-confirm-password");
+  if (passwordInput) passwordInput.value = "";
   modalSettingsConfirm.classList.add("active");
+  if (passwordInput) setTimeout(() => passwordInput.focus(), 150);
 });
 
 const gdriveSettingsForm = document.getElementById("gdrive-settings-form");
 gdriveSettingsForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
+  const gdriveKeyVal = document.getElementById("s-gdrive-key")?.value?.trim() || "";
+  
+  if (!gdriveKeyVal) {
+    showToast("Silakan isi Google Drive API Key yang ingin diperbarui!", "error");
+    return;
+  }
+  
   currentSettingsFormSubmit = "gdrive";
+  const passwordInput = document.getElementById("settings-confirm-password");
+  if (passwordInput) passwordInput.value = "";
   modalSettingsConfirm.classList.add("active");
+  if (passwordInput) setTimeout(() => passwordInput.focus(), 150);
 });
 
 btnSettingsCancel?.addEventListener("click", () => {
   modalSettingsConfirm.classList.remove("active");
+  const passwordInput = document.getElementById("settings-confirm-password");
+  if (passwordInput) passwordInput.value = "";
 });
 
 btnSettingsConfirm?.addEventListener("click", async () => {
-  modalSettingsConfirm.classList.remove("active");
+  const passwordInput = document.getElementById("settings-confirm-password");
+  const password = passwordInput?.value || "";
   
-  if (currentSettingsFormSubmit === "supabase") {
-    await saveSupabaseConfig();
-  } else if (currentSettingsFormSubmit === "gdrive") {
-    await saveGDriveConfig();
+  if (!password) {
+    showToast("Kata sandi wajib diisi untuk verifikasi!", "error");
+    if (passwordInput) passwordInput.focus();
+    return;
+  }
+  
+  const originalConfirmText = btnSettingsConfirm.innerText;
+  btnSettingsConfirm.disabled = true;
+  btnSettingsConfirm.innerText = "Memverifikasi...";
+  
+  try {
+    const sessionData = await supabase.auth.getSession();
+    const email = sessionData?.data?.session?.user?.email;
+    
+    if (!email) {
+      showToast("Sesi tidak aktif. Silakan masuk kembali.", "error");
+      btnSettingsConfirm.disabled = false;
+      btnSettingsConfirm.innerText = originalConfirmText;
+      return;
+    }
+    
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    
+    if (authError) {
+      showToast("Kata sandi salah! Akses ditolak.", "error");
+      btnSettingsConfirm.disabled = false;
+      btnSettingsConfirm.innerText = originalConfirmText;
+      if (passwordInput) {
+        passwordInput.value = "";
+        passwordInput.focus();
+      }
+      return;
+    }
+    
+    // Verification successful, close modal, clear password, and perform save
+    modalSettingsConfirm.classList.remove("active");
+    if (passwordInput) passwordInput.value = "";
+    
+    if (currentSettingsFormSubmit === "supabase") {
+      await saveSupabaseConfig();
+    } else if (currentSettingsFormSubmit === "gdrive") {
+      await saveGDriveConfig();
+    }
+  } catch (err) {
+    console.error("Settings password confirmation error:", err);
+    showToast("Gagal melakukan verifikasi kata sandi.", "error");
+  } finally {
+    btnSettingsConfirm.disabled = false;
+    btnSettingsConfirm.innerText = originalConfirmText;
   }
 });
 
@@ -1715,8 +1784,8 @@ async function cleanupOrphanedFiles() {
     const usedPaths = new Set();
     const getPathFromUrl = (url) => {
       if (!url) return null;
-      // Extracts path after '/wisata-media/'
-      const parts = url.split("/wisata-media/");
+      // Extracts path after '/ar-media/'
+      const parts = url.split("/ar-media/");
       return parts.length > 1 ? parts[1].split('?')[0] : null;
     };
 
@@ -1740,7 +1809,7 @@ async function cleanupOrphanedFiles() {
 
     for (const folder of folders) {
       statusText.innerText = `Memindai folder: ${folder}...`;
-      const { data: files, error: stError } = await supabase.storage.from('wisata-media').list(folder, { limit: 1000 });
+      const { data: files, error: stError } = await supabase.storage.from('ar-media').list(folder, { limit: 1000 });
       if (stError) {
         console.warn(`Could not list folder ${folder}:`, stError);
         continue;
@@ -1783,7 +1852,7 @@ async function cleanupOrphanedFiles() {
     // Delete in batches
     for (let i = 0; i < pathsToDelete.length; i += 50) {
       const batch = pathsToDelete.slice(i, i + 50);
-      const { error: delError } = await supabase.storage.from('wisata-media').remove(batch);
+      const { error: delError } = await supabase.storage.from('ar-media').remove(batch);
       
       if (!delError) {
         deletedCount += batch.length;
@@ -2243,12 +2312,12 @@ fileInput?.addEventListener("change", async (e) => {
     const file = files[i];
     const filePath = `uploads/${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
     const { error } = await supabase.storage
-      .from("wisata-media")
+      .from("ar-media")
       .upload(filePath, file);
     if (!error) {
       const {
         data: { publicUrl },
-      } = supabase.storage.from("wisata-media").getPublicUrl(filePath);
+      } = supabase.storage.from("ar-media").getPublicUrl(filePath);
       urls.push(publicUrl);
     }
   }
@@ -2277,12 +2346,12 @@ markerFileInput?.addEventListener("change", async (e) => {
 
   const filePath = `markers/${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
   const { error } = await supabase.storage
-    .from("wisata-media")
+    .from("ar-media")
     .upload(filePath, file);
   if (!error) {
     const {
       data: { publicUrl },
-    } = supabase.storage.from("wisata-media").getPublicUrl(filePath);
+    } = supabase.storage.from("ar-media").getPublicUrl(filePath);
     markerUrlInput.value = publicUrl;
     updateMarkerPreview(publicUrl);
     showToast("Marker berhasil diupload", "success");
@@ -2314,12 +2383,12 @@ videoFileInput?.addEventListener("change", async (e) => {
 
   const filePath = `videos/${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
   const { error } = await supabase.storage
-    .from("wisata-media")
+    .from("ar-media")
     .upload(filePath, file);
   if (!error) {
     const {
       data: { publicUrl },
-    } = supabase.storage.from("wisata-media").getPublicUrl(filePath);
+    } = supabase.storage.from("ar-media").getPublicUrl(filePath);
     videoUrlInput.value = publicUrl;
     showToast("Video berhasil diupload", "success");
   } else {
@@ -2393,7 +2462,7 @@ async function editItem(id) {
     }
     document.getElementById("f-deskripsi").value = data.deskripsi;
     document.getElementById("f-harga").value = data.harga === "Free" ? "Free" : formatRupiah(data.harga || "");
-    document.getElementById("f-booking_url").value = data.booking_url || "";
+    document.getElementById("f-contact_url").value = data.contact_url || "";
     document.getElementById("f-marker-url").value = data.marker_url || "";
     document.getElementById("f-media-url").value = data.slide_urls || "";
     document.getElementById("f-video-url").value = data.video_url || "";
@@ -2491,8 +2560,8 @@ btnDeleteConfirm?.addEventListener("click", async () => {
         const getPathFromUrl = (url) => {
           if (!url) return null;
           try {
-            // Extracts path after '/wisata-media/'
-            const parts = url.split("/wisata-media/");
+            // Extracts path after '/ar-media/'
+            const parts = url.split("/ar-media/");
             return parts.length > 1 ? parts[1] : null;
           } catch (e) {
             return null;
@@ -2520,7 +2589,7 @@ btnDeleteConfirm?.addEventListener("click", async () => {
         }
 
         if (filesToDelete.length > 0) {
-          await supabase.storage.from("wisata-media").remove(filesToDelete);
+          await supabase.storage.from("ar-media").remove(filesToDelete);
         }
       }
     }
@@ -2624,13 +2693,13 @@ modelFileInput?.addEventListener("change", async (e) => {
 
   const filePath = `models/${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
   const { error } = await supabase.storage
-    .from("wisata-media")
+    .from("ar-media")
     .upload(filePath, file);
     
   if (!error) {
     const {
       data: { publicUrl },
-    } = supabase.storage.from("wisata-media").getPublicUrl(filePath);
+    } = supabase.storage.from("ar-media").getPublicUrl(filePath);
     modelUrlInput.value = publicUrl;
     update3DPreview(publicUrl);
     showToast("Model 3D (.glb) berhasil diupload", "success");

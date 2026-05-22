@@ -3,6 +3,7 @@ using Vuforia;
 using TMPro;
 using UnityEngine.UI;
 using UnityEngine.Networking;
+using UnityEngine.Serialization;
 // using Siccity.GLTFUtility; // REMOVED: Incompatible with Draco compression and URP Android
 // using GLTFast; (dipanggil langsung via namespace)
 public class ARTargetHandler : MonoBehaviour
@@ -21,7 +22,8 @@ public class ARTargetHandler : MonoBehaviour
     public TextMeshProUGUI priceText;
     public TextMeshProUGUI typeText;
     public TextMeshProUGUI durationText; // Unified field for dates
-    public Button bookingButton;
+    [FormerlySerializedAs("bookingButton")]
+    public Button contactButton;
     
     [Header("Layout Variant: Mask (Square)")]
     public GameObject maskSlidesContainer;
@@ -246,11 +248,11 @@ public class ARTargetHandler : MonoBehaviour
         // Hide video media container logic is handled below in AR Content Mode Logic
 
 
-        if (bookingButton)
+        if (contactButton)
         {
-            bookingButton.gameObject.SetActive(!string.IsNullOrEmpty(data.booking_url));
-            bookingButton.onClick.RemoveAllListeners();
-            bookingButton.onClick.AddListener(() => Application.OpenURL(data.booking_url));
+            contactButton.gameObject.SetActive(!string.IsNullOrEmpty(data.contact_url));
+            contactButton.onClick.RemoveAllListeners();
+            contactButton.onClick.AddListener(() => Application.OpenURL(data.contact_url));
         }
 
         // AR Content Mode Logic

@@ -302,7 +302,7 @@ export const SettingsSection = () => `
       <div style="display: flex; align-items: center; justify-content: space-between; gap: 2rem;">
         <div style="flex: 1">
           <p style="font-size: 0.875rem; line-height: 1.5; color: var(--text-dim)">
-            Sistem akan memindai seluruh isi bucket <strong>wisata-media</strong> dan membandingkannya dengan database. 
+            Sistem akan memindai seluruh isi bucket <strong>ar-media</strong> dan membandingkannya dengan database. 
             File yang tidak memiliki referensi di tabel <code>ar_targets</code> akan dihapus untuk menghemat ruang penyimpanan.
           </p>
           <div style="margin-top: 0.75rem; font-size: 0.75rem; color: var(--danger); opacity: 0.8;">
@@ -414,7 +414,7 @@ export const SettingsSection = () => `
       <p
         style="
           color: var(--text-dim);
-          margin-bottom: 2rem;
+          margin-bottom: 1.5rem;
           font-size: 0.938rem;
           line-height: 1.6;
         "
@@ -423,6 +423,23 @@ export const SettingsSection = () => `
         koneksi antara Dashboard dan Unity App jika tidak sesuai. Pastikan
         data yang dimasukkan sudah benar.
       </p>
+      
+      <!-- Password Verification Field -->
+      <div style="text-align: left; margin-bottom: 2rem;">
+        <div class="form-group" style="margin: 0;">
+          <label for="settings-confirm-password" style="font-size: 0.8rem; margin-bottom: 6px; color: var(--text-main); font-weight: 500;">
+            Kata Sandi Admin
+          </label>
+          <input 
+            type="password" 
+            id="settings-confirm-password" 
+            placeholder="Masukkan kata sandi Anda..." 
+            required 
+            style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); color: #fff;"
+          />
+        </div>
+      </div>
+
       <div style="display: flex; gap: 12px; justify-content: stretch">
         <button
           id="btn-settings-cancel"
@@ -438,7 +455,7 @@ export const SettingsSection = () => `
           style="flex: 1; background: var(--pastel-peach); border-color: var(--pastel-peach); color: var(--text-dark); font-weight: 600;"
           type="button"
         >
-          Ya, Simpan
+          Verifikasi & Simpan
         </button>
       </div>
     </div>
@@ -502,7 +519,7 @@ export const SettingsSection = () => `
 
   <!-- Modal: Unlock Config Password Verification -->
   <div class="modal-overlay" id="modal-unlock-config">
-    <div class="modal-card" style="max-width: 400px; text-align: center; padding: 2rem;">
+    <div class="modal-content" style="max-width: 400px; text-align: center; padding: 2.5rem;">
       <div
         style="
           width: 56px;
