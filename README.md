@@ -32,7 +32,7 @@ Database kami menggunakan PostgreSQL yang dikonfigurasi secara efisien melalui S
 
 *   **`ar_targets` (Tabel Utama Target AR)**: Menyimpan semua data konten AR yang akan dirender di perangkat mobile.
     *   `id`: Kode unik target (misal: `tangkuban-perahu`).
-    *   `nama` & `type`: Nama objek wisata dan kategorinya (wisata, edukasi, dll.).
+    *   `nama` & `type`: Nama target/objek AR dan kategorinya (edukasi, bisnis, hiburan, dll.).
     *   `deskripsi` & `harga`: Informasi detail untuk pengguna.
     *   `marker_url`, `glb_url`, `video_url`: Tautan publik file aset (gambar marker, model 3D, dan video panduan) yang disimpan di Storage Supabase atau Google Drive.
     *   `contact_url`: Tautan eksternal untuk kontak / WhatsApp / website detail.
@@ -69,8 +69,8 @@ Database kami menggunakan PostgreSQL yang dikonfigurasi secara efisien melalui S
 
 Untuk meningkatkan kenyamanan pengguna, platform ini sedang mempersiapkan beberapa pengembangan strategis:
 1. **Interaksi Multi-Marker & Manipulasi 3D**: Memungkinkan pengguna memindai beberapa marker sekaligus dalam satu layar dan melakukan interaksi langsung (memutar, memperbesar, dan menggeser model 3D menggunakan gestur sentuhan).
-2. **Peta GPS Interaktif Terintegrasi**: Menyediakan peta navigasi langsung di dalam aplikasi Unity maupun Web Admin untuk mempermudah pengguna mencari rute jalan menuju lokasi wisata fisik yang sedang dipindai.
-3. **Analitik Scan Berbasis Peta Panas (*Heatmap*)**: Menambahkan visualisasi peta sebaran lokasi scan pada Web Admin untuk melihat objek wisata mana yang paling sering dikunjungi secara geografis.
+2. **Peta GPS Interaktif Terintegrasi**: Menyediakan peta navigasi langsung di dalam aplikasi Unity maupun Web Admin untuk mempermudah pengguna mencari rute jalan menuju lokasi fisik objek AR yang sedang dipindai.
+3. **Analitik Scan Berbasis Peta Panas (*Heatmap*)**: Menambahkan visualisasi peta sebaran lokasi scan pada Web Admin untuk melihat lokasi objek AR mana yang paling sering dipindai secara geografis.
 
 ---
 
@@ -86,7 +86,7 @@ graph TD
     C --> D[Masukkan Email & Password]
     D --> B
     B -- Ya --> E[Dashboard Utama - Statistik Scan Real-Time]
-    E --> F[Kelola Target AR - CRUD Wisata]
+    E --> F[Kelola Target AR - CRUD Marker]
     E --> G[Pengaturan Kredensial - app_settings]
     G --> H{Ubah Kredensial?}
     H -- Ya --> I[Masukkan Password Admin untuk Verifikasi]
