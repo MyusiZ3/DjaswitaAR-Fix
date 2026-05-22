@@ -28,7 +28,70 @@ Sistem Jawita AR terdiri dari tiga pilar utama yang saling terhubung secara real
 
 ### B. Struktur Basis Data Supabase (Database Schema)
 
-Database kami menggunakan PostgreSQL yang dikonfigurasi secara efisien melalui Supabase. Berikut adalah tabel-tabel utama yang menggerakkan platform Jawita AR:
+Database kami menggunakan PostgreSQL yang dikonfigurasi secara efisien melalui Supabase. Berikut adalah diagram relasi entitas (Entity Relationship Diagram - ERD) yang menggambarkan bagaimana data saling terhubung, diikuti oleh penjelasan struktur dari masing-masing tabel:
+
+```mermaid
+erDiagram
+    ar_targets ||--o{ scans : "mencatat aktivitas scan (has)"
+    profiles ||--|| auth_users : "terhubung ke sistem auth (references)"
+    app_settings ||--o{ app_settings_logs : "riwayat perubahan kredensial (tracked by)"
+
+    ar_targets {
+        text id PK "Kode unik target AR"
+        text nama "Nama objek AR"
+        text type "Kategori objek"
+        text deskripsi "Informasi detail target"
+        numeric harga "Harga tiket/konten (opsional)"
+        text contact_url "Tautan kontak eksternal"
+        text marker_url "URL gambar marker"
+        text slide_urls "Kumpulan URL galeri 2D"
+        text video_url "URL video streaming"
+        text glb_url "URL model 3D GLB"
+        text media_type "Jenis konten (image/video/glb)"
+        date start_date "Tanggal mulai aktif"
+        date end_date "Tanggal berakhir aktif"
+        text duration "Durasi pelaksanaan"
+        timestamptz activity_start "Waktu mulai aktivitas"
+        timestamptz activity_end "Waktu selesai aktivitas"
+        timestamptz created_at "Waktu pembuatan data"
+    }
+
+    scans {
+        bigint id PK "ID auto-increment"
+        text target_id FK "Relasi ke ar_targets.id"
+        text device_info "Tipe perangkat HP"
+        timestamptz scanned_at "Waktu aktivitas scan"
+    }
+
+    profiles {
+        uuid id PK "UUID terhubung ke auth.users"
+        text username "Nama pengguna admin"
+        text email "Email admin terdaftar"
+        text role "Hak akses (superadmin/admin)"
+        timestamptz created_at "Waktu pembuatan profil"
+    }
+
+    app_settings {
+        text id PK "ID konfigurasi aktif"
+        text supabase_url "URL endpoint Supabase"
+        text supabase_key "Anon Public Key Supabase"
+        text gdrive_api_key "API Key Google Drive"
+        text canva_template_url "Tautan template desain"
+        timestamptz updated_at "Waktu update terakhir"
+    }
+
+    app_settings_logs {
+        bigint id PK "ID auto-increment log"
+        text admin_email "Email pelaksana perubahan"
+        text old_url "URL lama"
+        text new_url "URL baru"
+        text old_key "Kunci API lama"
+        text new_key "Kunci API baru"
+        text old_gdrive_key "GDrive Key lama"
+        text new_gdrive_key "GDrive Key baru"
+        timestamptz created_at "Waktu pencatatan log"
+    }
+```
 
 *   **`ar_targets` (Tabel Utama Target AR)**: Menyimpan semua data konten AR yang akan dirender di perangkat mobile.
     *   `id`: Kode unik target (misal: `tangkuban-perahu`).
@@ -114,6 +177,33 @@ graph TD
     L -- 2D Media Carousel/Video --> O[Tampilkan Panel Media Slider / Video Live Stream]
     O --> P
     P --> Q[Kirim Log Scan Baru ke Tabel scans di Supabase]
+```
+
+### F. Struktur Direktori Proyek (Project Directory Map)
+
+Berikut adalah struktur pohon direktori proyek untuk mempermudah navigasi file dalam pengembangan aplikasi Unity maupun Web Admin:
+
+```text
+DjaswitaAR-Fix/
+├── Assets/                        # --- KODE & ASET UNITY ---
+│   ├── Prefabs/                   # Prefab penting (AR_Content_Root, dll.)
+│   ├── Scenes/                    # Adegan utama aplikasi (Main AR Scene)
+│   └── Scripts/                   # Skrip pemrograman C# Unity
+│       ├── APIManager.cs          # Penghubung API Supabase & GDrive
+│       ├── ARTargetHandler.cs     # Normalisasi ukuran 3D & render AR
+│       ├── AssetCacheManager.cs   # Sistem cache luring (Disk & RAM LRU)
+│       └── DynamicMarkerManager.cs# Pembuat marker Vuforia secara runtime
+├── WebAdmin/                      # --- DASBOR CMS WEB ADMIN ---
+│   ├── components/                # Komponen halaman modular (Target, Settings, dll.)
+│   │   ├── DashboardSection.js    # Visualisasi grafik analitik Chart.js
+│   │   ├── TargetSection.js       # Manajemen CRUD target marker AR
+│   │   └── SettingsSection.js     # Panel konfigurasi kredensial & panduan API
+│   ├── docs/                      # Rencana kerja & audit keamanan
+│   ├── index.html                 # Entry point halaman web CMS
+│   ├── main.css                   # Lembar gaya (styling premium)
+│   └── main.js                    # Logika utama dasbor & Supabase JS client
+├── README.md                      # Dokumentasi utama proyek
+└── fork_guide.md                  # Panduan duplikasi mandiri (Anti-Collision)
 ```
 
 ---
@@ -347,6 +437,19 @@ Aktifkan fitur **Row Level Security (RLS)** pada setiap tabel yang dibuat dan ko
           ```
       * Klik **Save Policy**.
 
+### E. Konfigurasi CORS Supabase (Cross-Origin Resource Sharing)
+
+Agar CMS Web Admin yang berjalan di komputer lokal (`localhost:5173`) atau domain server hosting Anda dapat mengirim permintaan (*HTTP Requests*) ke server Supabase tanpa diblokir oleh peramban (*browser*), Anda wajib mengonfigurasi pengaturan CORS di Supabase:
+
+1. Masuk ke **[Supabase Dashboard](https://supabase.com)** dan buka proyek Anda.
+2. Di panel navigasi sisi kiri, pilih menu **Settings (ikon roda gigi) > API**.
+3. Gulir ke bawah hingga Anda menemukan kolom **URI Terdaftar CORS (CORS Allowed Origins)**.
+4. Tambahkan URI berikut ke dalam daftar (pisahkan dengan tanda koma atau tekan Enter):
+   * `http://localhost:5173` (Untuk server pengembangan lokal Vite)
+   * `http://localhost:3000` (Opsional, untuk port pengembangan cadangan)
+   * `https://domain-hosting-anda.com` (Ubah dengan URL domain dasbor produksi Anda jika sudah dideploy)
+5. Klik **Save** di bagian bawah halaman untuk menerapkan perubahan.
+
 ---
 
 ## 5. Unity AR Application (Unity 6 Core)
@@ -387,7 +490,9 @@ Agar Unity dapat menarik data marker dari database Supabase:
 
 ### C. Fitur Utama Skrip Unity
 
-- **AssetCacheManager**: Sistem manajemen cache tunggal yang mengunduh gambar, video, dan model 3D, lalu menyimpannya secara lokal di dalam folder `Application.persistentDataPath` di handphone. Aset tidak perlu diunduh berulang kali sehingga sangat menghemat konsumsi kuota data internet pengguna.
+- **AssetCacheManager (Unified Cache & LRU Eviction)**: Sistem manajemen cache pintar yang mengisolasi aset di penyimpanan luring (Disk) dan memori aktif (RAM/GPU):
+  * **Disk Cache (Penyimpanan HP)**: Membatasi folder cache lokal maksimal **500 MB**. Jika melebihi batas, algoritma **Least Recently Used (LRU)** secara otomatis dijalankan untuk menghapus berkas yang paling lama tidak diakses (berdasarkan timestamp `LastAccessTime`) hingga kapasitas menyusut kembali ke batas aman **80% (400 MB)**.
+  * **RAM Cache (Memori Grafis)**: Membatasi maksimal **12 gambar marker** aktif di memori GPU/RAM. Gambar marker yang paling jarang dipindai akan otomatis dihancurkan (`Destroy`) dari RAM menggunakan antrean LRU untuk mencegah crash akibat *Out of Memory (OOM)* pada ponsel berspesifikasi rendah.
 - **ARTargetHandler (Auto-Normalize)**: Kode ini secara dinamis menghitung batas bounding box model 3D GLB yang baru saja diunduh, lalu melakukan normalisasi ukuran ke skala standar yang seragam (default: `0.15` unit Unity). Hal ini menjamin model 3D berukuran stabil saat menempel pada marker target.
 - **Delayed Hide Logic**: Memberikan waktu toleransi beberapa detik ketika kamera kehilangan pandangan dari marker AR sebelum menonaktifkan objek 3D. Menghindari gangguan visual (objek berkedip hilang-timbul) ketika kamera goyang atau terhalang sesaat.
 
@@ -404,3 +509,39 @@ Agar Unity dapat menarik data marker dari database Supabase:
 - **Pengelompokan Kategori Cerdas (Smart Category Chart):** Dashboard secara otomatis mengelompokkan kategori kustom yang diinput manual oleh admin ke dalam irisan **"Lainnya"** di diagram donat untuk menjaga kebersihan, tata letak, dan keindahan grafik analitik.
 - **Auto-Normalize Size:** Penyetelan otomatis proporsi visual objek 3D secara runtime menggunakan bounding box sehingga developer tidak perlu menyamakan skala mentah model di Blender/perangkat lunak modeling 3D.
 - **Unified Caching & Robust Tracking:** Sistem caching luring pintar untuk model 3D GLB, gambar slide, beserta penanganan buffering visual (*Delayed Hide*) agar objek tidak goyang atau hilang saat kamera terhalang sesaat.
+
+---
+
+## 7. Panduan Penanganan Masalah (Troubleshooting Guide)
+
+Berikut adalah ringkasan masalah umum yang sering ditemui selama proses pengembangan beserta solusi solutifnya:
+
+### A. Masalah Sisi Unity Client (Mobile AR)
+
+*   **Masalah**: Model 3D GLB gagal dimuat di layar saat marker terdeteksi.
+    *   *Solusi*: 
+        1. Pastikan skrip `glTFast` sudah terinstal sempurna melalui OpenUPM atau Package Manager.
+        2. Periksa apakah material model menggunakan **URP Shaders** (Universal Render Pipeline). Model 3D yang diekspor dari Blender terkadang menggunakan Standard Shader bawaan yang akan dirender berwarna merah muda (*pink*) atau transparan di URP jika tidak dikonversi.
+        3. Periksa URL file GLB di database Supabase. Pastikan link tersebut adalah tautan publik langsung (*direct download link*).
+
+*   **Masalah**: Marker cetak sangat sulit dideteksi oleh kamera handphone.
+    *   *Solusi*:
+        1. Unggah gambar marker Anda ke **[Vuforia Developer Portal](https://developer.vuforia.com)** untuk memeriksa rating kontrasnya (*Rating Star*). Pastikan marker memiliki minimal **3 hingga 5 bintang**. Gambar dengan kontras rendah atau pola berulang sulit dibaca oleh kamera AR.
+        2. Pastikan pencahayaan fisik saat pemindaian cukup terang dan tidak memantulkan cahaya berlebih ke lensa kamera.
+        3. Pastikan Anda telah memberikan izin akses kamera (*Camera Permission*) di pengaturan handphone Anda saat aplikasi dibuka.
+
+*   **Masalah**: Video Google Drive lambat diputar atau terjadi penurunan frame rate (lag).
+    *   *Solusi*:
+        1. Sistem klien kami telah dilengkapi opsi *bypass cache* otomatis untuk Google Drive. Pastikan file video tidak dikompresi dengan bitrate yang terlalu tinggi (disarankan format **MP4 H.264** dengan resolusi maksimal **1080p**).
+        2. Periksa kecepatan koneksi internet ponsel Anda. Video streaming langsung membutuhkan bandwidth stabil minimal **5 Mbps**.
+
+### B. Masalah Sisi Web Admin (CMS Dashboard)
+
+*   **Masalah**: Timbul error `Network Error` atau `CORS Blocked` saat CMS mencoba menyimpan/membaca data.
+    *   *Solusi*: Periksa konfigurasi CORS di dashboard Supabase Anda. Ikuti panduan lengkap pada **[Bagian 4.E (Konfigurasi CORS Supabase)](#e-konfigurasi-cors-supabase-cross-origin-resource-sharing)**.
+
+*   **Masalah**: Aset gambar/model gagal terunggah melalui form CMS.
+    *   *Solusi*:
+        1. Pastikan nama bucket penyimpanan di Supabase disetel tepat **`ar-media`** (menggunakan huruf kecil dan tanda hubung).
+        2. Pastikan Anda telah mengaktifkan status bucket menjadi **Public**.
+        3. Periksa kembali pengaturan kebijakan penyimpanan (Storage Policies / RLS). Pastikan policy `Admin CRUD Access` telah diaktifkan dengan benar untuk akun *Authenticated*.
