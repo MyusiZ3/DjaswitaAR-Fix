@@ -98,18 +98,22 @@ graph TD
 ```mermaid
 graph TD
     A[Pengguna Membuka Aplikasi] --> B{Koneksi Internet?}
-    B -- Online --> C[Tarik Pengaturan Kredensial Aktif dari app_settings Supabase]
-    B -- Offline --> D[Gunakan Master Fallback Config di APIManager.cs]
-    C & D --> E[Tarik Daftar Target AR Terbaru dari Tabel ar_targets]
+    B -- Tidak --> C[Tampilkan UI Overlay Tanpa Koneksi / Blokir Akses]
+    B -- Ya --> D[Tarik Kredensial Kunci dari app_settings Supabase]
+    D --> E[Tarik Daftar Target AR Terbaru dari Tabel ar_targets]
     E --> F[Bandingkan dengan Cache Lokal]
-    F -- Ada Aset Baru --> G[Unduh Aset ke Application.persistentDataPath]
+    F -- Ada Aset Baru/Berubah --> G[Unduh Aset Baru ke Cache Lokal]
     F -- Aset Sudah Sesuai --> H[Gunakan Aset dari Cache Lokal]
-    G & H --> I[Kamera AR Siap Dipakai]
+    G & H --> I[Kamera AR Siap Digunakan]
     I --> J[Kamera Mendeteksi Marker Cetak]
-    J --> K[Vuforia Mengenali Target & glTFast Memuat Model 3D]
-    K --> L[Skrip ARTargetHandler Menormalkan Ukuran Objek 3D]
-    L --> M[Objek 3D / Video Ditampilkan Secara Stabil]
-    M --> N[Kirim Log Scan Baru ke Tabel scans di Supabase]
+    J --> K[Vuforia Mengenali Target]
+    K --> L{Tipe Konten Target?}
+    L -- Model 3D GLB --> M[glTFast Memuat Model 3D ke Layar]
+    M --> N[Skrip ARTargetHandler Menormalkan Ukuran 3D]
+    N --> P[Konten AR Ditampilkan Secara Stabil]
+    L -- 2D Media Carousel/Video --> O[Tampilkan Panel Media Slider / Video Live Stream]
+    O --> P
+    P --> Q[Kirim Log Scan Baru ke Tabel scans di Supabase]
 ```
 
 ---
