@@ -1,4 +1,4 @@
-# 🍴 Panduan Fork & Duplikasi Proyek (Anti-Collision Guide)
+# Panduan Fork & Duplikasi Proyek (Anti-Collision Guide)
 
 Panduan ini ditujukan bagi pengembang atau tim lain yang ingin melakukan **fork** atau menyalin repositori **Jaswita AR** untuk membuat aplikasi Augmented Reality serupa yang mandiri. 
 
@@ -6,7 +6,7 @@ Ikuti panduan langkah-demi-langkah ini agar sistem Web Admin dan Unity Client An
 
 ---
 
-## 🚀 Alur Singkat Isolasi Sistem
+## Alur Singkat Isolasi Sistem
 ```mermaid
 graph LR
     A[Fork Repo] --> B[Buat Supabase Baru]
@@ -18,7 +18,7 @@ graph LR
 
 ---
 
-## 📋 Langkah 1: Fork dan Kloning Repositori
+## Langkah 1: Fork dan Kloning Repositori
 1. Klik tombol **Fork** di pojok kanan atas halaman repositori GitHub ini untuk menyalin proyek ke akun GitHub Anda sendiri.
 2. Kloning repositori hasil fork Anda ke komputer lokal menggunakan Git Bash / Terminal:
    ```bash
@@ -28,7 +28,7 @@ graph LR
 
 ---
 
-## ☁️ Langkah 2: Menyiapkan Server Backend Mandiri (Supabase)
+## Langkah 2: Menyiapkan Server Backend Mandiri (Supabase)
 Anda memerlukan server backend sendiri untuk menyimpan data marker dan menerima log scan.
 1. Buat akun gratis di **[Supabase](https://supabase.com)**.
 2. Klik **New Project** dan isi parameter proyek Anda (disarankan memilih region terdekat seperti **Singapore**).
@@ -38,7 +38,7 @@ Anda memerlukan server backend sendiri untuk menyimpan data marker dan menerima 
 
 ---
 
-## 🗄️ Langkah 3: Inisialisasi Database Anda
+## Langkah 3: Inisialisasi Database Anda
 Agar database baru Anda memiliki tabel dan logika sistem yang lengkap, jalankan perintah migrasi SQL berikut:
 1. Di dashboard Supabase, buka menu **SQL Editor** pada navigasi kiri.
 2. Klik **New Query**, lalu salin seluruh kode SQL pembuatan tabel dari berkas **[README.md](./README.md#4-konfigurasi-database-supabase-langkah-wajib)**.
@@ -46,7 +46,7 @@ Agar database baru Anda memiliki tabel dan logika sistem yang lengkap, jalankan 
 
 ---
 
-## 🌐 Langkah 4: Konfigurasi Web Admin (CMS)
+## Langkah 4: Konfigurasi Web Admin (CMS)
 1. Buka folder `WebAdmin/` di dalam folder proyek menggunakan teks editor pilihan Anda (VS Code, dll.).
 2. Buat file baru bernama **`.env`** di dalam folder `WebAdmin/`.
 3. Tulis kredensial Supabase pribadi Anda dengan format berikut:
@@ -65,7 +65,7 @@ Agar database baru Anda memiliki tabel dan logika sistem yang lengkap, jalankan 
 
 ---
 
-## 🎮 Langkah 5: Konfigurasi Aplikasi Unity Client (AR)
+## Langkah 5: Konfigurasi Aplikasi Unity Client (AR)
 Agar aplikasi mobile Unity Anda tidak "nyangkut" mengirim data ke database pengembang asli, Anda wajib mengubah kredensial gerbang awalnya:
 1. Buka folder proyek menggunakan **Unity Hub** (direkomendasikan menggunakan **Unity 6**).
 2. Di panel Project Unity, buka direktori skrip: `Assets/Scripts/`.
@@ -81,7 +81,7 @@ Agar aplikasi mobile Unity Anda tidak "nyangkut" mengirim data ke database penge
 
 ---
 
-## 📦 Langkah 6: Setup Supabase Storage Bucket
+## Langkah 6: Setup Supabase Storage Bucket
 Web Admin membutuhkan Cloud Storage untuk menyimpan gambar marker (.png/.jpg), model 3D (.glb), dan file video (.mp4).
 1. Buka menu **Storage** pada dashboard Supabase Anda.
 2. Buat bucket baru dengan mengklik **Create Bucket**:
@@ -97,7 +97,7 @@ Web Admin membutuhkan Cloud Storage untuk menyimpan gambar marker (.png/.jpg), m
 
 ---
 
-## 🛡️ Langkah 7: Pengamanan Keamanan Tambahan
+## Langkah 7: Pengamanan Keamanan Tambahan
 Untuk mencegah orang luar menyalahgunakan database Supabase baru Anda setelah Anda mempublikasikan hasil fork:
 1. Buka dashboard Supabase Anda, lalu pilih menu **Authentication > Providers > Email**.
 2. **Matikan / Disable** opsi **"Allow new users to sign up"**. Ini akan mengunci pendaftaran admin publik sehingga tidak ada orang asing yang bisa mendaftar sebagai admin di platform Anda.
@@ -105,4 +105,4 @@ Untuk mencegah orang luar menyalahgunakan database Supabase baru Anda setelah An
 
 ---
 
-🎉 **Selamat!** Sistem duplikasi aplikasi AR Anda sekarang telah terisolasi secara penuh, aman dari kebocoran data, dan siap dideploy secara mandiri tanpa mengganggu sistem pemilik asli proyek!
+**Selamat!** Sistem duplikasi aplikasi AR Anda sekarang telah terisolasi secara penuh, aman dari kebocoran data, dan siap dideploy secara mandiri tanpa mengganggu sistem pemilik asli proyek!
