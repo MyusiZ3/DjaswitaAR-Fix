@@ -105,4 +105,4 @@ Untuk mencegah orang luar menyalahgunakan database Supabase baru Anda setelah An
 
 ---
 
-**Selamat!** Sistem duplikasi aplikasi AR Anda sekarang telah terisolasi secara penuh, aman dari kebocoran data, dan siap dideploy secara mandiri tanpa mengganggu sistem pemilik asli proyek!
+Dengan menyelesaikan seluruh langkah di atas, proses isolasi sistem duplikasi telah berhasil dilakukan. Anda kini dapat melakukan pengujian fungsional secara mandiri di server lokal atau langsung mendeploy dasbor Web Admin beserta aplikasi Unity Anda ke server produksi.
