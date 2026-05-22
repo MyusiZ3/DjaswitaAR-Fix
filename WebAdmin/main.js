@@ -1549,6 +1549,14 @@ let currentSettingsFormSubmit = null;
 
 settingsForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
+  const urlVal = document.getElementById("s-url")?.value?.trim() || "";
+  const keyVal = document.getElementById("s-key")?.value?.trim() || "";
+  
+  if (!urlVal && !keyVal) {
+    showToast("Silakan isi URL atau Secret Key yang ingin diperbarui!", "error");
+    return;
+  }
+  
   currentSettingsFormSubmit = "supabase";
   const passwordInput = document.getElementById("settings-confirm-password");
   if (passwordInput) passwordInput.value = "";
@@ -1559,6 +1567,13 @@ settingsForm?.addEventListener("submit", async (e) => {
 const gdriveSettingsForm = document.getElementById("gdrive-settings-form");
 gdriveSettingsForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
+  const gdriveKeyVal = document.getElementById("s-gdrive-key")?.value?.trim() || "";
+  
+  if (!gdriveKeyVal) {
+    showToast("Silakan isi Google Drive API Key yang ingin diperbarui!", "error");
+    return;
+  }
+  
   currentSettingsFormSubmit = "gdrive";
   const passwordInput = document.getElementById("settings-confirm-password");
   if (passwordInput) passwordInput.value = "";
