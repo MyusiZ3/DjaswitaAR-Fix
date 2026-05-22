@@ -1550,27 +1550,81 @@ let currentSettingsFormSubmit = null;
 settingsForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
   currentSettingsFormSubmit = "supabase";
+  const passwordInput = document.getElementById("settings-confirm-password");
+  if (passwordInput) passwordInput.value = "";
   modalSettingsConfirm.classList.add("active");
+  if (passwordInput) setTimeout(() => passwordInput.focus(), 150);
 });
 
 const gdriveSettingsForm = document.getElementById("gdrive-settings-form");
 gdriveSettingsForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
   currentSettingsFormSubmit = "gdrive";
+  const passwordInput = document.getElementById("settings-confirm-password");
+  if (passwordInput) passwordInput.value = "";
   modalSettingsConfirm.classList.add("active");
+  if (passwordInput) setTimeout(() => passwordInput.focus(), 150);
 });
 
 btnSettingsCancel?.addEventListener("click", () => {
   modalSettingsConfirm.classList.remove("active");
+  const passwordInput = document.getElementById("settings-confirm-password");
+  if (passwordInput) passwordInput.value = "";
 });
 
 btnSettingsConfirm?.addEventListener("click", async () => {
-  modalSettingsConfirm.classList.remove("active");
+  const passwordInput = document.getElementById("settings-confirm-password");
+  const password = passwordInput?.value || "";
   
-  if (currentSettingsFormSubmit === "supabase") {
-    await saveSupabaseConfig();
-  } else if (currentSettingsFormSubmit === "gdrive") {
-    await saveGDriveConfig();
+  if (!password) {
+    showToast("Kata sandi wajib diisi untuk verifikasi!", "error");
+    if (passwordInput) passwordInput.focus();
+    return;
+  }
+  
+  const originalConfirmText = btnSettingsConfirm.innerText;
+  btnSettingsConfirm.disabled = true;
+  btnSettingsConfirm.innerText = "Memverifikasi...";
+  
+  try {
+    const sessionData = await supabase.auth.getSession();
+    const email = sessionData?.data?.session?.user?.email;
+    
+    if (!email) {
+      showToast("Sesi tidak aktif. Silakan masuk kembali.", "error");
+      btnSettingsConfirm.disabled = false;
+      btnSettingsConfirm.innerText = originalConfirmText;
+      return;
+    }
+    
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    
+    if (authError) {
+      showToast("Kata sandi salah! Akses ditolak.", "error");
+      btnSettingsConfirm.disabled = false;
+      btnSettingsConfirm.innerText = originalConfirmText;
+      if (passwordInput) {
+        passwordInput.value = "";
+        passwordInput.focus();
+      }
+      return;
+    }
+    
+    // Verification successful, close modal, clear password, and perform save
+    modalSettingsConfirm.classList.remove("active");
+    if (passwordInput) passwordInput.value = "";
+    
+    if (currentSettingsFormSubmit === "supabase") {
+      await saveSupabaseConfig();
+    } else if (currentSettingsFormSubmit === "gdrive") {
+      await saveGDriveConfig();
+    }
+  } catch (err) {
+    console.error("Settings password confirmation error:", err);
+    showToast("Gagal melakukan verifikasi kata sandi.", "error");
+  } finally {
+    btnSettingsConfirm.disabled = false;
+    btnSettingsConfirm.innerText = originalConfirmText;
   }
 });
 
