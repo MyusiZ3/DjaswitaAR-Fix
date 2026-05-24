@@ -827,6 +827,23 @@ async function handleAuthState(session) {
   const loader = document.getElementById("initial-loader");
   try {
     if (session) {
+      // Check 12-hour session limit
+      const loginTime = localStorage.getItem('login_timestamp');
+      if (loginTime) {
+        const elapsed = Date.now() - parseInt(loginTime, 10);
+        if (elapsed > 12 * 60 * 60 * 1000) {
+          localStorage.removeItem('login_timestamp');
+          localStorage.removeItem('activeSection');
+          await supabase.auth.signOut();
+          showToast("Sesi Anda telah berakhir setelah 12 jam. Silakan login kembali.", "warning");
+          setTimeout(() => window.location.reload(), 1500);
+          return;
+        }
+      } else {
+        // Set timestamp for fresh session
+        localStorage.setItem('login_timestamp', Date.now().toString());
+      }
+
       // If already initialized for this user, skip re-fetching data (prevents spinner on tab focus)
       if (isInitialized && currentUserId === session.user.id) {
         return;
@@ -886,6 +903,7 @@ async function handleAuthState(session) {
     } else {
       isInitialized = false;
       currentUserId = null;
+      localStorage.removeItem('login_timestamp'); // Clear timestamp on logout
       if (loginScreen) {
         loginScreen.style.display = "flex";
         loginScreen.classList.remove("init-hidden");
@@ -2840,6 +2858,25 @@ if (initError) {
   supabase.auth.getSession().then((res) => {
     handleAuthState(res.data?.session);
   });
+
+  // Periodic check for 12-hour session expiry
+  setInterval(async () => {
+    const sessionData = await supabase.auth.getSession();
+    const session = sessionData?.data?.session;
+    if (session) {
+      const loginTime = localStorage.getItem('login_timestamp');
+      if (loginTime) {
+        const elapsed = Date.now() - parseInt(loginTime, 10);
+        if (elapsed > 12 * 60 * 60 * 1000) {
+          showToast("Sesi Anda telah berakhir (batas 12 jam). Mengeluarkan...", "warning");
+          localStorage.removeItem('login_timestamp');
+          localStorage.removeItem('activeSection');
+          await supabase.auth.signOut();
+          setTimeout(() => window.location.reload(), 1000);
+        }
+      }
+    }
+  }, 60000); // Check every 60 seconds
 }
 
 // --- CANVA MODAL LOGIC ---
