@@ -7,7 +7,7 @@ Semua pengujian fungsional berjalan dengan sukses, membuktikan kesiapan sistem u
 
 ---
 
-## 📊 Ringkasan Hasil Pengujian (Test Executive Summary)
+## Ringkasan Hasil Pengujian (Test Executive Summary)
 
 | Kategori Pengujian | Total Kasus Uji | Pass (Lulus) | Fail (Gagal) | Tingkat Kelulusan (Pass Rate) |
 | :--- | :---: | :---: | :---: | :---: |
@@ -19,7 +19,7 @@ Semua pengujian fungsional berjalan dengan sukses, membuktikan kesiapan sistem u
 
 ---
 
-## 🛠️ Rincian Hasil Pengujian Per Kasus Uji (Test Case Execution Details)
+## Rincian Hasil Pengujian Per Kasus Uji (Test Case Execution Details)
 
 ### Kategori A: Autentikasi & Keamanan Sesi
 
@@ -241,7 +241,7 @@ Semua pengujian fungsional berjalan dengan sukses, membuktikan kesiapan sistem u
 
 ---
 
-## 📈 Kesimpulan Pengetesan (Testing Verdict)
+## Kesimpulan Pengetesan (Testing Verdict)
 
 Aplikasi **Web Admin Dashboard (CMS)** memiliki fungsionalitas yang **sangat stabil**, dengan sistem keamanan yang andal seperti **Timeout Sesi 12 Jam** dan **Double Authentication** untuk parameter rahasia. Perbaikan spesifik (seperti menonaktifkan pop-up sandi pada saat input kosong) terbukti bekerja dengan sempurna dan meningkatkan keramahan antarmuka (UX).
 

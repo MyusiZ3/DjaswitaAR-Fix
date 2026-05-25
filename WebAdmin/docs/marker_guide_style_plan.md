@@ -4,7 +4,7 @@ Dokumen ini memandu implementasi halaman panduan kualitas gambar marker agar ser
 
 ---
 
-## 🎴 1. Kartu Perbandingan Kualitas Gambar (Good vs Bad Markers)
+## 1. Kartu Perbandingan Kualitas Gambar (Good vs Bad Markers)
 Visualisasi contoh marker gambar yang baik dan yang buruk akan disajikan menggunakan tata letak kartu berdampingan (*comparison cards*) yang terstruktur sangat kontras.
 
 - **Kartu Marker Baik (High Contrast / Rich Features)**:
@@ -16,7 +16,7 @@ Visualisasi contoh marker gambar yang baik dan yang buruk akan disajikan menggun
 
 ---
 
-## 🎯 2. Grid & Viewfinder Overlay Kamera AR (Visual panduan)
+## 2. Grid & Viewfinder Overlay Kamera AR (Visual panduan)
 Untuk memberikan kesan simulasi kamera pemindai sungguhan, kotak contoh marker akan dilengkapi dengan overlay grid dan crosshair bertema holografik.
 
 - **Holographic Scan Grid**: Memberikan garis-garis tipis berpola kotak (*matrix grid*) transparan berwarna biru muda di atas gambar contoh.
@@ -34,7 +34,7 @@ Untuk memberikan kesan simulasi kamera pemindai sungguhan, kotak contoh marker a
 
 ---
 
-## 💡 3. Kartu Panduan Teknis & Kriteria Marker
+## 3. Kartu Panduan Teknis & Kriteria Marker
 Detail penjelasan kriteria (seperti resolusi gambar, detail kontras, dan format berkas) akan dikemas dalam modul list interaktif.
 
 - **Kriteria Kartu Panduan**: Menggunakan gaya kartu pastel asimetris (*Outlander style*), yaitu menggunakan latar belakang penuh warna **Pastel Peach (`var(--pastel-peach)`)** transparan atau **Pastel Lavender (`var(--pastel-lavender)`)** transparan dengan ikon di sebelah kiri yang serasi untuk menonjolkan poin-poin krusial.

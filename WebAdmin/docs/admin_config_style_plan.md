@@ -4,7 +4,7 @@ Dokumen ini memandu implementasi gaya visual halaman manajemen pengguna, pengatu
 
 ---
 
-## 👥 1. Grid Pengguna & Kartu Profil Anggota
+## 1. Grid Pengguna & Kartu Profil Anggota
 Profil para admin dan superadmin akan disajikan dalam susunan kartu profil minimalis yang bersih dengan status aktif yang mudah dipantau.
 
 - **Avatar Profil**: Menggunakan pembungkus berbentuk lingkaran dengan border berwarna **Pastel Lavender (`var(--pastel-lavender)`)** berpendar.
@@ -15,7 +15,7 @@ Profil para admin dan superadmin akan disajikan dalam susunan kartu profil minim
 
 ---
 
-## 🎚️ 2. Switch Toggle Hak Akses Kustom (`.switch`)
+## 2. Switch Toggle Hak Akses Kustom (`.switch`)
 Tombol sakelar geser (*toggle switch*) untuk menghidupkan/mematikan izin akses modul atau status verifikasi admin akan didesain menyerupai konsol teknologi tinggi yang futuristik.
 
 - **Background Switch Non-Aktif**: Warna arang gelap abu-abu (`#1e1f24`) dengan lingkaran geser berwarna abu-abu redup.
@@ -32,7 +32,7 @@ Tombol sakelar geser (*toggle switch*) untuk menghidupkan/mematikan izin akses m
 
 ---
 
-## 📋 3. Tabel Riwayat Aktivitas & Audit Logs
+## 3. Tabel Riwayat Aktivitas & Audit Logs
 Tabel log audit yang mencatat waktu kapan admin memperbarui lokasi wisata akan didesain agar mudah discan secara kronologis.
 
 - **Waktu / Timestamp**: Ditampilkan menggunakan font monospaced (`var(--font-mono)`) berwarna **Pastel Peach (`var(--pastel-peach)`)** tipis untuk kemudahan verifikasi waktu.

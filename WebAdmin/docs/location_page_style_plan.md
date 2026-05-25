@@ -4,7 +4,7 @@ Dokumen ini memandu penyelarasan gaya visual halaman daftar lokasi wisata, formu
 
 ---
 
-## 📝 1. Standar Input Kolom & Form Control (`.form-group`)
+## 1. Standar Input Kolom & Form Control (`.form-group`)
 Seluruh input teks (`input[type="text"]`), area catatan (`textarea`), dan pilihan menu (`select`) akan dibersihkan dari gaya bawaan browser dan diganti dengan desain arang matte minimalis.
 
 - **Warna Dasar Input**: Background `#18191e` dengan garis batas tipis `var(--border-color)` (`#212329`).
@@ -23,7 +23,7 @@ Seluruh input teks (`input[type="text"]`), area catatan (`textarea`), dan piliha
 
 ---
 
-## 📤 2. Drag & Drop File Uploader Zone
+## 2. Drag & Drop File Uploader Zone
 Kotak tempat mengunggah file marker gambar, model 3D (`.glb`), dan video MP4 akan diubah agar menyerupai instrumen laboratorium AR yang sangat premium.
 
 - **Gaya Border**: Garis putus-putus (`dashed`) melingkar dengan warna **Pastel Blue (`var(--pastel-blue)`)** transparan.
@@ -32,7 +32,7 @@ Kotak tempat mengunggah file marker gambar, model 3D (`.glb`), dan video MP4 aka
 
 ---
 
-## 🎛️ 3. Panel Kontrol Transformasi HUD (Skala, Rotasi, Posisi)
+## 3. Panel Kontrol Transformasi HUD (Skala, Rotasi, Posisi)
 Panel instrumen untuk mengatur koordinat model 3D agar presisi di dalam aplikasi mobile Unity AR akan diselaraskan menjadi instrumen HUD (*Heads-Up Display*).
 
 - **Label Koordinat**: Label sumbu X, Y, Z menggunakan font monospaced (`var(--font-mono)`) dan diberi tag warna pastel yang berbeda:

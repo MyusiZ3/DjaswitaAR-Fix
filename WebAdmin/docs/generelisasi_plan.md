@@ -4,7 +4,7 @@ Rencana ini dibuat untuk memenuhi permintaan generalisasi lanjutan agar platform
 
 ---
 
-## ⚠️ User Review Required: Panduan Migrasi Database & Storage Supabase
+## User Review Required: Panduan Migrasi Database & Storage Supabase
 
 Karena perubahan ini melibatkan backend aktif Anda di Supabase, Anda perlu melakukan migrasi manual berikut di Dashboard Supabase agar sinkron dengan kode program baru:
 
@@ -31,7 +31,7 @@ Karena Supabase tidak mendukung pengubahan nama (*rename*) bucket secara langsun
 
 ---
 
-## 🛠️ Detail Perubahan Per Berkas (Lokal)
+## Detail Perubahan Per Berkas (Lokal)
 
 Kami akan memperbarui berkas-berkas berikut secara terstruktur di lingkungan lokal:
 
@@ -78,7 +78,7 @@ Kami akan memperbarui berkas-berkas berikut secara terstruktur di lingkungan lok
 
 ---
 
-## 🧪 Rencana Verifikasi
+## Rencana Verifikasi
 
 ### Pengujian Web Admin:
 1. Pastikan aplikasi web berhasil dijalankan tanpa error di konsol browser.
@@ -92,6 +92,6 @@ Kami akan memperbarui berkas-berkas berikut secara terstruktur di lingkungan lok
 
 ---
 
-## 🛑 Konfirmasi Sebelum Commit
+## Konfirmasi Sebelum Commit
 
 Sesuai dengan kesepakatan ("*oke nanti sblm saya suh commit jangan commit langung ya saya perlu cek*"), seluruh rangkaian perubahan ini **hanya akan diaplikasikan pada salinan lokal** dan **tidak akan di-commit** secara langsung ke Git. Kami akan menunggu instruksi tertulis berikutnya setelah Anda selesai memeriksa seluruh modifikasi.

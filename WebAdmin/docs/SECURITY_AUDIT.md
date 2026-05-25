@@ -1,23 +1,23 @@
-# 🛡️ LAPORAN AUDIT KEAMANAN & STABILITAS SISTEM: D'JASWITA AR
+# LAPORAN AUDIT KEAMANAN & STABILITAS SISTEM: D'JASWITA AR
 
 Laporan ini menyajikan temuan audit keamanan teknis dan evaluasi stabilitas pada platform **D'Jaswita AR** (aplikasi Unity AR & dasbor WebAdmin). Audit difokuskan pada analisis kerentanan terhadap penyalahgunaan kunci API, potensi bypass otentikasi, eskalasi hak istimewa (*privilege escalation*), serta ketahanan sistem terhadap kondisi gangguan jaringan/offline.
 
 ---
 
-## 📊 RINGKASAN TEMUAN
+## RINGKASAN TEMUAN
 
 | No | Komponen | Nama Celah Keamanan | Tingkat Kerawanan | Status | Deskripsi Singkat |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| 1 | Supabase Auth & DB | **Administrative Privilege Escalation via Open SignUp** | 🔥 **KRITIS (CRITICAL)** | Teridentifikasi | Siapa pun dapat mendaftar melalui API publik Supabase dan secara otomatis mendapatkan hak akses Administrator penuh (`role = 'admin'`). |
-| 2 | Unity C# & Web JS | **Hardcoded & Exposed Sensitive API Keys** | ⚠️ **MEDIUM (SEDANG)** | Teridentifikasi | Supabase Anon Key dan Google Drive API Key terekspos langsung di kode klien (C# Unity & Web build JS) tanpa restriksi. |
-| 3 | Supabase RLS | **Permissive Row Level Security (RLS) Policies** | 🔥 **KRITIS (CRITICAL)** | Teridentifikasi | Kebijakan RLS saat ini hanya mengecek status otentikasi saja (`Authenticated`), bukan peran spesifik (`admin`/`superadmin`), sehingga RLS mudah dibypass jika penyerang berhasil login/mendaftar. |
-| 4 | Unity AR Client | **Offline State Resilience & Network-Loss Recovery** | ✅ **AMAN (STABLE)** | Terverifikasi | Sistem caching lokal, transisi luring (Lottie animation), dan pemantauan koneksi detak jantung berjalan sangat stabil dan toleran terhadap kegagalan jaringan. |
+| 1 | Supabase Auth & DB | **Administrative Privilege Escalation via Open SignUp** |  **KRITIS (CRITICAL)** | Teridentifikasi | Siapa pun dapat mendaftar melalui API publik Supabase dan secara otomatis mendapatkan hak akses Administrator penuh (`role = 'admin'`). |
+| 2 | Unity C# & Web JS | **Hardcoded & Exposed Sensitive API Keys** |  **MEDIUM (SEDANG)** | Teridentifikasi | Supabase Anon Key dan Google Drive API Key terekspos langsung di kode klien (C# Unity & Web build JS) tanpa restriksi. |
+| 3 | Supabase RLS | **Permissive Row Level Security (RLS) Policies** |  **KRITIS (CRITICAL)** | Teridentifikasi | Kebijakan RLS saat ini hanya mengecek status otentikasi saja (`Authenticated`), bukan peran spesifik (`admin`/`superadmin`), sehingga RLS mudah dibypass jika penyerang berhasil login/mendaftar. |
+| 4 | Unity AR Client | **Offline State Resilience & Network-Loss Recovery** |  **AMAN (STABLE)** | Terverifikasi | Sistem caching lokal, transisi luring (Lottie animation), dan pemantauan koneksi detak jantung berjalan sangat stabil dan toleran terhadap kegagalan jaringan. |
 
 ---
 
-## 🔍 ANALISIS KERENTANAN MENDALAM
+## ANALISIS KERENTANAN MENDALAM
 
-### 1. 🔥 Privilege Escalation via Open SignUp & Database Trigger (Sangat Kritis)
+### 1.  Privilege Escalation via Open SignUp & Database Trigger (Sangat Kritis)
 - **Lokasi Kode Celah Keamanan:** 
   - Fungsi PostgreSQL `public.handle_new_user()` di Supabase DB (tercantum di `README.md`):
     ```sql
@@ -45,7 +45,7 @@ Laporan ini menyajikan temuan audit keamanan teknis dan evaluasi stabilitas pada
 
 ---
 
-### 2. 🔥 Permissive Row Level Security (RLS) Policies (Sangat Kritis)
+### 2.  Permissive Row Level Security (RLS) Policies (Sangat Kritis)
 - **Lokasi Dokumen:** Kebijakan RLS yang direkomendasikan di `README.md` (baris 180-191):
   - Tabel `ar_targets` $\rightarrow$ Kebijakan `Admin CRUD` $\rightarrow$ Target Role: `Authenticated` $\rightarrow$ Izin: `ALL`
   - Tabel `profiles` $\rightarrow$ Kebijakan `View Profiles` $\rightarrow$ Target Role: `Authenticated` $\rightarrow$ Izin: `SELECT`
@@ -57,7 +57,7 @@ Laporan ini menyajikan temuan audit keamanan teknis dan evaluasi stabilitas pada
 
 ---
 
-### 3. ⚠️ Kunci API Google Drive & Supabase Terekspos tanpa Batasan (Medium)
+### 3.  Kunci API Google Drive & Supabase Terekspos tanpa Batasan (Medium)
 - **Lokasi Kode Celah Keamanan:** 
   - Variabel master di C# Unity client `APIManager.cs` (baris 20-24):
     ```csharp
@@ -72,7 +72,7 @@ Laporan ini menyajikan temuan audit keamanan teknis dan evaluasi stabilitas pada
 
 ---
 
-## 🛠️ REKOMENDASI PERBAIKAN DAN MITIGASI KONKRET
+## REKOMENDASI PERBAIKAN DAN MITIGASI KONKRET
 
 Kami merekomendasikan tindakan pengerasan (*hardening*) sistem berikut sesegera mungkin di lingkungan database Supabase dan Google Cloud Platform Anda:
 
@@ -187,11 +187,11 @@ Untuk memastikan kunci API Google Drive (`masterGDriveApiKey`) aman dari pencuri
 
 ---
 
-## 📈 ANALISIS STABILITAS SISTEM LURING (OFFLINE RESILIENCE)
+## ANALISIS STABILITAS SISTEM LURING (OFFLINE RESILIENCE)
 
 Selain aspek keamanan, audit juga difokuskan pada pengujian stabilitas Unity AR Client saat menghadapi masalah kegagalan jaringan atau kondisi tanpa internet.
 
-### 🌟 Aspek Stabilitas yang Sangat Baik (Kelebihan Sistem saat Ini):
+### Aspek Stabilitas yang Sangat Baik (Kelebihan Sistem saat Ini):
 1. **Pencegahan Aplikasi Hang/Freeze:**
    Dalam skrip `DynamicMarkerManager.cs` dan `ARTargetHandler.cs`, pemantauan status internet (`MonitorInternetConnection()`) berjalan secara periodik setiap 1 detik. Apabila internet terputus sewaktu-waktu:
    - Kamera Vuforia tetap aktif dan stabil.
@@ -204,7 +204,7 @@ Selain aspek keamanan, audit juga difokuskan pada pengujian stabilitas Unity AR 
 
 ---
 
-## 📝 KESIMPULAN AUDIT
+## KESIMPULAN AUDIT
 
 Sistem D'Jaswita AR memiliki **pondasi stabilitas klien Unity yang sangat tangguh** terhadap kegagalan jaringan. Namun, dari segi keamanan backend, terdapat **kelemahan struktural kritis pada pemicu otomatis otentikasi Supabase dan kebijakan RLS**. 
 

@@ -4,7 +4,7 @@ Dokumen ini memandu implementasi gaya visual halaman profil pengembang, sejarah 
 
 ---
 
-## 🛠️ 1. Panel Info Sistem & Arsitektur Terintegrasi
+## 1. Panel Info Sistem & Arsitektur Terintegrasi
 Area tentang teknologi yang digunakan (Vite, Supabase, Unity Engine, Vuforia SDK) akan dipresentasikan dengan modul ikon minimalis bertema modular.
 
 - **Integrasi Pustaka (Tech Stack Cards)**: Setiap teknologi dikemas dalam kartu kotak kecil abu-abu arang matte (`#141519`) berpendar.
@@ -13,7 +13,7 @@ Area tentang teknologi yang digunakan (Vite, Supabase, Unity Engine, Vuforia SDK
 
 ---
 
-## 📅 2. Garis Waktu Pengembangan & Release Notes (Timeline)
+## 2. Garis Waktu Pengembangan & Release Notes (Timeline)
 Garis waktu kronologis rilis perbaikan bug dan peningkatan sistem (misalnya pelacakan marker offline, optimalisasi URP, penyeimbangan shader variant) akan didesain vertikal secara minimalis.
 
 - **Garis Utama Timeline**: Garis vertikal tipis `2px` berwarna arang gelap, dengan titik bulat penyambung (*timeline nodes*) di setiap versi rilis.
@@ -33,7 +33,7 @@ Garis waktu kronologis rilis perbaikan bug dan peningkatan sistem (misalnya pela
 
 ---
 
-## 💻 3. Kartu Profil Pengembang (Developer Credits)
+## 3. Kartu Profil Pengembang (Developer Credits)
 Profil tim yang membangun Djaswita AR terintegrasi akan didesain asimetris menggunakan skema pastel yang menyenangkan.
 
 - **Warna Latar Belakang Kartu**: Menggunakan skema kartu pastel penuh asimetris:

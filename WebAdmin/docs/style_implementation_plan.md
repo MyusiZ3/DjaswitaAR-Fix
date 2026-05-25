@@ -4,7 +4,7 @@ Dokumen ini berisi rencana teknis revisi untuk mentransformasikan antarmuka (UI)
 
 ---
 
-## 🎨 1. Sistem Warna & Desain Token Baru (`main.css`)
+## 1. Sistem Warna & Desain Token Baru (`main.css`)
 
 Kami akan memperbarui bagian `:root` pada file `main.css` untuk mengubah skema warna neon tajam sebelumnya menjadi **skema pastel gelap matte** dengan tingkat kontras yang tinggi namun nyaman di mata.
 
@@ -48,7 +48,7 @@ Kami akan memperbarui bagian `:root` pada file `main.css` untuk mengubah skema w
 
 ---
 
-## 🧭 2. Desain Ulang Sidebar Navigation (Kreatop Style)
+## 2. Desain Ulang Sidebar Navigation (Kreatop Style)
 
 Sesuai referensi *Kreatop*, navigasi aktif akan dibuat sangat menonjol menggunakan **pill-shaped neon lime** dengan teks gelap, yang memancarkan kesan berenergi tinggi dan modern.
 
@@ -62,7 +62,7 @@ Sesuai referensi *Kreatop*, navigasi aktif akan dibuat sangat menonjol menggunak
 
 ---
 
-## 📊 3. Desain Grid Kartu Statistik & Grafik (Outlander Style)
+## 3. Desain Grid Kartu Statistik & Grafik (Outlander Style)
 
 Pada referensi *Outlander*, kartu statistik tidak semuanya seragam berwarna gelap. Kami akan mengadopsi struktur **Mix-and-Match Stat Cards** ini pada dashboard Jaswita AR untuk memecah kebosanan visual.
 
@@ -77,7 +77,7 @@ Pada referensi *Outlander*, kartu statistik tidak semuanya seragam berwarna gela
 
 ---
 
-## 3️⃣ 4. Holographic 3D Viewport & Pilihan Mode AR
+## 3⃣ 4. Holographic 3D Viewport & Pilihan Mode AR
 
 Kami akan menyelaraskan instrumen pratinjau 3D model-viewer dan marker agar selaras dengan estetika pastel gelap matte.
 
@@ -90,7 +90,7 @@ Kami akan menyelaraskan instrumen pratinjau 3D model-viewer dan marker agar sela
 
 ---
 
-## ⚡ 5. Micro-Animations & Kontrol Dinamis
+## 5. Micro-Animations & Kontrol Dinamis
 
 Menyempurnakan dashboard dengan animasi yang terasa sangat organik dan responsif saat diklik atau dimuat.
 
@@ -103,7 +103,7 @@ Menyempurnakan dashboard dengan animasi yang terasa sangat organik dan responsif
 
 ---
 
-## 🔍 Rencana Verifikasi Tampilan Visual
+## Rencana Verifikasi Tampilan Visual
 
 Kami akan melakukan peninjauan visual secara manual melalui browser subagent untuk memastikan:
 1.  **Konsistensi Kontras**: Memastikan teks di dalam kartu pastel (Mint & Lavender) terbaca dengan sangat jelas memakai warna teks gelap (`var(--text-dark)`).

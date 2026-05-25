@@ -4,7 +4,7 @@ Dokumen ini berisi rencana pengembangan teknis untuk mengubah field `booking_url
 
 ---
 
-## ⚠️ Perhatian Khusus & Mitigasi Risiko
+## Perhatian Khusus & Mitigasi Risiko
 
 Untuk menghindari kerusakan data dan terputusnya referensi komponen di Unity:
 1. **Unity Inspector Serialization Constraint**: Di dalam Unity, tombol `bookingButton` dihubungkan secara visual melalui Unity Inspector pada prefab `AR_Content_Root.prefab` dan scene `MainScene.unity`. Jika variabel `bookingButton` di dalam C# langsung diganti namanya menjadi `contactButton` tanpa mitigasi, Unity akan kehilangan referensi (*Null Reference*) dan tombol tidak akan berfungsi.
@@ -13,7 +13,7 @@ Untuk menghindari kerusakan data dan terputusnya referensi komponen di Unity:
 
 ---
 
-## 🛠️ Detail Perubahan Per Berkas
+## Detail Perubahan Per Berkas
 
 Kita akan memperbarui berkas-berkas berikut secara terstruktur:
 
@@ -88,7 +88,7 @@ Kita akan memperbarui berkas-berkas berikut secara terstruktur:
 
 ---
 
-## 🧪 Rencana Verifikasi
+## Rencana Verifikasi
 
 ### Pengujian Frontend (Web Admin):
 1. Buka formulir pembuatan/edit AR Marker.
@@ -105,6 +105,6 @@ Kita akan memperbarui berkas-berkas berikut secara terstruktur:
 
 ---
 
-## 🛑 Konfirmasi Sebelum Commit
+## Konfirmasi Sebelum Commit
 
 Sesuai instruksi Anda ("*oke nanti sblm saya suh commit jangan commit langung ya saya perlu cek*"), kami akan **hanya mengubah berkas-berkas secara lokal** dan **tidak akan melakukan `git commit` atau `git push`** sampai Anda memeriksa hasilnya dan memberikan perintah eksplisit untuk melakukan commit.

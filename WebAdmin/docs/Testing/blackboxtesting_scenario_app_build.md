@@ -7,7 +7,7 @@ Pengujian ini sangat penting karena performa kamera fisik, izin sistem operasi A
 
 ---
 
-## 📌 Lingkup Pengujian Perangkat Fisik (Physical Device Testing Scope)
+## Lingkup Pengujian Perangkat Fisik (Physical Device Testing Scope)
 
 1. **Instalasi & Manajemen Izin OS (Installation & Permissions):** Kompatibilitas versi OS Android, pemberian izin kamera, dan hak akses penyimpanan internal untuk caching.
 2. **Performa Sensor Kamera & Pelacakan AR Fisik (AR Tracking & Environment Sensitivity):** Sensitivitas pemindaian marker di bawah berbagai kondisi pencahayaan, sudut kemiringan, dan jarak fisik.
@@ -17,7 +17,7 @@ Pengujian ini sangat penting karena performa kamera fisik, izin sistem operasi A
 
 ---
 
-## 🛠️ Rincian Skenario Pengujian Perangkat Fisik (Android Build Test Cases)
+## Rincian Skenario Pengujian Perangkat Fisik (Android Build Test Cases)
 
 ### Kategori I: Instalasi & Keamanan Izin OS Android (Installation & Permissions)
 
@@ -62,7 +62,7 @@ Pengujian ini sangat penting karena performa kamera fisik, izin sistem operasi A
 
 ---
 
-## 📋 Langkah Persiapan Pengujian Perangkat Fisik (Pre-requisites)
+## Langkah Persiapan Pengujian Perangkat Fisik (Pre-requisites)
 
 1. **Persiapan Perangkat Keras:**
    * Sediakan minimal satu unit smartphone Android yang representatif (direkomendasikan spesifikasi menengah dengan RAM 4GB dan mendukung sensor gyro).

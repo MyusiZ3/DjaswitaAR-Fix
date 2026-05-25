@@ -7,14 +7,14 @@ Metode pengujian yang diterapkan meliputi **Equivalence Partitioning** (pembagia
 
 ---
 
-## 📌 Lingkup Pengujian (Test Scope)
+## Lingkup Pengujian (Test Scope)
 1. **Web Admin Dashboard (Web App)**: Autentikasi, Keamanan Sesi (Timeout 12 Jam), Manajemen Data Target (CRUD), Pengaturan Aplikasi (Supabase & Google Drive Config dengan Double Authentication), Manajemen Administrator, dan Pemantauan Statistik.
 2. **Unity Client (Mobile App)**: Inisialisasi Sistem, Deteksi Marker (Vuforia), Rendering Konten (3D glb, Image Carousel, Video Player GDrive), LRU Caching System (RAM & Disk), dan Manajemen Offline Mode.
 3. **Skenario Campuran/Integrasi (Mixed Scenario)**: Sinkronisasi data realtime antara scan marker di aplikasi mobile dan update statistik di Web Admin Dashboard.
 
 ---
 
-## 🛠️ Detail Skenario Pengujian (Test Cases)
+## Detail Skenario Pengujian (Test Cases)
 
 ### Kategori A: Autentikasi & Keamanan Sesi (Web Admin)
 
@@ -102,7 +102,7 @@ Metode pengujian yang diterapkan meliputi **Equivalence Partitioning** (pembagia
 
 ---
 
-## 📱 Panduan Acuan & Contoh Output Pengujian Aplikasi Unity (Mobile Client)
+## Panduan Acuan & Contoh Output Pengujian Aplikasi Unity (Mobile Client)
 
 Sebagai acuan mandiri bagi Penguji Aplikasi Mobile, berikut adalah daftar log konsol Unity (`Debug.Log`) dan indikator visual UI yang diharapkan muncul untuk masing-masing skenario uji:
 
@@ -214,7 +214,7 @@ Sebagai acuan mandiri bagi Penguji Aplikasi Mobile, berikut adalah daftar log ko
 
 ---
 
-## 📈 Laporan Hasil Pengujian (Test Log Summary Template)
+## Laporan Hasil Pengujian (Test Log Summary Template)
 *Gunakan tabel di bawah ini untuk mencatat hasil pengujian nyata saat uji coba dirilis:*
 
 | ID Pengujian | Tanggal Uji | Penguji | Status (Pass/Fail) | Catatan Masalah / Bugs | Tanda Tangan |

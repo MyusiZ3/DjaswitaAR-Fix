@@ -7,7 +7,7 @@ Semua modul pengujian utama—termasuk RAM/Disk caching, normalisasi URL, kalkul
 
 ---
 
-## 📊 Ringkasan Hasil Pengujian (Test Executive Summary)
+## Ringkasan Hasil Pengujian (Test Executive Summary)
 
 | Kategori Pengujian | Total Kasus Uji | Pass (Lulus) | Fail (Gagal) | Tingkat Kelulusan (Pass Rate) |
 | :--- | :---: | :---: | :---: | :---: |
@@ -18,7 +18,7 @@ Semua modul pengujian utama—termasuk RAM/Disk caching, normalisasi URL, kalkul
 
 ---
 
-## 🛠️ Rincian Hasil Pengujian Per Kasus Uji (Test Case Execution Details)
+## Rincian Hasil Pengujian Per Kasus Uji (Test Case Execution Details)
 
 ### Kategori E: Inisialisasi & Konektivitas
 
@@ -117,7 +117,7 @@ Semua modul pengujian utama—termasuk RAM/Disk caching, normalisasi URL, kalkul
 
 ---
 
-## 📈 Kesimpulan Pengetesan (Testing Verdict)
+## Kesimpulan Pengetesan (Testing Verdict)
 
 Aplikasi **Unity Client (Mobile AR App)** telah membuktikan ketahanan sistem yang luar biasa melalui 7 skenario pengujian otomatis ini. Algoritma pembersihan memori GPU (RAM Cache) dan LRU Disk terbukti sangat andal menjaga stabilitas performa ponsel. Fitur normalisasi skala AR serta penanganan Google Drive URL dinamis berjalan dengan akurasi tinggi. Terlebih lagi, sistem toleransi kesalahan (*Fault Tolerance*) terkonfirmasi murni aman dari risiko *crash* antarmuka apabila terputus dari database Supabase.
 

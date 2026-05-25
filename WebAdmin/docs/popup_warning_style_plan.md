@@ -4,7 +4,7 @@ Dokumen ini memandu implementasi gaya visual untuk seluruh jendela dialog, pesan
 
 ---
 
-## 🎨 1. Aturan Dasar Gaya Modal (`.modal-content`)
+## 1. Aturan Dasar Gaya Modal (`.modal-content`)
 Semua kotak dialog modal akan didesain minimalis dengan bayangan lembut yang dalam dan batas arang matte tipis.
 
 ```css
@@ -20,7 +20,7 @@ Semua kotak dialog modal akan didesain minimalis dengan bayangan lembut yang dal
 
 ---
 
-## ⚠️ 2. Pop-up Peringatan & Konfirmasi Hapus (Warning/Delete Modal)
+## 2. Pop-up Peringatan & Konfirmasi Hapus (Warning/Delete Modal)
 Ketika pengguna menghapus destinasi wisata, popup konfirmasi akan didominasi oleh aksen warna **Pastel Coral** (`#fecaca`) untuk menunjukkan tindakan berisiko tinggi.
 
 - **Header Icon Box**: Ikon tanda seru menggunakan latar lingkaran transparan dengan ikon **Pastel Coral** berpendar tipis.
@@ -34,7 +34,7 @@ Ketika pengguna menghapus destinasi wisata, popup konfirmasi akan didominasi ole
 
 ---
 
-## 🔔 3. Toast Notifications (Toast Sukses / Gagal)
+## 3. Toast Notifications (Toast Sukses / Gagal)
 Notifikasi dinamis di sudut kanan bawah akan diubah menjadi modul minimalis berbentuk kapsul premium dengan animasi pegas masuk (*elastic slide-in*).
 
 ```css

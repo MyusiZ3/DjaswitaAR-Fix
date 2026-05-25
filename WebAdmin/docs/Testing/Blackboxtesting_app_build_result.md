@@ -7,7 +7,7 @@ Secara fungsional, seluruh modul dinyatakan **LULUS (100% PASS RATE)** dengan be
 
 ---
 
-## 📊 Tabel Hasil Pengujian Perangkat Fisik (Physical Device Testing Master Table)
+## Tabel Hasil Pengujian Perangkat Fisik (Physical Device Testing Master Table)
 
 | ID Uji | Fitur / Skenario Pengujian | Langkah-Langkah Pengujian | Hasil Aktual (Actual Result) & Observasi Perangkat Nyata | Status |
 | :--- | :--- | :--- | :--- | :---: |
@@ -29,5 +29,5 @@ Secara fungsional, seluruh modul dinyatakan **LULUS (100% PASS RATE)** dengan be
 
 ---
 
-## 📈 Kesimpulan Akhir Pengujian Android (.APK)
+## Kesimpulan Akhir Pengujian Android (.APK)
 Secara keseluruhan, build APK aplikasi klien seluler **Djaswita AR** terbukti **sangat tangguh** untuk digunakan langsung di lapangan. Aplikasi memiliki sistem toleransi kesalahan (*fault tolerance*) dan penanganan interupsi OS Android yang luar biasa aman. Catatan observasi di atas merupakan masukan performa berharga untuk iterasi optimasi visual di masa mendatang, namun tidak menghalangi kesiapan aplikasi untuk rilis produksi resmi.
