@@ -1,4 +1,4 @@
-# Jawita AR - Platform Manajemen App Augmented Reality
+# Djaswita AR - Platform Manajemen App Augmented Reality
 
 Proyek ini terdiri dari dua bagian utama:
 
@@ -9,11 +9,11 @@ Proyek ini terdiri dari dua bagian utama:
 
 ## 1. Arsitektur & Rancangan Sistem (System Architecture & Design)
 
-Jawita AR dirancang dengan arsitektur modern yang memisahkan antara pengelola data (CMS/Web Admin), jembatan data & penyimpanan cloud (Supabase BaaS), serta penampil konten interaktif (Unity Client). Pemisahan ini memastikan sistem tetap ringan, mudah dirawat, dan hemat kuota data internet saat dijalankan di perangkat mobile pengguna.
+Djaswita AR dirancang dengan arsitektur modern yang memisahkan antara pengelola data (CMS/Web Admin), jembatan data & penyimpanan cloud (Supabase BaaS), serta penampil konten interaktif (Unity Client). Pemisahan ini memastikan sistem tetap ringan, mudah dirawat, dan hemat kuota data internet saat dijalankan di perangkat mobile pengguna.
 
 ### A. Cetak Biru Arsitektur (System Architecture Blueprint)
 
-Sistem Jawita AR terdiri dari tiga pilar utama yang saling terhubung secara real-time:
+Sistem Djaswita AR terdiri dari tiga pilar utama yang saling terhubung secara real-time:
 
 1. **Web Admin Dashboard (CMS)**:
    * **Teknologi**: HTML5, Vanilla JavaScript, CSS Premium, dan Vite.
@@ -280,7 +280,7 @@ Dashboard admin digunakan untuk mengelola data marker, memantau grafik engagemen
 
 Supabase berfungsi sebagai Backend-as-a-Service (BaaS) yang menyediakan database relasional PostgreSQL, otentikasi admin, dan Cloud Storage untuk menyimpan gambar marker, video panduan, serta model 3D GLB secara online.
 
-Apabila Anda belum memiliki project Supabase yang dikonfigurasi untuk Jawita AR, ikuti petunjuk mendetail di bawah ini:
+Apabila Anda belum memiliki project Supabase yang dikonfigurasi untuk Djaswita AR, ikuti petunjuk mendetail di bawah ini:
 
 ### A. Membuat Project Supabase Baru
 
@@ -288,7 +288,7 @@ Apabila Anda belum memiliki project Supabase yang dikonfigurasi untuk Jawita AR,
 2. Di dalam Dashboard utama Supabase, klik tombol **New Project** (atau **Create Project**).
 3. Lengkapi formulir pembuatan project baru dengan rincian berikut:
    - **Organization**: Pilih nama organisasi default Anda.
-   - **Project Name**: Isi dengan nama proyek, misalnya `Jawita AR`.
+   - **Project Name**: Isi dengan nama proyek, misalnya `Djaswita AR`.
    - **Database Password**: Buat kata sandi database yang aman, pastikan untuk menyalin atau mencatat kata sandi ini.
    - **Region**: Pilih lokasi server terdekat dengan pengguna Anda (direkomendasikan memilih **Singapore** / `ap-southeast-1` untuk performa terbaik dan latensi terendah dari Indonesia).
    - **Pricing Plan**: Pilih opsi **Free** (Gratis).
@@ -534,6 +534,31 @@ Agar Unity dapat menarik data marker dari database Supabase:
   * **RAM Cache (Memori Grafis)**: Membatasi maksimal **12 gambar marker** aktif di memori GPU/RAM. Gambar marker yang paling jarang dipindai akan otomatis dihancurkan (`Destroy`) dari RAM menggunakan antrean LRU untuk mencegah crash akibat *Out of Memory (OOM)* pada ponsel berspesifikasi rendah.
 - **ARTargetHandler (Auto-Normalize)**: Kode ini secara dinamis menghitung batas bounding box model 3D GLB yang baru saja diunduh, lalu melakukan normalisasi ukuran ke skala standar yang seragam (default: `0.15` unit Unity). Hal ini menjamin model 3D berukuran stabil saat menempel pada marker target.
 - **Delayed Hide Logic**: Memberikan waktu toleransi beberapa detik ketika kamera kehilangan pandangan dari marker AR sebelum menonaktifkan objek 3D. Menghindari gangguan visual (objek berkedip hilang-timbul) ketika kamera goyang atau terhalang sesaat.
+
+### D. Konfigurasi Lisensi Vuforia Engine (Langkah-demi-Langkah)
+
+Agar kamera augmented reality (AR) berbasis Vuforia dapat memindai marker fisik dengan sukses di dalam aplikasi mobile, Anda harus memasukkan **App License Key** yang valid ke dalam proyek Unity:
+
+1. **Daftar & Masuk ke Vuforia Developer Portal**:
+   * Kunjungi situs resmi **[Vuforia Developer Portal](https://developer.vuforia.com/)**.
+   * Jika belum memiliki akun, klik **Register** untuk membuat akun developer gratis. Jika sudah, klik **Log In**.
+2. **Membuat License Key Baru**:
+   * Setelah masuk ke dashboard developer, klik tab **Develop** di bagian menu navigasi atas.
+   * Pilih submenu **License Manager** di sisi kiri.
+   * Klik tombol **Get Basic** (atau **Get Development Key**). Lisensi Basic ini 100% gratis dan sangat ideal untuk kebutuhan pengembangan serta produksi skala kecil.
+   * Masukkan nama lisensi proyek Anda, misalnya `Djaswita_AR_Key`.
+   * Centang kotak persetujuan ketentuan layanan Vuforia, lalu klik **Confirm**.
+3. **Menyalin License Key**:
+   * Klik pada nama lisensi proyek yang baru saja Anda buat (`Djaswita_AR_Key`).
+   * Anda akan melihat string teks acak yang sangat panjang (App License Key).
+   * Klik pada kotak teks lisensi tersebut untuk menyalin seluruh kuncinya secara otomatis ke clipboard Anda.
+4. **Memasukkan License Key di Unity**:
+   * Buka proyek Unity Djaswita AR Anda.
+   * Di bilah menu atas Unity, pilih **Window > Vuforia Engine > Vuforia Engine Configuration** (atau gunakan pintasan tombol keyboard `Ctrl + Shift + V` / `Cmd + Shift + V`).
+   * Panel konfigurasi Vuforia akan terbuka di tab **Inspector** sebelah kanan.
+   * Cari kolom input berlabel **App License Key** di bagian paling atas.
+   * Tempel (*paste*) kunci lisensi Vuforia yang telah Anda salin sebelumnya ke dalam kolom tersebut.
+   * Simpan proyek Anda dengan menekan tombol **Ctrl + S** (atau `Cmd + S` di Mac) agar konfigurasi tersimpan permanen di aset `VuforiaConfiguration.asset`.
 
 ---
 
