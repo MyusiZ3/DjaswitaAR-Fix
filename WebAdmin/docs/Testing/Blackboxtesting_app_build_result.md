@@ -1,7 +1,7 @@
 # Laporan Hasil Pengujian Blackbox Aplikasi Android Build (.APK)
 ## Proyek: Jaswita AR - Unity Client (Mobile Android Application)
 
-Dokumen ini mencatat hasil pengujian fungsional dan observasi performa nyata (*Blackbox Testing*) dari paket rilis Android (`.apk`) yang diinstal pada perangkat keras smartphone fisik. Pengujian fungsional terpadu ini mencakup 14 skenario kasus uji dari instalasi, pelacakan AR, optimasi jaringan, hingga interupsi OS.
+Dokumen ini mencatat hasil pengujian fungsional dan observasi performa nyata (*Blackbox Testing*) dari paket rilis Android (`.apk`) yang diinstal pada perangkat keras smartphone fisik. Pengujian fungsional terpadu ini mencakup 15 skenario kasus uji dari instalasi, pelacakan AR, optimasi jaringan, hingga interupsi OS.
 
 Secara fungsional, seluruh modul dinyatakan **LULUS (100% PASS RATE)** dengan beberapa catatan observasi kinerja nyata untuk acuan optimasi selanjutnya.
 
@@ -15,6 +15,7 @@ Secara fungsional, seluruh modul dinyatakan **LULUS (100% PASS RATE)** dengan be
 | **TC-I-02** | Izin Kamera Fisik - Diizinkan | 1. Klik **"Allow / Saat Aplikasi Digunakan"** pada popup izin kamera saat aplikasi dijalankan pertama kali. | Kamera fisik ponsel menyala bersih di layar AR, pelacakan Vuforia aktif siap memindai secara instan. | **PASS** |
 | **TC-I-03** | Izin Kamera Fisik - Ditolak | 1. Klik **"Don't Allow / Tolak"** pada popup izin kamera.<br>2. Amati layar aplikasi. | Aplikasi tetap aman (tidak crash). Muncul dialog peringatan informatif dan menutup modul AR dengan aman. | **PASS** |
 | **TC-I-04** | Hak Akses Disk Cache Internal | 1. Pindai marker untuk mengunduh aset GLB.<br>2. Periksa direktori internal storage ponsel bawaan. | Direktori `JawitaCache` terbuat sempurna di storage internal ponsel. Aset terunduh berhasil dibaca dan ditulis dalam hash MD5. | **PASS** |
+| **TC-I-05** | Validasi Keamanan & Kunci API Supabase Tidak Valid | 1. Sengaja masukkan kunci API Supabase yang salah ke dalam berkas konfigurasi.<br>2. Jalankan aplikasi dan amati antarmuka. | Aplikasi mendeteksi kesalahan kredensial secara instan dan secara otomatis menampilkan **overlay disconnect** untuk mencegah visual crash dan mengamankan sesi pengguna. | **PASS** |
 | **TC-J-01** | Pelacakan Cahaya Redup | 1. Arahkan kamera ke marker di ruangan redup (< 50 lux).<br>2. Amati waktu respon deteksi. | Deteksi tetap berhasil dengan delay pemuatan sekitar **1 - 2 detik** (sangat dipengaruhi oleh tingkat kontras dan kualitas desain marker fisik). | **PASS** |
 | **TC-J-02** | Pelacakan Sudut Miring Ekstrem | 1. Arahkan kamera dari sudut kemiringan tajam (sekitar 15° - 30° dari permukaan meja). | Objek AR sukses melayang tegak mengikuti sudut kemiringan ponsel. Kadang muncul **glitch pelacakan minor** tergantung keunikan desain marker. | **PASS** |
 | **TC-J-03** | Toleransi Jarak Pelacakan | 1. Dekatkan kamera ke marker (< 10 cm).<br>2. Mundurkan kamera ke jarak > 2 meter. | Deteksi jarak dekat bekerja sangat baik. Pada jarak 2 meter, fokus kamera memudar sehingga diidentifikasi **jarak efektif optimal berada pada maksimal 1 meter**. | **PASS** |
