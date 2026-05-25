@@ -539,6 +539,8 @@ Agar Unity dapat menarik data marker dari database Supabase:
 
 ## 6. Fitur Unggulan & Optimasi Sistem (Terbaru)
 
+- **Proteksi Sesi & Auto-Logout 12 Jam:** Mekanisme pengamanan akun administrator yang secara aktif memantau durasi sesi login melalui interval background (setiap 60 detik) dan saat reload halaman. Jika sesi aktif telah mencapai 12 jam, sistem secara otomatis melakukan pembersihan kredensial lokal dan mengalihkan pengguna kembali ke halaman login.
+- **Pencegahan Pop-up Validasi Konfigurasi (Smart UX Validation Bypass):** Desain form pengaturan yang cerdas di mana verifikasi password otentikasi ganda hanya dipicu apabila terdapat data konfigurasi yang diisi oleh pengguna. Jika semua kolom masukan kosong, sistem langsung mengembalikan toast peringatan tanpa menampilkan pop-up password untuk menjaga kenyamanan alur kerja (UX) admin.
 - **Keamanan Konfigurasi Aktif (Masking & Verification):** Sistem perlindungan data kredensial API Supabase & GDrive di WebAdmin dengan penyensoran otomatis (*masking*), sistem verifikasi kata sandi admin untuk membuka kunci, serta fitur penguncian otomatis (*auto-lock* dalam 30 detik) demi mencegah kebocoran kunci API.
 - **Indikator Detak Jantung Koneksi (Database Heartbeat):** Dashboard dilengkapi dengan pemantau status koneksi Supabase secara *real-time* yang memberikan indikator visual hidup (*heartbeat status*) yang memberi tahu admin apabila database sedang terhubung atau terputus.
 - **Panduan Setup Kredensial Interaktif (Interactive API Guide):** Panduan terintegrasi berbasis tab di dashboard WebAdmin untuk mengedukasi administrator baru langkah-demi-langkah tentang cara mendapatkan API Key Supabase dan Google Drive secara mandiri.

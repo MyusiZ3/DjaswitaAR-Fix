@@ -102,6 +102,118 @@ Metode pengujian yang diterapkan meliputi **Equivalence Partitioning** (pembagia
 
 ---
 
+## 📱 Panduan Acuan & Contoh Output Pengujian Aplikasi Unity (Mobile Client)
+
+Sebagai acuan mandiri bagi Penguji Aplikasi Mobile, berikut adalah daftar log konsol Unity (`Debug.Log`) dan indikator visual UI yang diharapkan muncul untuk masing-masing skenario uji:
+
+### Kategori E: Inisialisasi & Konektivitas
+*   **TC-E-01 (Online Startup)**:
+    *   *Log Konsol yang Diharapkan:*
+        ```text
+        [INFO] [NetworkStatus] Internet connection detected (WiFi/Cellular).
+        [INFO] [SupabaseAPI] Initiating handshake with https://efjuwxlhfxpnlenxluus.supabase.co
+        [INFO] [SupabaseAPI] Fetching latest metadata for 'ar_targets'...
+        [INFO] [SQLite] Local database updated with 12 target definitions.
+        [INFO] [Vuforia] Target tracker database initialized successfully.
+        ```
+    *   *Indikator UI:* Menampilkan spinner/loader dengan teks "Menyinkronkan data..." selama 1-2 detik, lalu masuk ke layar kamera dengan ikon indikator hijau (Online).
+
+*   **TC-E-02 (Offline Startup)**:
+    *   *Log Konsol yang Diharapkan:*
+        ```text
+        [WARNING] [NetworkStatus] No internet connection. Switching to offline mode.
+        [INFO] [SQLite] Reading metadata cache from local database...
+        [INFO] [SQLite] Loaded 12 cached targets from 'ar_targets_cache.db'.
+        [INFO] [Vuforia] Initializing tracker with offline dataset 'JaswitaLocalTracker.xml'.
+        ```
+    *   *Indikator UI:* Toast merah melayang berbunyi "Koneksi terputus. Berjalan dalam Mode Offline." Indikator status di pojok layar menunjukkan warna abu-abu/merah.
+
+### Kategori F: Deteksi & Rendering Konten AR
+*   **TC-F-01 (3D Model rendering - glTFast)**:
+    *   *Log Konsol yang Diharapkan:*
+        ```text
+        [INFO] [Vuforia] Marker detected: 'trg-candi' (Candi Prambanan).
+        [INFO] [CacheSystem] Checking disk cache for 'candi.glb'...
+        [INFO] [CacheSystem] File 'candi.glb' found in cache. Loading directly.
+        [INFO] [glTFast] Loading 3D model: candi.glb...
+        [INFO] [glTFast] Model loaded successfully. Applying transform - Scale: 1.2, RotY: 90.
+        ```
+    *   *Indikator UI:* Kemunculan model 3D candi yang presisi di atas marker tanpa distorsi skala.
+
+*   **TC-F-02 (Image Carousel 2D)**:
+    *   *Log Konsol yang Diharapkan:*
+        ```text
+        [INFO] [Vuforia] Marker detected: 'trg-kuliner' (Kuliner Jaswita).
+        [INFO] [CarouselManager] Loading 3 image URLs into canvas container.
+        [INFO] [RAMCache] Image 1 (kuliner1.jpg) loaded into memory.
+        ```
+    *   *Indikator UI:* Canvas UI 2D muncul melayang dengan gambar pertama, tombol panah kiri-kanan aktif, dan indikator titik halaman (page dots) `[ •  ◦  ◦ ]`.
+
+*   **TC-F-03 (Video Player GDrive Streaming)**:
+    *   *Log Konsol yang Diharapkan:*
+        ```text
+        [INFO] [Vuforia] Marker detected: 'trg-event' (Event Jaswita).
+        [INFO] [VideoStreaming] Resolving Google Drive proxy URL...
+        [INFO] [VideoStreaming] Unified URL: https://docs.google.com/uc?export=download&id=...
+        [INFO] [VideoPlayer] Buffering video stream...
+        [INFO] [VideoPlayer] Video playing back at 30 FPS.
+        ```
+    *   *Indikator UI:* Panel video melayang dengan ikon loading berputar (buffering) sesaat, lalu video diputar otomatis. Tombol kontrol (Play/Pause) responsif terhadap sentuhan jari.
+
+*   **TC-F-04 (Tracking Lost Delay)**:
+    *   *Log Konsol yang Diharapkan:*
+        ```text
+        [WARNING] [Vuforia] Marker tracking lost: 'trg-candi'.
+        [INFO] [TrackingDelay] Grace period started: waiting 500ms...
+        [INFO] [TrackingDelay] Marker recaptured within grace period! Rendering maintained.
+        -- ATAU --
+        [INFO] [TrackingDelay] Grace period ended. Deactivating AR object.
+        ```
+    *   *Indikator UI:* Objek AR tetap bertahan stabil saat kamera bergeser sedikit atau terhalang sejenak (selama < 0.5 detik), tidak berkedip mati-nyala secara kasar.
+
+### Kategori G: LRU Caching System
+*   **TC-G-01 (Disk Cache cleanup)**:
+    *   *Log Konsol yang Diharapkan:*
+        ```text
+        [INFO] [CacheSystem] Disk space check: Total 520MB used (Limit: 500MB).
+        [WARNING] [CacheSystem] Limit exceeded by 20MB. Running LRU Eviction...
+        [INFO] [SQLite] Last accessed times retrieved. Candidate for deletion: 'hotel_banner.glb' (Last accessed: 5 days ago).
+        [INFO] [CacheSystem] Deleting local file: cache/hotel_banner.glb (Size: 25MB).
+        [INFO] [CacheSystem] Disk space cleanup done. New disk cache size: 495MB.
+        ```
+
+*   **TC-G-02 (RAM Image Cache cleanup)**:
+    *   *Log Konsol yang Diharapkan:*
+        ```text
+        [INFO] [RAMCache] Image count in memory: 13. Threshold (12) reached.
+        [INFO] [RAMCache] Evicting oldest image texture from memory: 'slide_wisata_01.png'.
+        [INFO] [RAMCache] Memory freed: 4.2 MB. Active image count: 12.
+        ```
+
+### Kategori H: Integrasi & Sinkronisasi Campuran
+*   **TC-H-01 (Scan Realtime Sync)**:
+    *   *Log Konsol yang Diharapkan:*
+        ```text
+        [INFO] [Vuforia] Target scanned: 'trg-candi'.
+        [INFO] [SupabaseSync] Incrementing scan_count for target ID 'trg-candi' in DB...
+        [INFO] [SupabaseSync] Sync successful. Local scan_count updated.
+        ```
+    *   *Web Admin Dashboard UI:* Tab dashboard akan menunjukkan penambahan angka grafik scan (Weekly Scans) secara instan berkat *Realtime Subscription* Supabase tanpa refresh manual.
+
+*   **TC-H-02 (Offline Scan Queue Sync)**:
+    *   *Log Konsol yang Diharapkan:*
+        ```text
+        [WARNING] [OfflineSync] Scan detected offline. Queuing scan event for 'trg-candi' in local SQLite...
+        [INFO] [SQLite] Saved scan event to 'offline_scans_queue' (Total pending: 5).
+        -- Saat internet menyala kembali --
+        [INFO] [NetworkStatus] Connection restored! Initiating background sync queue...
+        [INFO] [SupabaseSync] Sending batch of 5 scan events to DB...
+        [INFO] [SupabaseSync] Batch sync successful. Clearing local queue.
+        [INFO] [SQLite] 'offline_scans_queue' cleared.
+        ```
+
+---
+
 ## 📈 Laporan Hasil Pengujian (Test Log Summary Template)
 *Gunakan tabel di bawah ini untuk mencatat hasil pengujian nyata saat uji coba dirilis:*
 
