@@ -1,7 +1,7 @@
 # Skenario Pengujian Blackbox Aplikasi Android Build (.APK)
-## Proyek: Jaswita AR - Unity Client (Mobile Android Application)
+## Proyek: Djaswita AR - Unity Client (Mobile Android Application)
 
-Dokumen ini mendefinisikan rencana, metodologi, dan skenario pengujian fungsional terintegrasi khusus untuk aplikasi **Jaswita AR** yang telah di-build sebagai paket rilis Android (`.apk` atau `.aab`) dan diinstal langsung pada perangkat keras/smartphone Android fisik.
+Dokumen ini mendefinisikan rencana, metodologi, dan skenario pengujian fungsional terintegrasi khusus untuk aplikasi **Djaswita AR** yang telah di-build sebagai paket rilis Android (`.apk` atau `.aab`) dan diinstal langsung pada perangkat keras/smartphone Android fisik.
 
 Pengujian ini sangat penting karena performa kamera fisik, izin sistem operasi Android (Android OS Permissions), manajemen memori perangkat seluler, pemutaran video streaming, serta penanganan interupsi (panggilan telepon, meminimalisir aplikasi) hanya dapat divalidasi secara akurat pada perangkat keras nyata.
 
@@ -26,7 +26,7 @@ Pengujian ini sangat penting karena performa kamera fisik, izin sistem operasi A
 | **TC-I-01** | Kompatibilitas Pemasangan Aplikasi (Installation Match) | 1. Salin berkas `.apk` rilis ke penyimpanan ponsel.<br>2. Jalankan paket installer bawaan Android.<br>3. Selesaikan proses pemasangan aplikasi. | Android OS: v10 (Q) hingga v14 (Upside Down Cake)<br>Device: Low-end (RAM 3GB) & High-end | Aplikasi sukses terinstal tanpa memicu pesan kesalahan *"Package installer stopped"* atau *"App not installed"*. | |
 | **TC-I-02** | Penanganan Izin Kamera Fisik - Diizinkan (Permission Granted) | 1. Jalankan aplikasi pertama kali setelah instalasi.<br>2. Ketika popup permintaan izin kamera sistem muncul, klik **"Allow / Saat Aplikasi Digunakan"**.<br>3. Amati layar aplikasi. | Aksi klik: **Setuju (Grant)** | Kamera fisik ponsel menyala dengan lancar di layar AR, dan proses pelacakan marker aktif siap digunakan. | |
 | **TC-I-03** | Penanganan Izin Kamera Fisik - Ditolak (Permission Denied) | 1. Instal ulang aplikasi atau hapus data aplikasi.<br>2. Jalankan aplikasi.<br>3. Ketika popup izin kamera muncul, klik **"Don't Allow / Tolak"**.<br>4. Amati layar aplikasi. | Aksi klik: **Tolak (Deny)** | Aplikasi tidak mengalami *crash*. Aplikasi menampilkan dialog peringatan informatif: *"Izin kamera diperlukan untuk fitur AR. Silakan aktifkan di Pengaturan"* dan menutup modul AR dengan aman. | |
-| **TC-I-04** | Hak Akses Baca/Tulis Disk Cache Internal | 1. Masuk ke aplikasi.<br>2. Pindai marker untuk mengunduh aset Model 3D GLB pertama kali.<br>3. Periksa direktori internal storage perangkat menggunakan File Manager bawaan. | Path: `/Android/data/com.Jaswita.AR/files/JawitaCache/` | Aplikasi sukses membuat direktori cache internal tanpa memicu *security exception* OS Android. Aset terunduh tersimpan sebagai berkas hash MD5 unik dengan sempurna. | |
+| **TC-I-04** | Hak Akses Baca/Tulis Disk Cache Internal | 1. Masuk ke aplikasi.<br>2. Pindai marker untuk mengunduh aset Model 3D GLB pertama kali.<br>3. Periksa direktori internal storage perangkat menggunakan File Manager bawaan. | Path: `/Android/data/com.Djaswita.AR/files/JawitaCache/` | Aplikasi sukses membuat direktori cache internal tanpa memicu *security exception* OS Android. Aset terunduh tersimpan sebagai berkas hash MD5 unik dengan sempurna. | |
 | **TC-I-05** | Validasi Keamanan & Kunci API Supabase Tidak Valid (Supabase API Key Integrity) | 1. Sengaja masukkan kunci API Supabase (atau data inisialisasi URL/Keys) yang salah ke dalam berkas konfigurasi/APIManager.<br>2. Build dan jalankan aplikasi.<br>3. Amati antarmuka aplikasi. | Input: Salah memasukkan 2 Supabase Keys | Aplikasi mendeteksi kegagalan autentikasi API secara instan dan menampilkan overlay "Disconnect" atau "Connection Failed" secara otomatis. | |
 
 ---
@@ -57,7 +57,7 @@ Pengujian ini sangat penting karena performa kamera fisik, izin sistem operasi A
 | ID Pengujian | Fitur / Deskripsi | Langkah-Langkah Pengujian | Aksi Interupsi OS | Hasil yang Diharapkan (Expected Result) | Kriteria (Pass/Fail) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **TC-L-01** | Minimalkan Aplikasi saat Objek AR Aktif (Background/Minimize) | 1. Arahkan kamera ke marker hingga objek AR terwujud penuh.<br>2. Tekan tombol **"Home"** pada smartphone sehingga aplikasi berpindah ke latar belakang (*background*).<br>3. Biarkan selama 1 menit.<br>4. Buka kembali aplikasi dari menu *Recent Apps*. | Menekan tombol Home OS -> Resume | Saat berada di latar belakang, pemakaian kamera fisik langsung dilepaskan (dinonaktifkan untuk menjaga keamanan privasi OS). Saat kembali dibuka (Resume), kamera diaktifkan kembali dengan cepat dan siap memindai marker baru. | |
-| **TC-L-02** | Interupsi Panggilan Telepon Masuk (Incoming Call Interruption) | 1. Jalankan aplikasi dan arahkan kamera ke marker AR.<br>2. Lakukan panggilan telepon fisik dari nomor lain ke ponsel uji tersebut.<br>3. Biarkan ponsel berdering selama beberapa detik, lalu tolak panggilan telepon.<br>4. Kembali ke aplikasi Jaswita AR. | Panggilan telepon masuk di layar penuh | Aplikasi AR dijeda secara otomatis (*Paused*). Pemutaran audio/video dihentikan sementara. Begitu panggilan telepon selesai dan aplikasi aktif kembali, status pelacakan kamera AR pulih secara instan. | |
+| **TC-L-02** | Interupsi Panggilan Telepon Masuk (Incoming Call Interruption) | 1. Jalankan aplikasi dan arahkan kamera ke marker AR.<br>2. Lakukan panggilan telepon fisik dari nomor lain ke ponsel uji tersebut.<br>3. Biarkan ponsel berdering selama beberapa detik, lalu tolak panggilan telepon.<br>4. Kembali ke aplikasi Djaswita AR. | Panggilan telepon masuk di layar penuh | Aplikasi AR dijeda secara otomatis (*Paused*). Pemutaran audio/video dihentikan sementara. Begitu panggilan telepon selesai dan aplikasi aktif kembali, status pelacakan kamera AR pulih secara instan. | |
 | **TC-L-03** | Penguncian Layar Ponsel Secara Tiba-Tiba (Screen Lock/Power Button) | 1. Saat objek AR sedang dirender di layar, tekan tombol **"Power"** fisik ponsel untuk mengunci layar.<br>2. Diamkan ponsel selama 30 detik.<br>3. Tekan kembali tombol Power dan buka kunci layar ponsel (Pattern/PIN). | Layar terkunci -> Buka kunci layar | Sistem meluncurkan event `OnApplicationFocus(false)` dan menjeda rendering. Setelah layar dibuka kembali, memori GPU texture (RAM Cache) tetap terjaga utuh tanpa memicu visual korup atau piksel pecah pada model 3D. | |
 
 ---
@@ -68,7 +68,7 @@ Pengujian ini sangat penting karena performa kamera fisik, izin sistem operasi A
    * Sediakan minimal satu unit smartphone Android yang representatif (direkomendasikan spesifikasi menengah dengan RAM 4GB dan mendukung sensor gyro).
    * Pastikan kamera belakang dalam kondisi bersih untuk menghindari kegagalan deteksi marker.
 2. **Persiapan Berkas Uji:**
-   * Pasang berkas `.apk` rilis final Jaswita AR pada perangkat keras tersebut.
+   * Pasang berkas `.apk` rilis final Djaswita AR pada perangkat keras tersebut.
    * Cetak lembaran marker fisik resmi (Candi, Kuliner, Event) dalam ukuran standar kertas HVS A4 dengan warna yang tajam dan kontras.
 3. **Persiapan Lingkungan Pengujian:**
    * Lakukan pengujian di ruangan dengan pencahayaan yang cukup (terang/cahaya matahari tidak langsung).

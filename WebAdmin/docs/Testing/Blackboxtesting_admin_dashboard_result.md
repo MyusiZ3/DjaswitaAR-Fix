@@ -1,5 +1,5 @@
 # Laporan Hasil Pengujian Blackbox (Blackbox Testing Report)
-## Proyek: Jaswita AR - Web Admin Dashboard
+## Proyek: Djaswita AR - Web Admin Dashboard
 
 Dokumen ini mendokumentasikan hasil pengujian fungsional secara komprehensif pada **Web Admin Dashboard (CMS)** menggunakan metode **Blackbox Testing**. Pengujian dilakukan di lingkungan lokal dengan Vite Development Server (`http://localhost:5173/`) yang terhubung langsung ke database cloud **Supabase**.
 

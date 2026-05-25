@@ -1,5 +1,5 @@
 # Laporan Hasil Pengujian Blackbox (Blackbox Testing Report)
-## Proyek: Jaswita AR - Unity Client (Mobile AR Application)
+## Proyek: Djaswita AR - Unity Client (Mobile AR Application)
 
 Dokumen ini mendokumentasikan hasil pengujian otomatis dan simulasi aktif (*Blackbox Testing*) pada **Unity Client (Mobile AR Application)**. Pengujian dijalankan di dalam lingkungan **Unity Editor (Unity 6)** menggunakan skrip uji khusus `MockTestRunner.cs` pada scene pengujian independen `MockTestScene.unity`. 
 

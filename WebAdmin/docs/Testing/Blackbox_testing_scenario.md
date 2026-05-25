@@ -1,7 +1,7 @@
 # Skenario Pengujian Blackbox (Blackbox Testing Scenario)
-## Proyek: Jaswita AR (Web Admin Dashboard & Unity AR Mobile App)
+## Proyek: Djaswita AR (Web Admin Dashboard & Unity AR Mobile App)
 
-Dokumen ini berisi rencana dan skenario pengujian fungsional terintegrasi untuk sistem **Jaswita AR** menggunakan metode **Blackbox Testing**. Pengujian difokuskan pada pengamatan hasil akhir (output) dari masukan (input) yang diberikan tanpa harus melihat detail kode program secara mendalam.
+Dokumen ini berisi rencana dan skenario pengujian fungsional terintegrasi untuk sistem **Djaswita AR** menggunakan metode **Blackbox Testing**. Pengujian difokuskan pada pengamatan hasil akhir (output) dari masukan (input) yang diberikan tanpa harus melihat detail kode program secara mendalam.
 
 Metode pengujian yang diterapkan meliputi **Equivalence Partitioning** (pembagian kelas data) dan **Boundary Value Analysis** (analisis nilai batas).
 
@@ -68,8 +68,8 @@ Metode pengujian yang diterapkan meliputi **Equivalence Partitioning** (pembagia
 
 | ID Pengujian | Fitur / Deskripsi | Langkah-Langkah Pengujian | Kondisi Lingkungan | Hasil yang Diharapkan (Expected Result) | Kriteria (Pass/Fail) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **TC-E-01** | Startup Aplikasi dengan Koneksi Internet (Online Mode) | 1. Pastikan perangkat terhubung ke Wi-Fi / Data Seluler.<br>2. Jalankan aplikasi Unity Jaswita AR.<br>3. Amati proses inisialisasi awal. | Koneksi Internet Aktif | Aplikasi berhasil melakukan handshake API, mengunduh metadata target terbaru dari Supabase database, memperbarui target tracker Vuforia, dan masuk ke kamera utama. | |
-| **TC-E-02** | Startup Aplikasi tanpa Koneksi Internet (Offline Mode) | 1. Matikan semua jaringan internet perangkat (Airplane Mode).<br>2. Jalankan aplikasi Unity Jaswita AR.<br>3. Amati proses penanganan inisialisasi. | Tanpa Koneksi Internet | Aplikasi mendeteksi status offline, melewati proses fetch online, memuat metadata target cadangan dari SQLite lokal (cache terakhir), dan mengaktifkan kamera AR dengan database tracker lokal. | |
+| **TC-E-01** | Startup Aplikasi dengan Koneksi Internet (Online Mode) | 1. Pastikan perangkat terhubung ke Wi-Fi / Data Seluler.<br>2. Jalankan aplikasi Unity Djaswita AR.<br>3. Amati proses inisialisasi awal. | Koneksi Internet Aktif | Aplikasi berhasil melakukan handshake API, mengunduh metadata target terbaru dari Supabase database, memperbarui target tracker Vuforia, dan masuk ke kamera utama. | |
+| **TC-E-02** | Startup Aplikasi tanpa Koneksi Internet (Offline Mode) | 1. Matikan semua jaringan internet perangkat (Airplane Mode).<br>2. Jalankan aplikasi Unity Djaswita AR.<br>3. Amati proses penanganan inisialisasi. | Tanpa Koneksi Internet | Aplikasi mendeteksi status offline, melewati proses fetch online, memuat metadata target cadangan dari SQLite lokal (cache terakhir), dan mengaktifkan kamera AR dengan database tracker lokal. | |
 
 ---
 
@@ -124,7 +124,7 @@ Sebagai acuan mandiri bagi Penguji Aplikasi Mobile, berikut adalah daftar log ko
         [WARNING] [NetworkStatus] No internet connection. Switching to offline mode.
         [INFO] [SQLite] Reading metadata cache from local database...
         [INFO] [SQLite] Loaded 12 cached targets from 'ar_targets_cache.db'.
-        [INFO] [Vuforia] Initializing tracker with offline dataset 'JaswitaLocalTracker.xml'.
+        [INFO] [Vuforia] Initializing tracker with offline dataset 'DjaswitaLocalTracker.xml'.
         ```
     *   *Indikator UI:* Toast merah melayang berbunyi "Koneksi terputus. Berjalan dalam Mode Offline." Indikator status di pojok layar menunjukkan warna abu-abu/merah.
 
@@ -143,7 +143,7 @@ Sebagai acuan mandiri bagi Penguji Aplikasi Mobile, berikut adalah daftar log ko
 *   **TC-F-02 (Image Carousel 2D)**:
     *   *Log Konsol yang Diharapkan:*
         ```text
-        [INFO] [Vuforia] Marker detected: 'trg-kuliner' (Kuliner Jaswita).
+        [INFO] [Vuforia] Marker detected: 'trg-kuliner' (Kuliner Djaswita).
         [INFO] [CarouselManager] Loading 3 image URLs into canvas container.
         [INFO] [RAMCache] Image 1 (kuliner1.jpg) loaded into memory.
         ```
@@ -152,7 +152,7 @@ Sebagai acuan mandiri bagi Penguji Aplikasi Mobile, berikut adalah daftar log ko
 *   **TC-F-03 (Video Player GDrive Streaming)**:
     *   *Log Konsol yang Diharapkan:*
         ```text
-        [INFO] [Vuforia] Marker detected: 'trg-event' (Event Jaswita).
+        [INFO] [Vuforia] Marker detected: 'trg-event' (Event Djaswita).
         [INFO] [VideoStreaming] Resolving Google Drive proxy URL...
         [INFO] [VideoStreaming] Unified URL: https://docs.google.com/uc?export=download&id=...
         [INFO] [VideoPlayer] Buffering video stream...

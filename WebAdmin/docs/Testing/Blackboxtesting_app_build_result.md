@@ -1,5 +1,5 @@
 # Laporan Hasil Pengujian Blackbox Aplikasi Android Build (.APK)
-## Proyek: Jaswita AR - Unity Client (Mobile Android Application)
+## Proyek: Djaswita AR - Unity Client (Mobile Android Application)
 
 Dokumen ini mencatat hasil pengujian fungsional dan observasi performa nyata (*Blackbox Testing*) dari paket rilis Android (`.apk`) yang diinstal pada perangkat keras smartphone fisik. Pengujian fungsional terpadu ini mencakup 15 skenario kasus uji dari instalasi, pelacakan AR, optimasi jaringan, hingga interupsi OS.
 
@@ -30,4 +30,4 @@ Secara fungsional, seluruh modul dinyatakan **LULUS (100% PASS RATE)** dengan be
 ---
 
 ## 📈 Kesimpulan Akhir Pengujian Android (.APK)
-Secara keseluruhan, build APK aplikasi klien seluler **Jaswita AR** terbukti **sangat tangguh** untuk digunakan langsung di lapangan. Aplikasi memiliki sistem toleransi kesalahan (*fault tolerance*) dan penanganan interupsi OS Android yang luar biasa aman. Catatan observasi di atas merupakan masukan performa berharga untuk iterasi optimasi visual di masa mendatang, namun tidak menghalangi kesiapan aplikasi untuk rilis produksi resmi.
+Secara keseluruhan, build APK aplikasi klien seluler **Djaswita AR** terbukti **sangat tangguh** untuk digunakan langsung di lapangan. Aplikasi memiliki sistem toleransi kesalahan (*fault tolerance*) dan penanganan interupsi OS Android yang luar biasa aman. Catatan observasi di atas merupakan masukan performa berharga untuk iterasi optimasi visual di masa mendatang, namun tidak menghalangi kesiapan aplikasi untuk rilis produksi resmi.
