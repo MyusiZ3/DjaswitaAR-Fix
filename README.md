@@ -233,15 +233,29 @@ DjaswitaAR-Fix/
 │       ├── AssetCacheManager.cs   # Sistem cache luring (Disk & RAM LRU)
 │       └── DynamicMarkerManager.cs# Pembuat marker Vuforia secara runtime
 ├── WebAdmin/                      # --- DASBOR CMS WEB ADMIN ---
-│   ├── components/                # Komponen halaman modular (Target, Settings, dll.)
+│   ├── components/                # Komponen halaman modular CMS
+│   │   ├── AboutSection.js        # Halaman Profil Developer & About
+│   │   ├── AdminsSection.js       # Manajemen Akun Administrator (CRUD)
 │   │   ├── DashboardSection.js    # Visualisasi grafik analitik Chart.js
-│   │   ├── TargetSection.js       # Manajemen CRUD target marker AR
-│   │   └── SettingsSection.js     # Panel konfigurasi kredensial & panduan API
-│   ├── docs/                      # Rencana kerja & audit keamanan
-│   ├── index.html                 # Entry point halaman web CMS
-│   ├── main.css                   # Lembar gaya (styling premium)
-│   └── main.js                    # Logika utama dasbor & Supabase JS client
-├── README.md                      # Dokumentasi utama proyek
+│   │   ├── InstructionsSection.js # Halaman Panduan Marker & Canva Template
+│   │   ├── SettingsSection.js     # Panel konfigurasi API Supabase & GDrive
+│   │   └── TargetSection.js       # Manajemen CRUD target marker AR
+│   ├── docs/                      # Dokumen arsitektur, rencana kerja & audit
+│   │   ├── Testing/               # Dokumen skenario & hasil pengujian sistem
+│   │   │   ├── Blackbox_testing_scenario.md          # Skenario uji Editor & Dashboard
+│   │   │   ├── blackboxtesting_scenario_app_build.md  # Skenario uji Android Build
+│   │   │   ├── Blackboxtesting_admin_dashboard_result.md # Hasil uji Dashboard CMS
+│   │   │   ├── Blackboxtesting_unity_app_result.md       # Hasil uji Unity Editor Sim
+│   │   │   └── Blackboxtesting_app_build_result.md       # Hasil uji Android Build Fisik
+│   │   └── *.md                   # Rencana gaya UI (Style Plans) & Audit Keamanan
+│   ├── public/                    # Aset publik statis untuk web server
+│   │   ├── favicon.svg            # Ikon browser (logo tab)
+│   │   ├── icons.svg              # Kumpulan ikon vektor SVG
+│   │   └── image/                 # Berkas gambar statis CMS (og, logo, dll.)
+│   ├── index.html                 # Entry point utama halaman web CMS
+│   ├── main.css                   # Lembar gaya CSS dasbor premium
+│   └── main.js                    # Logika utama dasbor & klien Supabase JS
+├── README.md                      # Dokumentasi utama proyek Djaswita AR
 └── fork_guide.md                  # Panduan duplikasi mandiri (Anti-Collision)
 ```
 
