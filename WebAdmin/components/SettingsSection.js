@@ -7,28 +7,42 @@ export const SettingsSection = () => `
   </header>
 
   <div class="card" style="margin-top: 1rem">
-    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div class="card-header" id="connection-config-header" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;">
       <div>
-        <h3>Konfigurasi Koneksi Supabase</h3>
-        <p style="font-size: 0.875rem; color: var(--text-dim)">
-          Atur endpoint dan API Key untuk Unity
+        <h3 style="margin: 0;">Konfigurasi Koneksi Supabase</h3>
+        <p style="font-size: 0.875rem; color: var(--text-dim); margin: 0;">
+          Atur endpoint dan API Key untuk Unity (Klik untuk collapse/expand)
         </p>
       </div>
-      <div id="db-heartbeat" style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 500; background: rgba(255,255,255,0.02); padding: 6px 12px; border-radius: 100px; border: 1px solid var(--glass-border);">
-        <span class="heartbeat-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; display: inline-block; box-shadow: 0 0 8px #94a3b8; transition: all 0.3s ease;"></span>
-        <span class="heartbeat-text" style="color: var(--text-dim);">Checking connection...</span>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div id="db-heartbeat" style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 500; background: rgba(255,255,255,0.02); padding: 6px 12px; border-radius: 100px; border: 1px solid var(--glass-border);">
+          <span class="heartbeat-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; display: inline-block; box-shadow: 0 0 8px #94a3b8; transition: all 0.3s ease;"></span>
+          <span class="heartbeat-text" style="color: var(--text-dim);">Checking connection...</span>
+        </div>
+        <svg id="chevron-config-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: rotate(90deg); color: var(--pastel-peach);">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
       </div>
     </div>
 
     <div
-      class="settings-grid"
+      id="connection-config-content"
       style="
-        display: grid;
-        grid-template-columns: 1.2fr 1fr;
-        gap: 2rem;
-        padding: 1.5rem;
+        transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+        max-height: 1500px;
+        opacity: 1;
+        overflow: hidden;
       "
     >
+      <div
+        class="settings-grid"
+        style="
+          display: grid;
+          grid-template-columns: 1.2fr 1fr;
+          gap: 2rem;
+          padding: 1.5rem;
+        "
+      >
       <!-- LEFT: Input Form -->
       <div
         class="settings-left"
@@ -290,6 +304,7 @@ export const SettingsSection = () => `
       </div>
     </div>
   </div>
+  </div>
 
   <div class="card" style="margin-top: 2rem; border-color: rgba(239, 68, 68, 0.2)">
     <div class="card-header">
@@ -329,11 +344,20 @@ export const SettingsSection = () => `
   </div>
 
   <div class="card" style="margin-top: 2rem">
-    <div class="card-header">
-      <h3>Riwayat Perubahan</h3>
-      <p style="font-size: 0.875rem; color: var(--text-dim)">
-        Riwayat perubahan konfigurasi aplikasi
-      </p>
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <h3>Riwayat Perubahan</h3>
+        <p style="font-size: 0.875rem; color: var(--text-dim)">
+          Riwayat perubahan konfigurasi aplikasi
+        </p>
+      </div>
+      <div class="search-box">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="settings-logs-search" placeholder="Cari admin atau URL..." />
+      </div>
     </div>
     <div
       class="content-card"
@@ -342,38 +366,45 @@ export const SettingsSection = () => `
         border: none;
         background: transparent;
         backdrop-filter: none;
+        min-height: 380px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
       "
     >
-      <table style="margin: 0">
-        <thead>
-          <tr>
-            <th
-              id="th-sort-time"
-              style="cursor: pointer; user-select: none"
-            >
-              Waktu <span id="sort-icon-time">↓</span>
-            </th>
-            <th>Admin</th>
-            <th>Perubahan URL</th>
-            <th>Perubahan Key</th>
-            <th>Perubahan GDrive Key</th>
-          </tr>
-        </thead>
-        <tbody id="settings-logs-body">
-          <tr>
-            <td
-              colspan="5"
-              style="
-                text-align: center;
-                padding: 2rem;
-                color: var(--text-dim);
-              "
-            >
-              Memuat riwayat...
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div style="flex-grow: 1;">
+        <table style="margin: 0">
+          <thead>
+            <tr>
+              <th
+                id="th-sort-time"
+                style="cursor: pointer; user-select: none"
+              >
+                Waktu <span id="sort-icon-time">↓</span>
+              </th>
+              <th>Admin</th>
+              <th>Perubahan URL</th>
+              <th>Perubahan Key</th>
+              <th>Perubahan GDrive Key</th>
+            </tr>
+          </thead>
+          <tbody id="settings-logs-body">
+            <tr>
+              <td
+                colspan="5"
+                style="
+                  text-align: center;
+                  padding: 2rem;
+                  color: var(--text-dim);
+                "
+              >
+                Memuat riwayat...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="settings-logs-pagination" style="display: flex; justify-content: flex-end; align-items: center; gap: 8px; padding: 1.25rem; border-top: 1px solid rgba(255,255,255,0.05); min-height: 57px;"></div>
     </div>
   </div>
 

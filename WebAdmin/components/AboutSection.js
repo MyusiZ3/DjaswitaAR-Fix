@@ -104,7 +104,10 @@ export const AboutSection = () => `
         <div style="width: 150px; height: 150px; background: var(--primary-glow); border-radius: 50%; margin: 0 auto 2rem; display: flex; align-items: center; justify-content: center; border: 4px solid var(--glass-border); overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);">
           <img src="image/Imyusi.JPG" alt="Profile" style="width: 100%; height: 100%; object-fit: cover" />
         </div>
-        <h2 style="margin-bottom: 0.5rem; color: var(--text-main)">Muhamad Sidik</h2>
+        <h2 style="margin-bottom: 0.5rem; color: var(--text-main); display: flex; align-items: center; justify-content: center; gap: 10px;">
+          Muhamad Sidik
+          <span style="font-size: 0.75rem; font-weight: 700; background: rgba(253, 186, 116, 0.15); color: var(--pastel-peach); padding: 4px 10px; border-radius: 100px; border: 1px solid rgba(253, 186, 116, 0.3); text-transform: uppercase; letter-spacing: 1px; line-height: 1;">Arch</span>
+        </h2>
         <p style="color: var(--pastel-mint); margin-bottom: 1.5rem; font-weight: 600;">Creative Designer & Unity Developer</p>
         <p style="color: var(--text-dim); line-height: 1.8; margin-bottom: 2.5rem;">
           To me, technology is not just about a functioning system, but about creating new experiences that people can truly feel. D'Jaswita AR is one of my works that integrates my expertise in Fullstack Development and AR Interaction Design.
