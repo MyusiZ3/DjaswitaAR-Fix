@@ -134,6 +134,8 @@ let isInitialized = false;
 let currentUserId = null;
 
 let logsSortAsc = false;
+let appSettingsLogsCurrentPage = 1;
+const appSettingsLogsPerPage = 5;
 
 // --- TOAST NOTIFICATION SYSTEM ---
 function showToast(message, type = "info") {
@@ -1533,12 +1535,42 @@ async function renderAppSettingsLogs() {
 
     if (error) throw error;
 
-    if (!data || data.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-dim);">Belum ada riwayat perubahan.</td></tr>`;
+    let filteredData = data || [];
+    const searchInput = document.getElementById("settings-logs-search");
+    const searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : "";
+    
+    if (searchQuery) {
+      filteredData = data.filter(log => {
+        const adminEmail = (log.admin_email || "").toLowerCase();
+        const newUrl = (log.new_url || "").toLowerCase();
+        const oldUrl = (log.old_url || "").toLowerCase();
+        return adminEmail.includes(searchQuery) || newUrl.includes(searchQuery) || oldUrl.includes(searchQuery);
+      });
+    }
+
+    if (filteredData.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-dim);">${searchQuery ? 'Tidak ada riwayat perubahan yang cocok dengan pencarian.' : 'Belum ada riwayat perubahan.'}</td></tr>`;
+      const paginationContainer = document.getElementById("settings-logs-pagination");
+      if (paginationContainer) paginationContainer.innerHTML = "";
       return;
     }
 
-    tbody.innerHTML = data.map(log => `
+    const totalItems = filteredData.length;
+    const totalPages = Math.ceil(totalItems / appSettingsLogsPerPage);
+    
+    // Safety boundaries for current page
+    if (appSettingsLogsCurrentPage > totalPages) {
+      appSettingsLogsCurrentPage = totalPages;
+    }
+    if (appSettingsLogsCurrentPage < 1) {
+      appSettingsLogsCurrentPage = 1;
+    }
+
+    const startIdx = (appSettingsLogsCurrentPage - 1) * appSettingsLogsPerPage;
+    const endIdx = startIdx + appSettingsLogsPerPage;
+    const pageData = filteredData.slice(startIdx, endIdx);
+
+    tbody.innerHTML = pageData.map(log => `
       <tr>
         <td style="font-size: 0.8rem; white-space: nowrap;">
           ${new Date(log.created_at).toLocaleString('id-ID')}
@@ -1558,9 +1590,45 @@ async function renderAppSettingsLogs() {
         </td>
       </tr>
     `).join("");
+
+    renderAppSettingsLogsPagination(totalItems);
   } catch (err) {
     console.error("Error rendering logs:", err);
   }
+}
+
+function renderAppSettingsLogsPagination(totalItems) {
+  const paginationContainer = document.getElementById("settings-logs-pagination");
+  if (!paginationContainer) return;
+
+  const totalPages = Math.ceil(totalItems / appSettingsLogsPerPage);
+  if (totalPages <= 1) {
+    paginationContainer.innerHTML = "";
+    return;
+  }
+
+  let html = "";
+  // Prev button
+  html += `<button type="button" class="btn btn-ghost" style="padding: 4px 10px; font-size: 0.85rem;" ${appSettingsLogsCurrentPage === 1 ? 'disabled' : ''} onclick="changeSettingsLogsPage(${appSettingsLogsCurrentPage - 1})">Prev</button>`;
+
+  // Page number buttons
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === appSettingsLogsCurrentPage) {
+      html += `<button type="button" class="btn btn-primary" style="padding: 4px 12px; font-size: 0.85rem; min-width: 32px; justify-content: center; border-radius: 6px;">${i}</button>`;
+    } else {
+      html += `<button type="button" class="btn btn-ghost" style="padding: 4px 12px; font-size: 0.85rem; min-width: 32px; justify-content: center; border-radius: 6px;" onclick="changeSettingsLogsPage(${i})">${i}</button>`;
+    }
+  }
+
+  // Next button
+  html += `<button type="button" class="btn btn-ghost" style="padding: 4px 10px; font-size: 0.85rem;" ${appSettingsLogsCurrentPage === totalPages ? 'disabled' : ''} onclick="changeSettingsLogsPage(${appSettingsLogsCurrentPage + 1})">Next</button>`;
+
+  paginationContainer.innerHTML = html;
+}
+
+window.changeSettingsLogsPage = function(page) {
+  appSettingsLogsCurrentPage = page;
+  renderAppSettingsLogs();
 }
 
 let currentSettingsFormSubmit = null;
@@ -1776,7 +1844,31 @@ async function saveGDriveConfig() {
 
 document.getElementById("th-sort-time")?.addEventListener("click", () => {
   logsSortAsc = !logsSortAsc;
+  appSettingsLogsCurrentPage = 1;
   renderAppSettingsLogs();
+});
+
+document.getElementById("settings-logs-search")?.addEventListener("input", () => {
+  appSettingsLogsCurrentPage = 1;
+  renderAppSettingsLogs();
+});
+
+// --- COLLAPSIBLE CONNECTION CONFIG ---
+document.getElementById("connection-config-header")?.addEventListener("click", () => {
+  const content = document.getElementById("connection-config-content");
+  const chevron = document.getElementById("chevron-config-icon");
+  if (!content || !chevron) return;
+  
+  const isCollapsed = content.style.maxHeight === "0px";
+  if (isCollapsed) {
+    content.style.maxHeight = "1500px";
+    content.style.opacity = "1";
+    chevron.style.transform = "rotate(90deg)";
+  } else {
+    content.style.maxHeight = "0px";
+    content.style.opacity = "0";
+    chevron.style.transform = "rotate(0deg)";
+  }
 });
 
 // --- APP SETTINGS (SUPERADMIN ONLY) ---
