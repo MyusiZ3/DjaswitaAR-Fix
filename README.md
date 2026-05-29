@@ -113,7 +113,74 @@ erDiagram
 
 ---
 
-### C. Daftar Kebutuhan Fitur (Feature Requirements)
+### C. Diagram Use Case (Use Case Diagram)
+
+Diagram Use Case di bawah ini menggambarkan interaksi antara berbagai peran aktor (**Superadmin**, **Admin (CMS)**, dan **Pengunjung / User**) dengan sistem **Djaswita AR**:
+
+```mermaid
+graph TD
+    %% Define Actors
+    subgraph Aktor
+        Superadmin["👤 Superadmin"]
+        Admin["👤 Admin (CMS)"]
+        User["📱 Pengunjung / User (Unity App)"]
+    end
+
+    %% Define Use Cases inside the System boundary
+    subgraph Djaswita AR Platform
+        %% Web Admin Use Cases
+        UC_Login("Masuk Sistem (Login)")
+        UC_View_Stat("Pantau Analitik & Statistik")
+        UC_CRUD_Target("Kelola Data Target AR (CRUD)")
+        UC_CRUD_Admin("Kelola Akun Administrator (CRUD)")
+        UC_Config("Perbarui Konfigurasi API & Supabase")
+        UC_Double_Auth("Verifikasi Double Authentication")
+        UC_Cleanup("Bersihkan File Sampah Storage & Log")
+
+        %% Unity App Use Cases
+        UC_Init("Inisialisasi Data (Online/Offline)")
+        UC_Scan("Pindai Marker Fisik (Vuforia)")
+        UC_Render_3D("Melihat Objek AR 3D (.glb)")
+        UC_Render_Carousel("Melihat Galeri 2D Carousel")
+        UC_Render_Video("Memutar Video Streaming (GDrive)")
+        UC_Offline_Sync("Simpan & Sinkronisasi Scan Offline")
+    end
+
+    %% Actor Relationships
+    %% Admin / Superadmin
+    Superadmin --> UC_CRUD_Admin
+    Superadmin --> Admin
+    Admin --> UC_Login
+    Admin --> UC_View_Stat
+    Admin --> UC_CRUD_Target
+    Admin --> UC_Config
+    Admin --> UC_Cleanup
+
+    %% Include / Extend relationships
+    UC_Config -.->|"<<include>>"| UC_Double_Auth
+    UC_CRUD_Admin -.->|"<<include>>"| UC_Login
+    UC_CRUD_Target -.->|"<<include>>"| UC_Login
+    UC_View_Stat -.->|"<<include>>"| UC_Login
+
+    %% User / Unity App
+    User --> UC_Init
+    User --> UC_Scan
+    UC_Scan -.->|"<<extend>>"| UC_Render_3D
+    UC_Scan -.->|"<<extend>>"| UC_Render_Carousel
+    UC_Scan -.->|"<<extend>>"| UC_Render_Video
+    UC_Scan -.->|"<<include>>"| UC_Offline_Sync
+
+    %% Styling
+    classDef actor fill:#f43f5e,stroke:#be123c,stroke-width:2px,color:#fff;
+    classDef usecase fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#fff,rx:20,ry:20;
+    
+    class Superadmin,Admin,User actor;
+    class UC_Login,UC_View_Stat,UC_CRUD_Target,UC_CRUD_Admin,UC_Config,UC_Double_Auth,UC_Cleanup,UC_Init,UC_Scan,UC_Render_3D,UC_Render_Carousel,UC_Render_Video,UC_Offline_Sync usecase;
+```
+
+---
+
+### D. Daftar Kebutuhan Fitur (Feature Requirements)
 
 | Kategori | Fitur Utama | Kebutuhan Teknis |
 | :--- | :--- | :--- |
@@ -128,7 +195,7 @@ erDiagram
 
 ---
 
-### D. Rancangan Sistem dalam Pengembangan (Future Roadmap)
+### E. Rancangan Sistem dalam Pengembangan (Future Roadmap)
 
 Untuk meningkatkan kenyamanan pengguna, platform ini sedang mempersiapkan beberapa pengembangan strategis:
 1. **Interaksi Multi-Marker & Manipulasi 3D**: Memungkinkan pengguna memindai beberapa marker sekaligus dalam satu layar dan melakukan interaksi langsung (memutar, memperbesar, dan menggeser model 3D menggunakan gestur sentuhan).
@@ -137,7 +204,7 @@ Untuk meningkatkan kenyamanan pengguna, platform ini sedang mempersiapkan bebera
 
 ---
 
-### E. Alur Kerja Aplikasi (App Flow & User Flow)
+### F. Alur Kerja Aplikasi (App Flow & User Flow)
 
 Berikut adalah visualisasi alur perjalanan pengguna (*User Flow*) dan pertukaran data sistem (*App Flow*):
 
