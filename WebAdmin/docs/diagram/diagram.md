@@ -132,7 +132,7 @@ Flowchart ini memetakan langkah-langkah logika mendalam yang dieksekusi oleh apl
 *Catatan: Pemindaian diblokir sepenuhnya saat offline dengan memunculkan **Overlay Offline** untuk meminimalisir kegagalan penampilan pemutaran video Google Drive.*
 
 ```mermaid
-flowchart TD
+flowchart LR
     %% Mulai
     Start([Mulai Aplikasi Unity Client]) --> InitConn{Apakah Perangkat<br>Memiliki Internet?}
 
