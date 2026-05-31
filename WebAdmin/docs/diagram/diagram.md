@@ -70,11 +70,8 @@ Use case diagram di bawah ini merinci fungsionalitas dan batas sistem (*system b
 ```mermaid
 graph LR
     %% Definisi Aktor
-    subgraph Aktor ["Aktor Pengguna"]
-        direction TB
-        Admin[("👤 Administrator <br>(Super/Admin/Member)")]
-        User[("📱 Pengunjung Pameran <br>(End User)")]
-    end
+    Admin[("👤 Administrator <br>(Super/Admin/Member)")]
+    User[("📱 Pengunjung Pameran <br>(End User)")]
 
     %% Batas Sistem (System Boundary)
     subgraph SystemBoundary ["Batas Sistem Djaswita AR"]
