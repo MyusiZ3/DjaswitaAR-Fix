@@ -132,75 +132,53 @@ Flowchart ini memetakan langkah-langkah logika mendalam yang dieksekusi oleh apl
 *Catatan: Pemindaian diblokir sepenuhnya saat offline dengan memunculkan **Overlay Offline** untuk meminimalisir kegagalan penampilan pemutaran video Google Drive.*
 
 ```mermaid
-flowchart LR
+flowchart TD
     %% Mulai
     Start([Mulai Aplikasi Unity Client]) --> InitConn{Apakah Perangkat<br>Memiliki Internet?}
 
-    %% Cabang Inisialisasi Koneksi
-    InitConn -- Ya (Online) --> FetchOnline[Unduh Kredensial & Metadata Terbaru dari Supabase]
-    FetchOnline --> ActiveVuforia[Aktifkan Kamera & Vuforia SDK]
-
-    %% Cabang Offline (Blokir Pemindaian)
+    %% Penanganan Koneksi
+    InitConn -- Ya (Online) --> InitApp[Inisialisasi Aplikasi:<br>1. Unduh Kredensial & Metadata dari Supabase<br>2. Aktifkan Kamera & Vuforia SDK]
+    
     InitConn -- Tidak (Offline) --> ShowOfflineOverlay[Tampilkan Overlay Offline & Blokir Pemindaian]
-    ShowOfflineOverlay --> BlockScan[Aplikasi Menunggu Jaringan Aktif Kembali]
-    BlockScan --> CheckNetAgain{Apakah Koneksi<br>Kembali Aktif?}
-    CheckNetAgain -- Tidak --> BlockScan
-    CheckNetAgain -- Ya --> FetchOnline
+    ShowOfflineOverlay --> CheckNetAgain{Apakah Koneksi<br>Kembali Aktif?}
+    CheckNetAgain -- Tidak --> ShowOfflineOverlay
+    CheckNetAgain -- Ya --> InitApp
 
-    %% Proses Pemindaian
-    ActiveVuforia --> ScanLoop{Apakah Marker<br>Fisik Terdeteksi?}
+    %% Siklus Pemindaian
+    InitApp --> ScanLoop{Apakah Marker<br>Fisik Terdeteksi?}
     ScanLoop -- Tidak --> ScanLoop
-    ScanLoop -- Ya --> ResolveTarget[Ekstrak ID Target dari Vuforia Dataset]
-
-    %% Pemeriksaan Cache Marker (LRU Caching)
-    ResolveTarget --> CheckCache{Apakah Berkas Marker<br>Ada di Disk Cache Lokal?}
     
-    CheckCache -- Tidak --> DownloadMarker[Unduh Marker dari Supabase Storage]
-    DownloadMarker --> SaveCache[Simpan Berkas Marker di Disk Lokal]
-    SaveCache --> CheckLRU{Apakah Ukuran Cache Marker<br>Melebihi Batas?}
+    %% Alur Cache
+    ScanLoop -- Ya --> CheckCache{Apakah Berkas Marker<br>Ada di Disk Cache Lokal?}
     
-    CheckLRU -- Ya --> EvictLRU[Hapus Aset Marker Tertua yang Jarang Digunakan]
-    EvictLRU --> CheckType
-    CheckLRU -- Tidak --> CheckType
-
-    CheckCache -- Ya --> ReadCache[Baca Berkas Marker Langsung dari Penyimpanan Lokal]
+    CheckCache -- Ya --> ReadCache[Baca Berkas Marker dari Disk Lokal]
+    CheckCache -- Tidak --> CacheProcess[Proses Disk Cache Lokal:<br>1. Unduh Berkas Marker dari Supabase Storage<br>2. Simpan Berkas & Terapkan Eliminasi LRU jika Penuh]
+    
     ReadCache --> CheckType
+    CacheProcess --> CheckType
 
-    %% Percabangan Jenis Media Konten
+    %% Percabangan Konten (3-Way Split Horisontal)
     CheckType{Apa Jenis Konten Utama<br>dari Target Terdeteksi?}
     
-    CheckType -- "3D Model (.glb)" --> ParseGLB[Parse File GLB menggunakan glTFast]
-    ParseGLB --> AutoScale[Hitung Normalisasi Skala Bounding Box]
-    AutoScale --> Render3D[Render Model 3D Melayang Presisi di Atas Marker]
-    Render3D --> RecordScan
+    CheckType -- "3D Model (.glb)" --> Render3D[Render Model 3D:<br>1. Parse GLB via glTFast<br>2. Normalisasi Skala Bounding Box]
+    CheckType -- "Image Carousel (2D)" --> RenderCarousel[Render Image Carousel:<br>1. Muat Gambar ke RAM GPU<br>2. Batasi Maks 12 Tekstur di Memori]
+    CheckType -- "Video Streaming" --> RenderVideo[Render Video Streaming:<br>1. Konversi Tautan GDrive via Proxy URL<br>2. Alirkan & Buffering Video]
 
-    CheckType -- "Image Carousel (2D)" --> LoadImages[Muat Gambar-Gambar ke RAM GPU Texture]
-    LoadImages --> LimitRAM{Apakah Gambar di RAM<br>Lebih dari 12 Tekstur?}
-    LimitRAM -- Ya --> EvictRAM[Hapus Alokasi Tekstur Tertua dari Memori]
-    EvictRAM --> RenderCarousel
-    LimitRAM -- Tidak --> RenderCarousel
-    RenderCarousel[Render Canvas 2D Melayang dengan Navigasi Slide Arrow]
-    RenderCarousel --> RecordScan
+    %% Penggabungan ke Analitik
+    Render3D --> LogAnalytics
+    RenderCarousel --> LogAnalytics
+    RenderVideo --> LogAnalytics
 
-    CheckType -- "Video Streaming" --> ProxyGDrive[Konversi Tautan File Google Drive Menjadi Proxy URL]
-    ProxyGDrive --> VideoPlayer[Alirkan Video ke Unity VideoPlayer dengan Buffering]
-    VideoPlayer --> RenderVideo[Render Video Melayang Dilengkapi Kontrol Play/Pause]
-    RenderVideo --> RecordScan
+    LogAnalytics[Pencatatan Analitik & Real-time Sync:<br>1. Kirim Log Aktivitas & Tambah Scan ke Supabase<br>2. Supabase Real-time Memicu Update Grafik Dashboard] --> TrackingCheck
 
-    %% Perekaman Log Analitik
-    RecordScan --> IncrementStats[Kirim Tambah Scan & Log Aktivitas ke Supabase]
-    IncrementStats --> PushRealtime[Supabase Realtime Memicu Update Grafik Dashboard]
-    PushRealtime --> TrackingLostCheck
-
-    %% Penanganan Tracking Lost & Delay
-    TrackingLostCheck{Apakah Kamera Kehilangan<br>Pelacakan Marker?}
-    TrackingLostCheck -- Tidak --> TrackingLostCheck
-    TrackingLostCheck -- Ya --> DelayTimer[Aktifkan Jeda Waktu Pengampunan 0.5 Detik]
+    %% Pelacakan & Siklus Ulang (Optimasi Delay)
+    TrackingCheck{Apakah Kamera Kehilangan<br>Pelacakan Marker?}
+    TrackingCheck -- Tidak --> TrackingCheck
     
-    DelayTimer --> RecaptureCheck{Apakah Marker<br>Terdeteksi Kembali?}
-    RecaptureCheck -- Ya (Sebelum 0.5s) --> MaintainRender[Pertahankan Tampilan Konten AR Tanpa Kedip]
-    MaintainRender --> TrackingLostCheck
+    TrackingCheck -- Ya --> DelayCheck{Marker Terdeteksi Kembali<br>dalam Jeda 0.5 Detik?}
+    DelayCheck -- Ya --> MaintainRender[Pertahankan Tampilan Konten AR Tanpa Kedip]
+    MaintainRender --> TrackingCheck
     
-    RecaptureCheck -- Tidak (Setelah 0.5s) --> HideContent[Sembunyikan Konten AR dengan Aman]
+    DelayCheck -- Tidak --> HideContent[Sembunyikan Konten AR dengan Aman]
     HideContent --> ScanLoop
 ```
