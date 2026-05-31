@@ -68,9 +68,10 @@ erDiagram
 Use case diagram di bawah ini merinci fungsionalitas dan batas sistem (*system boundary*) berdasarkan dua aktor utama: **Administrator** (termasuk sub-role Superadmin, Admin, Member) dan **Pengunjung Pameran (End User)**.
 
 ```mermaid
-graph TB
+graph LR
     %% Definisi Aktor
     subgraph Aktor ["Aktor Pengguna"]
+        direction TB
         Admin[("👤 Administrator <br>(Super/Admin/Member)")]
         User[("📱 Pengunjung Pameran <br>(End User)")]
     end
