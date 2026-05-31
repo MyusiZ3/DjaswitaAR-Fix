@@ -82,7 +82,8 @@ graph TB
         %% Use Cases Admin
         UC_Login["Login & Autentikasi Sesi <br>(Timeout 12 Jam)"]
         UC_CRUD["Mengelola Target AR <br>(CRUD & Pencarian Target)"]
-        UC_Config["Mengubah Konfigurasi API <br>(Double Authentication)"]
+        UC_Config["Mengubah Konfigurasi API"]
+        UC_DoubleAuth["Verifikasi Sandi Admin <br>(Double Authentication)"]
         UC_ViewStats["Memantau Grafik Statistik <br>(Real-time Weekly Scans)"]
         UC_ManageAdmin["Mengelola Akun Admin <br>(Superadmin Only)"]
         UC_Hearbeat["Memantau Database Heartbeat"]
@@ -92,7 +93,7 @@ graph TB
         UC_View3D["Melihat Model 3D <br>(Auto-Scale glTFast)"]
         UC_ViewCarousel["Melihat Slideshow Gambar <br>(Image Carousel 2D)"]
         UC_PlayVideo["Memutar Video Promosi <br>(GDrive Proxy Stream)"]
-        UC_OfflineOverlay["Melihat Overlay Offline <br>(Blokir Scan & Mencegah GDrive Video Fail)"]
+        UC_OfflineOverlay["Melihat Overlay Offline <br>(Blokir Pemindaian)"]
         UC_CacheMarker["Caching Marker Aset <br>(LRU Cache System)"]
     end
 
@@ -105,13 +106,15 @@ graph TB
     Admin --> UC_Hearbeat
 
     User --> UC_ScanMarker
-    User --> UC_OfflineOverlay
 
     %% Relasi Include / Extend
-    UC_ScanMarker -. "<< include >>" .-> UC_View3D
-    UC_ScanMarker -. "<< include >>" .-> UC_ViewCarousel
-    UC_ScanMarker -. "<< include >>" .-> UC_PlayVideo
-    UC_ScanMarker -. "<< extend >>" .-> UC_CacheMarker
+    UC_Config -. "<< include >>" .-> UC_DoubleAuth
+    UC_ScanMarker -. "<< include >>" .-> UC_CacheMarker
+    
+    UC_View3D -. "<< extend >>" .-> UC_ScanMarker
+    UC_ViewCarousel -. "<< extend >>" .-> UC_ScanMarker
+    UC_PlayVideo -. "<< extend >>" .-> UC_ScanMarker
+    UC_OfflineOverlay -. "<< extend >>" .-> UC_ScanMarker
 
     %% Styling Warna
     style Admin fill:#efebe9,stroke:#5d4037,stroke-width:2px;
