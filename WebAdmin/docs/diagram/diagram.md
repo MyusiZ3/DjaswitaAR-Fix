@@ -78,24 +78,28 @@ graph LR
 
     %% Batas Sistem (System Boundary)
     subgraph SystemBoundary ["Batas Sistem Djaswita AR"]
-        direction TB
+        direction LR
         
-        %% Use Cases Admin
-        UC_Login["Login & Autentikasi Sesi <br>(Timeout 12 Jam)"]
-        UC_CRUD["Mengelola Target AR <br>(CRUD & Pencarian Target)"]
-        UC_Config["Mengubah Konfigurasi API"]
-        UC_DoubleAuth["Verifikasi Sandi Admin <br>(Double Authentication)"]
-        UC_ViewStats["Memantau Grafik Statistik <br>(Real-time Weekly Scans)"]
-        UC_ManageAdmin["Mengelola Akun Admin <br>(Superadmin Only)"]
-        UC_Hearbeat["Memantau Database Heartbeat"]
+        subgraph AdminModule ["Modul Administrator"]
+            direction TB
+            UC_Login["Login & Autentikasi Sesi <br>(Timeout 12 Jam)"]
+            UC_CRUD["Mengelola Target AR <br>(CRUD & Pencarian)"]
+            UC_Config["Mengubah Konfigurasi API"]
+            UC_DoubleAuth["Verifikasi Sandi Admin <br>(Double Authentication)"]
+            UC_ViewStats["Memantau Grafik Statistik <br>(Real-time Weekly Scans)"]
+            UC_ManageAdmin["Mengelola Akun Admin <br>(Superadmin Only)"]
+            UC_Hearbeat["Memantau Database Heartbeat"]
+        end
 
-        %% Use Cases User
-        UC_ScanMarker["Memindai Marker Fisik <br>(Vuforia Tracking)"]
-        UC_View3D["Melihat Model 3D <br>(Auto-Scale glTFast)"]
-        UC_ViewCarousel["Melihat Slideshow Gambar <br>(Image Carousel 2D)"]
-        UC_PlayVideo["Memutar Video Promosi <br>(GDrive Proxy Stream)"]
-        UC_OfflineOverlay["Melihat Overlay Offline <br>(Blokir Pemindaian)"]
-        UC_CacheMarker["Caching Marker Aset <br>(LRU Cache System)"]
+        subgraph UserModule ["Modul Pengunjung Pameran (End User)"]
+            direction TB
+            UC_ScanMarker["Memindai Marker Fisik <br>(Vuforia Tracking)"]
+            UC_View3D["Melihat Model 3D <br>(Auto-Scale glTFast)"]
+            UC_ViewCarousel["Melihat Slideshow Gambar <br>(Image Carousel 2D)"]
+            UC_PlayVideo["Memutar Video Promosi <br>(GDrive Proxy Stream)"]
+            UC_OfflineOverlay["Melihat Overlay Offline <br>(Blokir Pemindaian)"]
+            UC_CacheMarker["Caching Marker Aset <br>(LRU Cache System)"]
+        end
     end
 
     %% Hubungan Aktor ke Use Case
@@ -121,6 +125,8 @@ graph LR
     style Admin fill:#efebe9,stroke:#5d4037,stroke-width:2px;
     style User fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
     style SystemBoundary fill:#fafafa,stroke:#333,stroke-width:2px;
+    style AdminModule fill:#ffffff,stroke:#b0bec5,stroke-width:1px,stroke-dasharray: 5 5;
+    style UserModule fill:#ffffff,stroke:#b0bec5,stroke-width:1px,stroke-dasharray: 5 5;
 ```
 
 ---
