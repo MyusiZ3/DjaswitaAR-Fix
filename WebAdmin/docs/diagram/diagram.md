@@ -69,47 +69,46 @@ Use case diagram di bawah ini merinci fungsionalitas dan batas sistem (*system b
 
 ```mermaid
 graph LR
-    %% Definisi Aktor
-    Admin(("👤<br><b>Administrator</b><br>(Super/Admin/Member)"))
+    %% Aktor Kiri (User)
     User(("🧍<br><b>Pengunjung Pameran</b><br>(End User)"))
 
-    %% Batas Sistem (System Boundary)
+    %% Batas Sistem (System Boundary Tunggal)
     subgraph SystemBoundary ["Batas Sistem Djaswita AR"]
-        direction LR
+        direction TB
         
-        subgraph AdminModule ["Modul Administrator"]
-            direction TB
-            UC_Login["Login & Autentikasi Sesi <br>(Timeout 12 Jam)"]
-            UC_CRUD["Mengelola Target AR <br>(CRUD & Pencarian)"]
-            UC_Config["Mengubah Konfigurasi API"]
-            UC_DoubleAuth["Verifikasi Sandi Admin <br>(Double Authentication)"]
-            UC_ViewStats["Memantau Grafik Statistik <br>(Real-time Weekly Scans)"]
-            UC_ManageAdmin["Mengelola Akun Admin <br>(Superadmin Only)"]
-            UC_Hearbeat["Memantau Database Heartbeat"]
-        end
-
-        subgraph UserModule ["Modul Pengunjung Pameran (End User)"]
-            direction TB
-            UC_ScanMarker["Memindai Marker Fisik <br>(Vuforia Tracking)"]
-            UC_View3D["Melihat Model 3D <br>(Auto-Scale glTFast)"]
-            UC_ViewCarousel["Melihat Slideshow Gambar <br>(Image Carousel 2D)"]
-            UC_PlayVideo["Memutar Video Promosi <br>(GDrive Proxy Stream)"]
-            UC_OfflineOverlay["Melihat Overlay Offline <br>(Blokir Pemindaian)"]
-            UC_CacheMarker["Caching Marker Aset <br>(LRU Cache System)"]
-        end
+        %% Use Cases dalam bentuk OVAL (Stadium Shape)
+        UC_Login(["Login & Autentikasi Sesi <br>(Timeout 12 Jam)"])
+        UC_CRUD(["Mengelola Target AR <br>(CRUD & Pencarian)"])
+        UC_Config(["Mengubah Konfigurasi API"])
+        UC_DoubleAuth(["Verifikasi Sandi Admin <br>(Double Authentication)"])
+        UC_ViewStats(["Memantau Grafik Statistik <br>(Real-time Weekly Scans)"])
+        UC_ManageAdmin(["Mengelola Akun Admin <br>(Superadmin Only)"])
+        UC_Hearbeat(["Memantau Database Heartbeat"])
+        
+        UC_ScanMarker(["Memindai Marker Fisik <br>(Vuforia Tracking)"])
+        UC_View3D(["Melihat Model 3D <br>(Auto-Scale glTFast)"])
+        UC_ViewCarousel(["Melihat Slideshow Gambar <br>(Image Carousel 2D)"])
+        UC_PlayVideo(["Memutar Video Promosi <br>(GDrive Proxy Stream)"])
+        UC_OfflineOverlay(["Melihat Overlay Offline <br>(Blokir Pemindaian)"])
+        UC_CacheMarker(["Caching Marker Aset <br>(LRU Cache System)"])
     end
 
-    %% Hubungan Aktor ke Use Case
-    Admin --> UC_Login
-    Admin --> UC_CRUD
-    Admin --> UC_Config
-    Admin --> UC_ViewStats
-    Admin --> UC_ManageAdmin
-    Admin --> UC_Hearbeat
+    %% Aktor Kanan (Admin)
+    Admin(("👤<br><b>Administrator</b><br>(Super/Admin/Member)"))
 
+    %% Hubungan Aktor Kiri ke Use Cases
     User --> UC_ScanMarker
+    User --> UC_OfflineOverlay
 
-    %% Relasi Include / Extend
+    %% Hubungan Aktor Kanan ke Use Cases (Tarik ke kanan)
+    UC_Login --> Admin
+    UC_CRUD --> Admin
+    UC_Config --> Admin
+    UC_ViewStats --> Admin
+    UC_ManageAdmin --> Admin
+    UC_Hearbeat --> Admin
+
+    %% Relasi Include / Extend (Dashed Lines dengan label UML)
     UC_Config -. "<< include >>" .-> UC_DoubleAuth
     UC_ScanMarker -. "<< include >>" .-> UC_CacheMarker
     
@@ -118,12 +117,10 @@ graph LR
     UC_PlayVideo -. "<< extend >>" .-> UC_ScanMarker
     UC_OfflineOverlay -. "<< extend >>" .-> UC_ScanMarker
 
-    %% Styling Warna
-    style Admin fill:#efebe9,stroke:#5d4037,stroke-width:2px;
+    %% Styling Warna & Bentuk Sesuai Standar Premium
     style User fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
+    style Admin fill:#efebe9,stroke:#5d4037,stroke-width:2px;
     style SystemBoundary fill:#fafafa,stroke:#333,stroke-width:2px;
-    style AdminModule fill:#ffffff,stroke:#b0bec5,stroke-width:1px,stroke-dasharray: 5 5;
-    style UserModule fill:#ffffff,stroke:#b0bec5,stroke-width:1px,stroke-dasharray: 5 5;
 ```
 
 ---
