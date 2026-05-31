@@ -92,8 +92,8 @@ graph TB
         UC_View3D["Melihat Model 3D <br>(Auto-Scale glTFast)"]
         UC_ViewCarousel["Melihat Slideshow Gambar <br>(Image Carousel 2D)"]
         UC_PlayVideo["Memutar Video Promosi <br>(GDrive Proxy Stream)"]
-        UC_OfflineMode["Berjalan Tanpa Internet <br>(SQLite Offline Fallback)"]
-        UC_CacheSync["Sinkronisasi Antrean Scan <br>(Background Batch Sync)"]
+        UC_OfflineOverlay["Melihat Overlay Offline <br>(Blokir Scan & Mencegah GDrive Video Fail)"]
+        UC_CacheMarker["Caching Marker Aset <br>(LRU Cache System)"]
     end
 
     %% Hubungan Aktor ke Use Case
@@ -105,13 +105,13 @@ graph TB
     Admin --> UC_Hearbeat
 
     User --> UC_ScanMarker
-    User --> UC_OfflineMode
+    User --> UC_OfflineOverlay
 
     %% Relasi Include / Extend
     UC_ScanMarker -. "<< include >>" .-> UC_View3D
     UC_ScanMarker -. "<< include >>" .-> UC_ViewCarousel
     UC_ScanMarker -. "<< include >>" .-> UC_PlayVideo
-    UC_OfflineMode -. "<< extend >>" .-> UC_CacheSync
+    UC_ScanMarker -. "<< extend >>" .-> UC_CacheMarker
 
     %% Styling Warna
     style Admin fill:#efebe9,stroke:#5d4037,stroke-width:2px;
@@ -123,7 +123,9 @@ graph TB
 
 ## 3. Flowchart Alur Pemindaian dan Penampilan Konten Augmented Reality
 
-Flowchart ini memetakan langkah-langkah logika mendalam yang dieksekusi oleh aplikasi klien seluler (Unity Client) sejak aplikasi pertama kali diluncurkan, pemeriksaan status jaringan, proses pemindaian Vuforia, pengunduhan & pembersihan cache LRU, hingga penampilan visual AR yang dinamis di layar perangkat.
+Flowchart ini memetakan langkah-langkah logika mendalam yang dieksekusi oleh aplikasi klien seluler (Unity Client) sejak aplikasi pertama kali diluncurkan, pemeriksaan status jaringan, proses pemindaian Vuforia, pengunduhan & pembersihan cache LRU marker, hingga penampilan visual AR yang dinamis di layar perangkat. 
+
+*Catatan: Pemindaian diblokir sepenuhnya saat offline dengan memunculkan **Overlay Offline** untuk meminimalisir kegagalan penampilan pemutaran video Google Drive.*
 
 ```mermaid
 flowchart TD
@@ -132,30 +134,32 @@ flowchart TD
 
     %% Cabang Inisialisasi Koneksi
     InitConn -- Ya (Online) --> FetchOnline[Unduh Kredensial & Metadata Terbaru dari Supabase]
-    FetchOnline --> UpdateLocalDB[Perbarui Basis Data SQLite Lokal]
-    UpdateLocalDB --> ActiveVuforia[Aktifkan Kamera & Vuforia SDK]
+    FetchOnline --> ActiveVuforia[Aktifkan Kamera & Vuforia SDK]
 
-    InitConn -- Tidak (Offline) --> LoadLocalDB[Muat Metadata Target Terakhir dari SQLite Lokal]
-    LoadLocalDB --> ShowOfflineToast[Tampilkan Toast Indikator Offline]
-    ShowOfflineToast --> ActiveVuforia
+    %% Cabang Offline (Blokir Pemindaian)
+    InitConn -- Tidak (Offline) --> ShowOfflineOverlay[Tampilkan Overlay Offline & Blokir Pemindaian]
+    ShowOfflineOverlay --> BlockScan[Aplikasi Menunggu Jaringan Aktif Kembali]
+    BlockScan --> CheckNetAgain{Apakah Koneksi<br>Kembali Aktif?}
+    CheckNetAgain -- Tidak --> BlockScan
+    CheckNetAgain -- Ya --> FetchOnline
 
     %% Proses Pemindaian
     ActiveVuforia --> ScanLoop{Apakah Marker<br>Fisik Terdeteksi?}
     ScanLoop -- Tidak --> ScanLoop
     ScanLoop -- Ya --> ResolveTarget[Ekstrak ID Target dari Vuforia Dataset]
 
-    %% Pemeriksaan Cache
-    ResolveTarget --> CheckCache{Apakah Berkas Aset<br>Ada di Disk Cache Lokal?}
+    %% Pemeriksaan Cache Marker (LRU Caching)
+    ResolveTarget --> CheckCache{Apakah Berkas Marker<br>Ada di Disk Cache Lokal?}
     
-    CheckCache -- Tidak --> DownloadAsset[Unduh Aset dari Storage/Google Drive Proxy]
-    DownloadAsset --> SaveCache[Simpan Berkas Baru di Disk Lokal]
-    SaveCache --> CheckLRU{Apakah Ukuran Cache<br>Melebihi 500 MB?}
+    CheckCache -- Tidak --> DownloadMarker[Unduh Marker dari Supabase Storage]
+    DownloadMarker --> SaveCache[Simpan Berkas Marker di Disk Lokal]
+    SaveCache --> CheckLRU{Apakah Ukuran Cache Marker<br>Melebihi Batas?}
     
-    CheckLRU -- Ya --> EvictLRU[Hapus Aset Tertua yang Jarang Digunakan]
+    CheckLRU -- Ya --> EvictLRU[Hapus Aset Marker Tertua yang Jarang Digunakan]
     EvictLRU --> CheckType
     CheckLRU -- Tidak --> CheckType
 
-    CheckCache -- Ya --> ReadCache[Baca Berkas Langsung dari Penyimpanan Lokal]
+    CheckCache -- Ya --> ReadCache[Baca Berkas Marker Langsung dari Penyimpanan Lokal]
     ReadCache --> CheckType
 
     %% Percabangan Jenis Media Konten
@@ -180,14 +184,9 @@ flowchart TD
     RenderVideo --> RecordScan
 
     %% Perekaman Log Analitik
-    RecordScan{Apakah Aplikasi<br>Berstatus Online?}
-    
-    RecordScan -- Ya --> IncrementStats[Kirim Tambah Scan & Log Aktivitas ke Supabase]
+    RecordScan --> IncrementStats[Kirim Tambah Scan & Log Aktivitas ke Supabase]
     IncrementStats --> PushRealtime[Supabase Realtime Memicu Update Grafik Dashboard]
     PushRealtime --> TrackingLostCheck
-
-    RecordScan -- Tidak --> QueueOffline[Masukkan Event Scan ke SQLite Offline Queue]
-    QueueOffline --> TrackingLostCheck
 
     %% Penanganan Tracking Lost & Delay
     TrackingLostCheck{Apakah Kamera Kehilangan<br>Pelacakan Marker?}
