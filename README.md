@@ -498,6 +498,31 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 ```
 
+#### Fungsi RPC lookup Email berdasarkan Username (Login Username WebAdmin)
+
+Agar admin dapat masuk menggunakan **Username** (selain Email), diperlukan fungsi pembantu (*Helper RPC*) di PostgreSQL untuk mencari email terkait tanpa terbentur proteksi keamanan RLS (*Row Level Security*) pada tabel profiles. Jalankan query SQL berikut:
+
+```sql
+-- Membuat fungsi pencarian email berdasarkan username secara aman
+CREATE OR REPLACE FUNCTION public.get_email_by_username(p_username text)
+RETURNS text AS $$
+DECLARE
+  v_email text;
+BEGIN
+  SELECT email INTO v_email
+  FROM public.profiles
+  WHERE username = p_username
+  LIMIT 1;
+  
+  RETURN v_email;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Batasi hak akses fungsi RPC agar hanya dapat diakses oleh role anon/authenticated
+REVOKE ALL ON FUNCTION public.get_email_by_username(text) FROM public;
+GRANT EXECUTE ON FUNCTION public.get_email_by_username(text) TO anon, authenticated;
+```
+
 ### C. Row Level Security (RLS)
 
 Aktifkan fitur **Row Level Security (RLS)** pada setiap tabel yang dibuat dan konfigurasikan policy/kebijakan berikut:
