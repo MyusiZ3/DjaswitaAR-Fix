@@ -925,6 +925,27 @@ async function handleAuthState(session) {
   }
 }
 
+// Password Visibility Toggle
+const togglePasswordBtn = document.getElementById("toggle-password");
+const passwordInput = document.getElementById("l-password");
+
+togglePasswordBtn?.addEventListener("click", () => {
+  if (!passwordInput) return;
+  const isPassword = passwordInput.getAttribute("type") === "password";
+  passwordInput.setAttribute("type", isPassword ? "text" : "password");
+  
+  const eyeClosedIcon = togglePasswordBtn.querySelector(".eye-closed");
+  const eyeOpenIcon = togglePasswordBtn.querySelector(".eye-open");
+  
+  if (isPassword) {
+    eyeClosedIcon?.classList.add("hide");
+    eyeOpenIcon?.classList.remove("hide");
+  } else {
+    eyeClosedIcon?.classList.remove("hide");
+    eyeOpenIcon?.classList.add("hide");
+  }
+});
+
 loginForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
   const btn = e.target.querySelector('button[type="submit"]');
@@ -932,25 +953,55 @@ loginForm?.addEventListener("submit", async (e) => {
   btn.innerText = "Memproses...";
   btn.disabled = true;
 
-  let loginIdentifier = document.getElementById("l-email").value;
+  let loginIdentifier = document.getElementById("l-email").value.trim();
   const password = document.getElementById("l-password").value;
   let email = loginIdentifier;
 
   // If not an email, try to find email by username
   if (!loginIdentifier.includes("@")) {
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("email")
-      .eq("username", loginIdentifier)
-      .maybeSingle();
+    let resolvedEmail = null;
     
-    if (profileError || !profile) {
-      showToast("Username tidak ditemukan", "error");
+    // Attempt 1: Call RPC function get_email_by_username
+    try {
+      const { data, error: rpcError } = await supabase.rpc(
+        "get_email_by_username",
+        { p_username: loginIdentifier }
+      );
+      if (!rpcError && data) {
+        resolvedEmail = data;
+      } else if (rpcError) {
+        console.warn("RPC username lookup returned error:", rpcError);
+      }
+    } catch (e) {
+      console.warn("RPC username lookup exception:", e);
+    }
+    
+    // Attempt 2: Fallback to direct query of profiles (works if RLS is relaxed or allows selection)
+    if (!resolvedEmail) {
+      try {
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("email")
+          .eq("username", loginIdentifier)
+          .maybeSingle();
+        
+        if (!profileError && profile && profile.email) {
+          resolvedEmail = profile.email;
+        } else if (profileError) {
+          console.error("Direct query profiles error:", profileError);
+        }
+      } catch (e) {
+        console.error("Direct query profiles exception:", e);
+      }
+    }
+    
+    if (!resolvedEmail) {
+      showToast("Username tidak ditemukan atau akses database dibatasi (RLS). Silakan buat RPC get_email_by_username di Supabase.", "error");
       btn.innerText = originalText;
       btn.disabled = false;
       return;
     }
-    email = profile.email;
+    email = resolvedEmail;
   }
 
   const { error } = await supabase.auth.signInWithPassword({ email, password });

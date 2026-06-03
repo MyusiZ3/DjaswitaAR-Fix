@@ -168,7 +168,7 @@ export const InstructionsSection = () => `
         <p style="color: var(--text-dim); margin-bottom: 2rem">Gunakan alat ini untuk membuat QR Code link download aplikasi.</p>
         <div class="form-group" style="margin-bottom: 1.5rem">
           <label>Application Link / URL</label>
-          <input type="url" id="qr-input" placeholder="https://..." value="https://jawita-ar.vercel.app" />
+          <input type="url" id="qr-input" placeholder="https://..." value="https://djaswita-ar.vercel.app" />
         </div>
         <div style="display: flex; gap: 10px">
           <button id="btn-generate-qr" class="btn btn-primary">Generate QR</button>
@@ -176,7 +176,7 @@ export const InstructionsSection = () => `
         </div>
       </div>
       <div style="background: white; padding: 1.5rem; border-radius: 12px; display: flex; align-items: center; justify-content: center; min-height: 250px;">
-        <img id="qr-result" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://jawita-ar.vercel.app" alt="QR Result" style="max-width: 100%; height: auto; width: 250px;" />
+        <img id="qr-result" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://djaswita-ar.vercel.app" alt="QR Result" style="max-width: 100%; height: auto; width: 250px;" />
       </div>
     </div>
   </div>
