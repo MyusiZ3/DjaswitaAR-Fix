@@ -1086,6 +1086,45 @@ textarea:focus {
   text-align: left;
 }
 
+.password-field-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-field-container input {
+  padding-right: 3rem !important;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent !important;
+  border: none !important;
+  color: var(--text-dim) !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important;
+  height: auto !important;
+  width: auto !important;
+  transition: color 0.2s ease;
+  z-index: 10;
+  box-shadow: none !important;
+}
+
+.password-toggle-btn:hover {
+  color: var(--pastel-blue) !important;
+  background: transparent !important;
+}
+
+.password-toggle-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
 .navbar-user {
   display: flex;
   align-items: center;
