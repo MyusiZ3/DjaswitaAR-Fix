@@ -79,6 +79,44 @@ public class ARTargetHandler : MonoBehaviour
     // Robust Scan Logging
     private bool mIsTargetPresent = false;
     private Coroutine mLostCoroutine;
+    private Coroutine mFetchCoroutine;
+    private bool mShouldRestartVideoOnPlay = false;
+
+    private void Awake()
+    {
+        mObserverBehaviour = GetComponentInParent<ObserverBehaviour>();
+    }
+
+    private void OnEnable()
+    {
+        if (mObserverBehaviour)
+        {
+            mObserverBehaviour.OnTargetStatusChanged += OnTargetStatusChanged;
+        }
+        mIsTargetPresent = false;
+        mLostCoroutine = null;
+        mFetchCoroutine = null;
+    }
+
+    private void OnDisable()
+    {
+        if (mObserverBehaviour)
+        {
+            mObserverBehaviour.OnTargetStatusChanged -= OnTargetStatusChanged;
+        }
+        mIsTargetPresent = false;
+        if (mLostCoroutine != null)
+        {
+            StopCoroutine(mLostCoroutine);
+            mLostCoroutine = null;
+        }
+        if (mFetchCoroutine != null)
+        {
+            StopCoroutine(mFetchCoroutine);
+            mFetchCoroutine = null;
+        }
+        ImmediateHide();
+    }
 
     private void Start()
     {
@@ -102,12 +140,6 @@ public class ARTargetHandler : MonoBehaviour
         {
             mInteraction = modelContainer.GetComponent<ModelInteraction>();
             if (mInteraction == null) mInteraction = modelContainer.gameObject.AddComponent<ModelInteraction>();
-        }
-
-        mObserverBehaviour = GetComponentInParent<ObserverBehaviour>();
-        if (mObserverBehaviour)
-        {
-            mObserverBehaviour.OnTargetStatusChanged += OnTargetStatusChanged;
         }
 
         if (nextButtonMask) nextButtonMask.onClick.AddListener(ShowNextImage);
@@ -243,7 +275,7 @@ public class ARTargetHandler : MonoBehaviour
             }
         }
 
-        if (typeText) typeText.text = data.type?.ToUpper();
+        if (typeText) typeText.text = data.type?.Replace("_", " ").ToUpper();
 
         // Hide video media container logic is handled below in AR Content Mode Logic
 
@@ -699,8 +731,8 @@ public class ARTargetHandler : MonoBehaviour
                 }
                 else 
                 {
-                    if (gameObject.activeInHierarchy)
-                        StartCoroutine(FetchData());
+                    if (gameObject.activeInHierarchy && mFetchCoroutine == null)
+                        mFetchCoroutine = StartCoroutine(FetchData());
                 }
             }
             
@@ -753,7 +785,8 @@ public class ARTargetHandler : MonoBehaviour
         
         if (videoPlayer) 
         {
-            videoPlayer.Stop();
+            videoPlayer.Pause();
+            mShouldRestartVideoOnPlay = true;
         }
         
         // Reset interaksi model (kembali ke posisi/skala awal)
@@ -804,6 +837,11 @@ public class ARTargetHandler : MonoBehaviour
             else
             {
                 if (videoDisplay) videoDisplay.gameObject.SetActive(true);
+                if (mShouldRestartVideoOnPlay)
+                {
+                    mShouldRestartVideoOnPlay = false;
+                    videoPlayer.time = 0;
+                }
                 if (!videoPlayer.isPlaying) videoPlayer.Play();
             }
         }
@@ -837,9 +875,14 @@ public class ARTargetHandler : MonoBehaviour
 
     private void PrepareVideo(string url)
     {
+        mShouldRestartVideoOnPlay = false;
         string finalUrl = ProcessVideoUrl(url);
         videoPlayer.url = finalUrl;
         videoPlayer.isLooping = true;
+        if (videoPlayer.canSetSkipOnDrop)
+        {
+            videoPlayer.skipOnDrop = true;
+        }
         
         // Unsubscribe to avoid memory leaks and duplicate calls
         videoPlayer.prepareCompleted -= OnVideoPrepared;
@@ -855,6 +898,11 @@ public class ARTargetHandler : MonoBehaviour
     private void OnVideoPrepared(UnityEngine.Video.VideoPlayer vp)
     {
         ToggleMediaLoadingIndicator(false);
+        if (!mIsTargetPresent)
+        {
+            vp.Pause();
+            return;
+        }
         if (videoDisplay) videoDisplay.gameObject.SetActive(true);
         AdjustAspectRatio(videoDisplay, (float)vp.width / vp.height, false);
         vp.Play();
@@ -885,22 +933,34 @@ public class ARTargetHandler : MonoBehaviour
         }
     }
 
-    // Fallback if data not initialized (rare case)
     private System.Collections.IEnumerator FetchData()
     {
-        if (string.IsNullOrEmpty(markerId)) yield break;
+        if (string.IsNullOrEmpty(markerId))
+        {
+            mFetchCoroutine = null;
+            yield break;
+        }
         if (loadingPanel) loadingPanel.SetActive(true);
 
         yield return APIManager.Instance.GetTargetById(markerId, 
             (data) => {
                 Initialize(data);
-                UpdateUI(data);
-                StartCoroutine(APIManager.Instance.LogScan(data.id));
+                if (mIsTargetPresent)
+                {
+                    UpdateUI(data);
+                    StartCoroutine(APIManager.Instance.LogScan(data.id));
+                }
+                else
+                {
+                    ImmediateHide();
+                }
+                mFetchCoroutine = null;
             },
             (error) => {
                 Debug.LogError("Error fetching data: " + error);
                 if (loadingPanel) loadingPanel.SetActive(false);
                 if (mainCanvas) mainCanvas.SetActive(false);
+                mFetchCoroutine = null;
             }
         );
     }

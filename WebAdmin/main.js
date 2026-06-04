@@ -2653,17 +2653,6 @@ async function editItem(id) {
     updatePreview(data.slide_urls || "");
     updateMarkerPreview(data.marker_url || "");
     update3DPreview(data.model_url || "");
-
-    // Toggle date visibility based on type
-    const eventDateGroup = document.getElementById("event-date-group");
-    if (data.type === 'event') {
-        if (eventDateGroup) eventDateGroup.style.display = 'grid';
-    } else {
-        if (eventDateGroup) eventDateGroup.style.display = 'none';
-    }
-
-    updatePreview(data.slide_urls || "");
-    updateMarkerPreview(data.marker_url || "");
     update3DPreview(data.model_url || "");
 
     isEditing = true;
@@ -2799,8 +2788,7 @@ function closeModal() {
   modal.classList.remove("active");
   form.reset();
   if (document.getElementById("f-target-layout")) document.getElementById("f-target-layout").value = "mask";
-  const eventDateGroup = document.getElementById("event-date-group");
-  if (eventDateGroup) eventDateGroup.style.display = 'none';
+
   
   const otherTypeContainer = document.getElementById("other-type-container");
   const fTypeCustom = document.getElementById("f-type-custom");
@@ -2940,15 +2928,6 @@ hargaInput?.addEventListener("input", (e) => {
 
 const typeInput = document.getElementById("f-type");
 typeInput?.addEventListener("change", (e) => {
-  const eventDateGroup = document.getElementById("event-date-group");
-  if (eventDateGroup) {
-    if (e.target.value === "event") {
-      eventDateGroup.style.display = "grid";
-    } else {
-      eventDateGroup.style.display = "none";
-    }
-  }
-
   const otherTypeContainer = document.getElementById("other-type-container");
   const fTypeCustom = document.getElementById("f-type-custom");
   if (otherTypeContainer && fTypeCustom) {

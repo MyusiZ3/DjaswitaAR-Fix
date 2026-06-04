@@ -22,7 +22,7 @@ export const InstructionsSection = () => `
     </div>
   </header>
 
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 1.5rem;">
+  <div class="instructions-grid">
     <!-- Card 1: Dimensi -->
     <div class="guide-card-pastel">
       <h3 style="margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px; color: white;">
@@ -63,6 +63,20 @@ export const InstructionsSection = () => `
         <li><b>Ekspor PDF Print:</b> Gunakan format PDF Print untuk hasil cetak paling tajam.</li>
         <li><b>Minimal 300 DPI:</b> Pastikan cetakan tajam, tidak blur.</li>
         <li><b>Pencahayaan:</b> Cahaya merata di lokasi pameran.</li>
+      </ul>
+    </div>
+
+    <!-- Card 4: Format & Streaming Video -->
+    <div class="guide-card-pastel">
+      <h3 style="margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px; color: white;">
+        <span style="background: var(--pastel-blue); color: var(--text-dark); padding: 5px 12px; border-radius: 8px; font-size: 0.9rem; font-weight: 700;">4</span>
+        Format & Streaming Video
+      </h3>
+      <ul style="color: var(--text-dim); padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.8; margin: 0;">
+        <li><b>Format Wajib:</b> MP4 dengan codec H.264 (Video) dan AAC (Audio).</li>
+        <li><b>Google Drive:</b> Wajib di-encode dengan fitur <b>Fast-Start / Web Optimized</b>.</li>
+        <li><b>Rekomendasi Tools:</b> Gunakan software gratis <b>HandBrake</b> dan centang kotak opsi <b>"Web Optimized"</b> sebelum ekspor.</li>
+        <li><b>Catatan Penting:</b> Tanpa opsi ini, video streaming dari Drive akan error (stuck/tidak berputar).</li>
       </ul>
     </div>
   </div>

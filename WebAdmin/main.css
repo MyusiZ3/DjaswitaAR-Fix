@@ -1868,6 +1868,20 @@ model-viewer {
   color: var(--text-dark);
 }
 
+
+.instructions-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .instructions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @keyframes marker-pulse-glow {
   0%, 100% {
     transform: scale(1);
