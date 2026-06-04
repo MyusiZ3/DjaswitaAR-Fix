@@ -33,6 +33,13 @@ public static class AssetCacheManager
     public static bool IsCached(string url)
     {
         if (string.IsNullOrEmpty(url)) return false;
+
+        // Bypass cache check for Google Drive URLs (always stream)
+        if (url.Contains("drive.google.com") || url.Contains("googleusercontent.com"))
+        {
+            return false;
+        }
+
         string path = GetFilePath(url);
         bool exists = File.Exists(path);
         
