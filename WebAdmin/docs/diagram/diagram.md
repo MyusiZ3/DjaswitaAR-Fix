@@ -65,7 +65,7 @@ erDiagram
 
 ## 2. Use Case Diagram Sistem Augmented Reality Dinamis
 
-Use case diagram di bawah ini merinci fungsionalitas dan batas sistem (*system boundary*) berdasarkan dua aktor utama: **Administrator** (termasuk sub-role Superadmin, Admin, Member) dan **Pengunjung Pameran (End User)**.
+Use case diagram di bawah ini merinci fungsionalitas dan batas sistem (*system boundary*) berdasarkan aktor utama: **Superadmin**, **Admin**, **Member**, dan **Pengunjung Pameran (End User)**.
 
 ```mermaid
 graph LR
@@ -93,20 +93,28 @@ graph LR
         UC_CacheMarker(["Caching Marker Aset <br>(LRU Cache System)"])
     end
 
-    %% Aktor Kanan (Admin)
-    Admin(("👤<br><b>Administrator</b><br>(Super/Admin/Member)"))
+    %% Aktor Kanan (Admin Roles)
+    Member(("👤<br><b>Member</b><br>(Read-Only Admin)"))
+    AdminActor(("👤<br><b>Admin</b><br>(Manager)"))
+    Superadmin(("👤<br><b>Superadmin</b><br>(Full Controller)"))
+
+    %% Relasi Pewarisan / Generalization (Dashed lines to parent class)
+    Superadmin -.-> AdminActor
+    AdminActor -.-> Member
 
     %% Hubungan Aktor Kiri ke Use Cases
     User --> UC_ScanMarker
     User --> UC_OfflineOverlay
 
-    %% Hubungan Aktor Kanan ke Use Cases (Tarik ke kanan)
-    UC_Login --> Admin
-    UC_CRUD --> Admin
-    UC_Config --> Admin
-    UC_ViewStats --> Admin
-    UC_ManageAdmin --> Admin
-    UC_Hearbeat --> Admin
+    %% Hubungan Aktor Kanan ke Use Cases
+    Member --> UC_Login
+    Member --> UC_ViewStats
+    Member --> UC_Hearbeat
+
+    AdminActor --> UC_CRUD
+
+    Superadmin --> UC_Config
+    Superadmin --> UC_ManageAdmin
 
     %% Relasi Include / Extend (Dashed Lines dengan label UML)
     UC_Config -. "<< include >>" .-> UC_DoubleAuth
@@ -119,7 +127,9 @@ graph LR
 
     %% Styling Warna & Bentuk Sesuai Standar Premium
     style User fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    style Admin fill:#efebe9,stroke:#5d4037,stroke-width:2px;
+    style Member fill:#efebe9,stroke:#5d4037,stroke-width:2px;
+    style AdminActor fill:#efebe9,stroke:#5d4037,stroke-width:2px;
+    style Superadmin fill:#efebe9,stroke:#5d4037,stroke-width:2px;
     style SystemBoundary fill:#fafafa,stroke:#333,stroke-width:2px;
 ```
 
