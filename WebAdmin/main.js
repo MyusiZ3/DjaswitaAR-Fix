@@ -24,7 +24,6 @@ for (const [id, html] of Object.entries(sections)) {
   if (el) el.innerHTML = html;
 }
 
-
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -34,7 +33,9 @@ let initError = null;
 
 try {
   if (!SUPABASE_URL || !SUPABASE_KEY) {
-    throw new Error("VITE_SUPABASE_URL atau VITE_SUPABASE_ANON_KEY tidak ditemukan di environment variables.");
+    throw new Error(
+      "VITE_SUPABASE_URL atau VITE_SUPABASE_ANON_KEY tidak ditemukan di environment variables.",
+    );
   }
   supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
   supabaseAux = createClient(SUPABASE_URL, SUPABASE_KEY, {
@@ -42,7 +43,7 @@ try {
       persistSession: false,
       autoRefreshToken: false,
       detectSessionInUrl: false,
-      storageKey: 'jawita-aux-auth'
+      storageKey: "jawita-aux-auth",
     },
   });
 } catch (err) {
@@ -54,8 +55,8 @@ try {
 const tableBody = document.getElementById("data-table-body");
 const modal = document.getElementById("modal-form");
 const form = document.getElementById("target-form");
-const fType = document.getElementById('f-type');
-const eventDateGroup = document.getElementById('event-date-group');
+const fType = document.getElementById("f-type");
+const eventDateGroup = document.getElementById("event-date-group");
 
 // Start and End Date are now always visible as per user requirement
 
@@ -117,7 +118,6 @@ const modalSettingsConfirm = document.getElementById("modal-settings-confirm");
 const btnSettingsConfirm = document.getElementById("btn-settings-confirm");
 const btnSettingsCancel = document.getElementById("btn-settings-cancel");
 
-
 let isEditing = false;
 let editingId = null;
 
@@ -175,9 +175,9 @@ function showSection(sectionId) {
       item.classList.add("active");
     }
   });
-  
+
   // Save state to localStorage to persist across refreshes/tab focus
-  localStorage.setItem('activeSection', sectionId);
+  localStorage.setItem("activeSection", sectionId);
 
   if (sectionId === "section-dashboard") fetchAnalytics();
   if (sectionId === "section-instructions") fetchAppSettings(); // Reuse fetch to get canva link
@@ -186,7 +186,9 @@ function showSection(sectionId) {
     fetchAppSettings();
     setupSettingsListeners();
   }
-  if (sectionId === "section-about") { /* No data to fetch for static about section */ }
+  if (sectionId === "section-about") {
+    /* No data to fetch for static about section */
+  }
 }
 
 // --- NAVIGATION ---
@@ -266,21 +268,21 @@ function maskValue(val, type) {
   if (type === "url") {
     try {
       const url = new URL(val);
-      const hostParts = url.hostname.split('.');
+      const hostParts = url.hostname.split(".");
       if (hostParts.length > 1) {
-        return `${url.protocol}//••••••••.${hostParts.slice(1).join('.')}`;
+        return `${url.protocol}//••••••••.${hostParts.slice(1).join(".")}`;
       }
     } catch (e) {}
     return "https://••••••••.supabase.co";
   }
-  
+
   if (type === "key") {
     if (val.length > 12) {
       return val.slice(0, 8) + "••••••••••••••••••••••••";
     }
     return "••••••••••••••••";
   }
-  
+
   return "••••••••••••••••";
 }
 
@@ -288,17 +290,23 @@ function renderActiveConfig() {
   if (!activeConfigData) return;
   const urlDisplay = document.getElementById("current-url-display");
   const keyDisplay = document.getElementById("current-key-display");
-  const gdriveKeyDisplay = document.getElementById("current-gdrive-key-display");
-  
+  const gdriveKeyDisplay = document.getElementById(
+    "current-gdrive-key-display",
+  );
+
   const unlockBtn = document.getElementById("btn-unlock-config");
   const unlockIcon = document.getElementById("unlock-config-icon");
   const unlockText = document.getElementById("unlock-config-text");
 
   if (isConfigUnlocked) {
-    if (urlDisplay) urlDisplay.innerText = activeConfigData.supabase_url || "Belum diatur";
-    if (keyDisplay) keyDisplay.innerText = activeConfigData.supabase_key || "Belum diatur";
-    if (gdriveKeyDisplay) gdriveKeyDisplay.innerText = activeConfigData.gdrive_api_key || "Belum diatur";
-    
+    if (urlDisplay)
+      urlDisplay.innerText = activeConfigData.supabase_url || "Belum diatur";
+    if (keyDisplay)
+      keyDisplay.innerText = activeConfigData.supabase_key || "Belum diatur";
+    if (gdriveKeyDisplay)
+      gdriveKeyDisplay.innerText =
+        activeConfigData.gdrive_api_key || "Belum diatur";
+
     if (unlockBtn) {
       unlockBtn.style.color = "var(--danger)";
       unlockBtn.style.borderColor = "rgba(239, 68, 68, 0.2)";
@@ -308,10 +316,16 @@ function renderActiveConfig() {
       unlockIcon.innerHTML = `<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path>`;
     }
   } else {
-    if (urlDisplay) urlDisplay.innerText = maskValue(activeConfigData.supabase_url, "url");
-    if (keyDisplay) keyDisplay.innerText = maskValue(activeConfigData.supabase_key, "key");
-    if (gdriveKeyDisplay) gdriveKeyDisplay.innerText = maskValue(activeConfigData.gdrive_api_key, "key");
-    
+    if (urlDisplay)
+      urlDisplay.innerText = maskValue(activeConfigData.supabase_url, "url");
+    if (keyDisplay)
+      keyDisplay.innerText = maskValue(activeConfigData.supabase_key, "key");
+    if (gdriveKeyDisplay)
+      gdriveKeyDisplay.innerText = maskValue(
+        activeConfigData.gdrive_api_key,
+        "key",
+      );
+
     if (unlockBtn) {
       unlockBtn.style.color = "var(--text-dim)";
       unlockBtn.style.borderColor = "var(--glass-border)";
@@ -340,8 +354,8 @@ function updateMarkerPreview(url) {
   } else {
     markerPreviewBox.innerHTML =
       '<span class="preview-placeholder">Belum ada marker</span>';
-    const indicator = document.getElementById('marker-quality-indicator');
-    if (indicator) indicator.style.display = 'none';
+    const indicator = document.getElementById("marker-quality-indicator");
+    if (indicator) indicator.style.display = "none";
     currentMarkerImg = null;
     currentMarkerCorners = [];
   }
@@ -349,25 +363,26 @@ function updateMarkerPreview(url) {
 
 // Harris Corner Detector (Exact local feature point calculation)
 function detectHarrisCorners(imgElement) {
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+
   // Downscale image to a standard processing size (200px width) to ensure high performance (<20ms)
   const w = 200;
-  const h = Math.round((imgElement.naturalHeight / imgElement.naturalWidth) * w) || 200;
+  const h =
+    Math.round((imgElement.naturalHeight / imgElement.naturalWidth) * w) || 200;
   canvas.width = w;
   canvas.height = h;
   ctx.drawImage(imgElement, 0, 0, w, h);
-  
+
   const imgData = ctx.getImageData(0, 0, w, h);
   const data = imgData.data;
-  
+
   // 1. Grayscale Conversion
   const gray = new Float32Array(w * h);
   for (let i = 0; i < data.length; i += 4) {
-    gray[i/4] = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+    gray[i / 4] = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
   }
-  
+
   // 2. Compute X and Y Gradients (using Sobel operators)
   const Ix = new Float32Array(w * h);
   const Iy = new Float32Array(w * h);
@@ -375,19 +390,19 @@ function detectHarrisCorners(imgElement) {
     for (let x = 1; x < w - 1; x++) {
       const idx = y * w + x;
       // Sobel X kernel
-      Ix[idx] = 
+      Ix[idx] =
         (gray[idx - w + 1] - gray[idx - w - 1]) * 1 +
-        (gray[idx + 1]     - gray[idx - 1])     * 2 +
+        (gray[idx + 1] - gray[idx - 1]) * 2 +
         (gray[idx + w + 1] - gray[idx + w - 1]) * 1;
-      
+
       // Sobel Y kernel
-      Iy[idx] = 
+      Iy[idx] =
         (gray[idx + w - 1] - gray[idx - w - 1]) * 1 +
-        (gray[idx + w]     - gray[idx - w])     * 2 +
+        (gray[idx + w] - gray[idx - w]) * 2 +
         (gray[idx + w + 1] - gray[idx - w + 1]) * 1;
     }
   }
-  
+
   // 3. Compute Ix2, Iy2, Ixy
   const Ix2 = new Float32Array(w * h);
   const Iy2 = new Float32Array(w * h);
@@ -397,7 +412,7 @@ function detectHarrisCorners(imgElement) {
     Iy2[i] = Iy[i] * Iy[i];
     Ixy[i] = Ix[i] * Iy[i];
   }
-  
+
   // 4. Sum gradients locally (Gaussian box approximation in 5x5 window)
   const sIx2 = new Float32Array(w * h);
   const sIy2 = new Float32Array(w * h);
@@ -406,7 +421,9 @@ function detectHarrisCorners(imgElement) {
   for (let y = r; y < h - r; y++) {
     for (let x = r; x < w - r; x++) {
       const idx = y * w + x;
-      let sumIx2 = 0, sumIy2 = 0, sumIxy = 0;
+      let sumIx2 = 0,
+        sumIy2 = 0,
+        sumIxy = 0;
       for (let dy = -r; dy <= r; dy++) {
         for (let dx = -r; dx <= r; dx++) {
           const nidx = (y + dy) * w + (x + dx);
@@ -420,7 +437,7 @@ function detectHarrisCorners(imgElement) {
       sIxy[idx] = sumIxy;
     }
   }
-  
+
   // 5. Compute Harris Corner Response R
   const R = new Float32Array(w * h);
   const k = 0.04; // Harris constant
@@ -431,7 +448,7 @@ function detectHarrisCorners(imgElement) {
       const A = sIx2[idx];
       const B = sIy2[idx];
       const C = sIxy[idx];
-      
+
       const det = A * B - C * C;
       const trace = A + B;
       const response = det - k * trace * trace;
@@ -441,7 +458,7 @@ function detectHarrisCorners(imgElement) {
       }
     }
   }
-  
+
   // 6. Non-Maximum Suppression (7x7 local area) & thresholding
   const corners = [];
   const threshold = maxR * 0.06; // Ignore lower responses
@@ -450,7 +467,7 @@ function detectHarrisCorners(imgElement) {
       const idx = y * w + x;
       const val = R[idx];
       if (val < threshold) continue;
-      
+
       let isMax = true;
       for (let dy = -3; dy <= 3; dy++) {
         for (let dx = -3; dx <= 3; dx++) {
@@ -461,25 +478,25 @@ function detectHarrisCorners(imgElement) {
         }
         if (!isMax) break;
       }
-      
+
       if (isMax) {
         corners.push({ x: x / w, y: y / h }); // Store normalized coordinates
       }
     }
   }
-  
+
   return corners;
 }
 
 // Canvas Drawer - overlays yellow crosshairs (+) on top of the image
 function drawPreviewWithFeatures(imgElement, corners, showFeatures = true) {
-  const canvas = document.getElementById('marker-preview-canvas');
+  const canvas = document.getElementById("marker-preview-canvas");
   if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  
+  const ctx = canvas.getContext("2d");
+
   const containerWidth = markerPreviewBox.clientWidth || 250;
   const containerHeight = markerPreviewBox.clientHeight || 100;
-  
+
   const imgRatio = imgElement.naturalWidth / imgElement.naturalHeight;
   let drawW = containerWidth;
   let drawH = containerWidth / imgRatio;
@@ -487,27 +504,27 @@ function drawPreviewWithFeatures(imgElement, corners, showFeatures = true) {
     drawH = containerHeight;
     drawW = containerHeight * imgRatio;
   }
-  
+
   // High DPI rendering scale
   canvas.width = drawW * 2;
   canvas.height = drawH * 2;
-  canvas.style.width = drawW + 'px';
-  canvas.style.height = drawH + 'px';
-  
+  canvas.style.width = drawW + "px";
+  canvas.style.height = drawH + "px";
+
   ctx.scale(2, 2);
-  
+
   // Render the grayscale version to look exactly like the Vuforia developer portal
   ctx.drawImage(imgElement, 0, 0, drawW, drawH);
-  
+
   if (showFeatures && corners && corners.length > 0) {
-    ctx.strokeStyle = '#fbbf24'; // Golden Yellow
+    ctx.strokeStyle = "#fbbf24"; // Golden Yellow
     ctx.lineWidth = 1.2;
     const size = 3; // Crosshair radius
-    
-    corners.forEach(c => {
+
+    corners.forEach((c) => {
       const px = c.x * drawW;
       const py = c.y * drawH;
-      
+
       ctx.beginPath();
       // Horizontal bar
       ctx.moveTo(px - size, py);
@@ -523,24 +540,24 @@ function drawPreviewWithFeatures(imgElement, corners, showFeatures = true) {
 // AR Marker Quality Analyzer (Canvas Edge, Contrast, and Texture Entropy Detection)
 // AR Marker Quality Analyzer (Multi-zone Distribution, Global Contrast, and Repetitive Pattern Checks)
 function analyzeMarkerQuality(imgElement, corners) {
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+
   canvas.width = 128;
   canvas.height = 128;
   ctx.drawImage(imgElement, 0, 0, 128, 128);
-  
+
   const imgData = ctx.getImageData(0, 0, 128, 128);
   const data = imgData.data;
-  
+
   // 1. Convert to Grayscale & Calculate Contrast (Standard Deviation) & Midtone Ratio (Texture Depth)
   let sum = 0;
   const grayscale = new Uint8Array(128 * 128);
   let midTones = 0;
-  
+
   for (let i = 0; i < data.length; i += 4) {
-    const gray = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
-    grayscale[i/4] = gray;
+    const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+    grayscale[i / 4] = gray;
     sum += gray;
     if (gray >= 50 && gray <= 205) {
       midTones++;
@@ -548,28 +565,28 @@ function analyzeMarkerQuality(imgElement, corners) {
   }
   const mean = sum / (128 * 128);
   const midToneRatio = midTones / (128 * 128);
-  
+
   let varianceSum = 0;
   for (let i = 0; i < grayscale.length; i++) {
     varianceSum += Math.pow(grayscale[i] - mean, 2);
   }
   const stdDev = Math.sqrt(varianceSum / (128 * 128));
-  
+
   // 2. Calculate Feature Spatial Distribution (4x4 Grid, 16 Zones check)
   const zones = new Array(16).fill(0);
-  corners.forEach(c => {
+  corners.forEach((c) => {
     const zx = Math.min(Math.floor(c.x * 4), 3);
     const zy = Math.min(Math.floor(c.y * 4), 3);
     zones[zy * 4 + zx]++;
   });
-  const activeZones = zones.filter(count => count > 0).length; // Number of zones containing features (0 to 16)
+  const activeZones = zones.filter((count) => count > 0).length; // Number of zones containing features (0 to 16)
   const distributionRatio = activeZones / 16;
-  
+
   // 3. Multi-Criteria Strict Scoring Engine
   const numFeatures = corners.length;
   let stars = 5;
   const reasons = [];
-  
+
   // A. Evaluate Feature Count
   if (numFeatures < 6) {
     stars = 1;
@@ -582,7 +599,7 @@ function analyzeMarkerQuality(imgElement, corners) {
   } else if (numFeatures < 60) {
     stars = Math.min(stars, 4);
   }
-  
+
   // B. Evaluate Global Contrast
   if (stdDev < 15) {
     stars = 1;
@@ -591,39 +608,51 @@ function analyzeMarkerQuality(imgElement, corners) {
     stars = Math.min(stars, 2);
     reasons.push("Kontras gambar agak redup.");
   }
-  
+
   // C. Evaluate Spatial Distribution (Clustering Penalty)
   if (numFeatures >= 6) {
-    if (distributionRatio < 0.25) { // Clustered in less than 4 grids
+    if (distributionRatio < 0.25) {
+      // Clustered in less than 4 grids
       stars = Math.min(stars, 1);
-      reasons.push("Fitur menumpuk ekstrem di satu area sempit saja (Clustered).");
-    } else if (distributionRatio < 0.45) { // Clustered in less than 7 grids
+      reasons.push(
+        "Fitur menumpuk ekstrem di satu area sempit saja (Clustered).",
+      );
+    } else if (distributionRatio < 0.45) {
+      // Clustered in less than 7 grids
       stars = Math.min(stars, 2);
-      reasons.push("Sebaran fitur tidak merata, hanya berkumpul di bagian tertentu gambar.");
-    } else if (distributionRatio < 0.60) {
+      reasons.push(
+        "Sebaran fitur tidak merata, hanya berkumpul di bagian tertentu gambar.",
+      );
+    } else if (distributionRatio < 0.6) {
       stars = Math.min(stars, 3);
-      reasons.push("Sebaran detail cukup baik, namun ada beberapa sudut kosong yang rawan tidak terdeteksi.");
+      reasons.push(
+        "Sebaran detail cukup baik, namun ada beberapa sudut kosong yang rawan tidak terdeteksi.",
+      );
     }
   }
-  
+
   // D. Evaluate Repetitive Geometric/Line-Art Patterns (The wireframe/checkerboard killer)
-  const isHighContrastLineArt = (stdDev > 45 && midToneRatio < 0.14);
+  const isHighContrastLineArt = stdDev > 45 && midToneRatio < 0.14;
   if (isHighContrastLineArt) {
     if (numFeatures > 32) {
       // High corner count + extremely low gradient variety = Symmetrical Repeating Wireframe Grid
       stars = 1;
-      reasons.push("Peringatan Kritis: Pola geometris berulang / jaring segitiga wireframe (Repetitive Pattern). Meskipun memiliki banyak sudut tajam, pola repetitif yang identik membuat sensor AR bingung menentukan disorientasi.");
+      reasons.push(
+        "Peringatan Kritis: Pola geometris berulang / jaring segitiga wireframe (Repetitive Pattern). Meskipun memiliki banyak sudut tajam, pola repetitif yang identik membuat sensor AR bingung menentukan disorientasi.",
+      );
     } else {
       // Low features + zero texture = Flat stencil / logo
       stars = Math.min(stars, 2);
-      reasons.push("Pola grafis vektor/garis sederhana (Line-Art). Gunakan foto organik dengan tekstur alami.");
+      reasons.push(
+        "Pola grafis vektor/garis sederhana (Line-Art). Gunakan foto organik dengan tekstur alami.",
+      );
     }
   }
-  
+
   // 4. Construct response message and colors
   let text = "";
   let color = "var(--pastel-mint)";
-  
+
   if (stars === 5) {
     text = `Kontras & sebaran tekstur sempurna! Terdeteksi ${numFeatures} titik sudut unik tersebar merata di 16 sektor gambar. Vuforia menjamin pelacakan yang sangat stabil.`;
     color = "var(--pastel-mint)";
@@ -638,16 +667,16 @@ function analyzeMarkerQuality(imgElement, corners) {
       text = `Kualitas detail sedang. Ditemukan ${numFeatures} fitur, namun disarankan untuk meningkatkan variasi warna/tekstur gambar.`;
     }
   }
-  
+
   return { stars, text, color };
 }
 
 function evaluateMarkerQuality(imgElement) {
-  const indicator = document.getElementById('marker-quality-indicator');
+  const indicator = document.getElementById("marker-quality-indicator");
   if (!indicator) return;
-  
+
   try {
-    indicator.style.display = 'flex';
+    indicator.style.display = "flex";
     indicator.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 4px 0;">
         <div class="loading-spinner" style="width: 14px; height: 14px; border-width: 2px;"></div>
@@ -658,40 +687,44 @@ function evaluateMarkerQuality(imgElement) {
     setTimeout(() => {
       // 1. Detect Harris Corners
       const corners = detectHarrisCorners(imgElement);
-      
+
       // Store in global scope for rendering
       currentMarkerImg = imgElement;
       currentMarkerCorners = corners;
-      
+
       // 2. Draw features onto the canvas preview
       drawPreviewWithFeatures(imgElement, corners, showMarkerFeatures);
-      
+
       // 3. Setup click listener for the interactive toggle switch
-      const toggleBtn = document.getElementById('marker-feature-toggle');
+      const toggleBtn = document.getElementById("marker-feature-toggle");
       if (toggleBtn) {
         // Clear previous event listener
         toggleBtn.onclick = null;
-        toggleBtn.onclick = function(event) {
+        toggleBtn.onclick = function (event) {
           event.stopPropagation();
           showMarkerFeatures = !showMarkerFeatures;
-          const dot = toggleBtn.querySelector('div');
-          const text = toggleBtn.querySelector('span');
+          const dot = toggleBtn.querySelector("div");
+          const text = toggleBtn.querySelector("span");
           if (showMarkerFeatures) {
-            dot.style.background = '#fbbf24';
-            dot.style.boxShadow = '0 0 6px #fbbf24';
-            text.innerText = 'Features: ON';
+            dot.style.background = "#fbbf24";
+            dot.style.boxShadow = "0 0 6px #fbbf24";
+            text.innerText = "Features: ON";
           } else {
-            dot.style.background = 'rgba(255,255,255,0.2)';
-            dot.style.boxShadow = 'none';
-            text.innerText = 'Features: OFF';
+            dot.style.background = "rgba(255,255,255,0.2)";
+            dot.style.boxShadow = "none";
+            text.innerText = "Features: OFF";
           }
-          drawPreviewWithFeatures(currentMarkerImg, currentMarkerCorners, showMarkerFeatures);
+          drawPreviewWithFeatures(
+            currentMarkerImg,
+            currentMarkerCorners,
+            showMarkerFeatures,
+          );
         };
       }
-      
+
       // 4. Analyze overall score
       const evaluation = analyzeMarkerQuality(imgElement, corners);
-      
+
       let starHTML = "";
       for (let i = 1; i <= 5; i++) {
         if (i <= evaluation.stars) {
@@ -727,18 +760,18 @@ function evaluateMarkerQuality(imgElement) {
     }, 150);
   } catch (err) {
     console.error("Evaluation error:", err);
-    indicator.style.display = 'none';
+    indicator.style.display = "none";
   }
 }
 
 function triggerURLMarkerEvaluation(url) {
-  const indicator = document.getElementById('marker-quality-indicator');
+  const indicator = document.getElementById("marker-quality-indicator");
   if (!indicator || !url || url.trim() === "") {
-    if (indicator) indicator.style.display = 'none';
+    if (indicator) indicator.style.display = "none";
     return;
   }
-  
-  indicator.style.display = 'flex';
+
+  indicator.style.display = "flex";
   indicator.innerHTML = `
     <div style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 4px 0;">
       <div class="loading-spinner" style="width: 14px; height: 14px; border-width: 2px;"></div>
@@ -748,10 +781,10 @@ function triggerURLMarkerEvaluation(url) {
 
   const img = new Image();
   img.crossOrigin = "anonymous";
-  img.onload = function() {
+  img.onload = function () {
     evaluateMarkerQuality(img);
   };
-  img.onerror = function() {
+  img.onerror = function () {
     indicator.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
         <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-main); text-transform: uppercase;">Vuforia Tracking</span>
@@ -785,34 +818,37 @@ function update3DPreview(url) {
         </div>
       </model-viewer>
     `;
-    
+
     // Apply current transform values immediately after loading
     setTimeout(() => {
-      const mv = modelPreviewBox.querySelector('model-viewer');
+      const mv = modelPreviewBox.querySelector("model-viewer");
       if (mv) {
         const hideLoader = () => {
-          const loader = mv.querySelector('.model-loading-overlay');
-          if (loader) loader.classList.add('hide');
+          const loader = mv.querySelector(".model-loading-overlay");
+          if (loader) loader.classList.add("hide");
         };
 
         // Use multiple events to ensure it hides
-        mv.addEventListener('load', hideLoader);
-        mv.addEventListener('poster-dismissed', hideLoader);
-        
+        mv.addEventListener("load", hideLoader);
+        mv.addEventListener("poster-dismissed", hideLoader);
+
         // Fallback: if it's already loaded or takes too long
         if (mv.loaded) hideLoader();
         setTimeout(hideLoader, 15000); // 15s max for loader
-        
-        mv.addEventListener('error', (e) => {
+
+        mv.addEventListener("error", (e) => {
           hideLoader();
           console.error("Model Viewer Error:", e);
-          showToast("Gagal memuat model 3D. Pastikan format file benar (.glb)", "error");
+          showToast(
+            "Gagal memuat model 3D. Pastikan format file benar (.glb)",
+            "error",
+          );
         });
 
-        const scale = document.getElementById('f-model-scale').value || "1.0";
-        const rotY = document.getElementById('f-model-rot-y').value || "0";
-        mv.setAttribute('scale', `${scale} ${scale} ${scale}`);
-        mv.setAttribute('orientation', `0deg ${rotY}deg 0deg`);
+        const scale = document.getElementById("f-model-scale").value || "1.0";
+        const rotY = document.getElementById("f-model-rot-y").value || "0";
+        mv.setAttribute("scale", `${scale} ${scale} ${scale}`);
+        mv.setAttribute("orientation", `0deg ${rotY}deg 0deg`);
       }
     }, 100);
   } else {
@@ -821,8 +857,9 @@ function update3DPreview(url) {
   }
 }
 
-modelUrlInput?.addEventListener("input", (e) => update3DPreview(e.target.value));
-
+modelUrlInput?.addEventListener("input", (e) =>
+  update3DPreview(e.target.value),
+);
 
 // Handle Login / App Startup
 async function handleAuthState(session) {
@@ -830,27 +867,30 @@ async function handleAuthState(session) {
   try {
     if (session) {
       // Check 12-hour session limit
-      const loginTime = localStorage.getItem('login_timestamp');
+      const loginTime = localStorage.getItem("login_timestamp");
       if (loginTime) {
         const elapsed = Date.now() - parseInt(loginTime, 10);
         if (elapsed > 12 * 60 * 60 * 1000) {
-          localStorage.removeItem('login_timestamp');
-          localStorage.removeItem('activeSection');
+          localStorage.removeItem("login_timestamp");
+          localStorage.removeItem("activeSection");
           await supabase.auth.signOut();
-          showToast("Sesi Anda telah berakhir setelah 12 jam. Silakan login kembali.", "warning");
+          showToast(
+            "Sesi Anda telah berakhir setelah 12 jam. Silakan login kembali.",
+            "warning",
+          );
           setTimeout(() => window.location.reload(), 1500);
           return;
         }
       } else {
         // Set timestamp for fresh session
-        localStorage.setItem('login_timestamp', Date.now().toString());
+        localStorage.setItem("login_timestamp", Date.now().toString());
       }
 
       // If already initialized for this user, skip re-fetching data (prevents spinner on tab focus)
       if (isInitialized && currentUserId === session.user.id) {
         return;
       }
-      
+
       isInitialized = true;
       currentUserId = session.user.id;
 
@@ -869,43 +909,50 @@ async function handleAuthState(session) {
         .select("role")
         .eq("id", session.user.id)
         .maybeSingle();
-      
+
       if (profileError) {
         console.error("Profile fetch error:", profileError);
       }
 
       currentRole = profile?.role || "admin";
-      
+
       if (userRoleDisplay) {
         // Map roles to friendly display names
         const roleLabels = {
-          'superadmin': 'Superadmin',
-          'admin': 'Administrator',
-          'member': 'Member'
+          superadmin: "Superadmin",
+          admin: "Administrator",
+          member: "Member",
         };
-        userRoleDisplay.innerText = roleLabels[currentRole] || (currentRole.charAt(0).toUpperCase() + currentRole.slice(1));
+        userRoleDisplay.innerText =
+          roleLabels[currentRole] ||
+          currentRole.charAt(0).toUpperCase() + currentRole.slice(1);
       }
-      
-      document.body.classList.toggle("is-super-admin", currentRole === "superadmin");
-      
+
+      document.body.classList.toggle(
+        "is-super-admin",
+        currentRole === "superadmin",
+      );
+
       // Hide Add button and Action column for members (Read Only)
       if (btnAdd) {
-        btnAdd.style.display = (currentRole === "member") ? "none" : "flex";
+        btnAdd.style.display = currentRole === "member" ? "none" : "flex";
       }
-      const thTarget = document.getElementById('th-aksi-target');
+      const thTarget = document.getElementById("th-aksi-target");
       if (thTarget) {
-        thTarget.style.display = (currentRole === "member") ? "none" : "table-cell";
+        thTarget.style.display =
+          currentRole === "member" ? "none" : "table-cell";
       }
 
       // Restore last section or default to dashboard
-      const lastSection = localStorage.getItem('activeSection') || 'section-dashboard';
+      const lastSection =
+        localStorage.getItem("activeSection") || "section-dashboard";
       showSection(lastSection);
-      
+
       fetchData();
     } else {
       isInitialized = false;
       currentUserId = null;
-      localStorage.removeItem('login_timestamp'); // Clear timestamp on logout
+      localStorage.removeItem("login_timestamp"); // Clear timestamp on logout
       if (loginScreen) {
         loginScreen.style.display = "flex";
         loginScreen.classList.remove("init-hidden");
@@ -933,10 +980,10 @@ togglePasswordBtn?.addEventListener("click", () => {
   if (!passwordInput) return;
   const isPassword = passwordInput.getAttribute("type") === "password";
   passwordInput.setAttribute("type", isPassword ? "text" : "password");
-  
+
   const eyeClosedIcon = togglePasswordBtn.querySelector(".eye-closed");
   const eyeOpenIcon = togglePasswordBtn.querySelector(".eye-open");
-  
+
   if (isPassword) {
     eyeClosedIcon?.classList.add("hide");
     eyeOpenIcon?.classList.remove("hide");
@@ -960,12 +1007,12 @@ loginForm?.addEventListener("submit", async (e) => {
   // If not an email, try to find email by username
   if (!loginIdentifier.includes("@")) {
     let resolvedEmail = null;
-    
+
     // Attempt 1: Call RPC function get_email_by_username
     try {
       const { data, error: rpcError } = await supabase.rpc(
         "get_email_by_username",
-        { p_username: loginIdentifier }
+        { p_username: loginIdentifier },
       );
       if (!rpcError && data) {
         resolvedEmail = data;
@@ -975,7 +1022,7 @@ loginForm?.addEventListener("submit", async (e) => {
     } catch (e) {
       console.warn("RPC username lookup exception:", e);
     }
-    
+
     // Attempt 2: Fallback to direct query of profiles (works if RLS is relaxed or allows selection)
     if (!resolvedEmail) {
       try {
@@ -984,7 +1031,7 @@ loginForm?.addEventListener("submit", async (e) => {
           .select("email")
           .eq("username", loginIdentifier)
           .maybeSingle();
-        
+
         if (!profileError && profile && profile.email) {
           resolvedEmail = profile.email;
         } else if (profileError) {
@@ -994,9 +1041,9 @@ loginForm?.addEventListener("submit", async (e) => {
         console.error("Direct query profiles exception:", e);
       }
     }
-    
+
     if (!resolvedEmail) {
-      showToast("Username tidak ditemukan atau akses database dibatasi (RLS). Silakan buat RPC get_email_by_username di Supabase.", "error");
+      showToast("Invalid login credentials", "error");
       btn.innerText = originalText;
       btn.disabled = false;
       return;
@@ -1028,7 +1075,7 @@ btnConfirmLogout?.addEventListener("click", async () => {
 
   try {
     await supabase.auth.signOut();
-    localStorage.removeItem('activeSection');
+    localStorage.removeItem("activeSection");
     if (modalConfirm) modalConfirm.classList.remove("active");
     window.location.reload();
   } catch (err) {
@@ -1048,17 +1095,19 @@ function renderTable(data) {
       .map(
         (item) => `
       <tr>
-        <td><img src="${item.slide_urls ? item.slide_urls.split(",")[0] : (item.marker_url || "")}" class="media-thumbnail" onerror="this.src=''"></td>
+        <td><img src="${item.slide_urls ? item.slide_urls.split(",")[0] : item.marker_url || ""}" class="media-thumbnail" onerror="this.src=''"></td>
         <td style="font-family: monospace; color: var(--primary)">${item.id}</td>
         <td style="font-weight: 600">${item.nama}</td>
-        <td><span class="badge badge-${item.type}">${item.type.replace(/_/g, ' ')}</span></td>
+        <td><span class="badge badge-${item.type}">${item.type.replace(/_/g, " ")}</span></td>
         <td style="font-size: 0.85rem; color: var(--text-dim);">
           ${item.start_date ? `<span>${item.start_date}</span>` : ""}
           ${item.start_date && item.end_date ? " - " : ""}
-          ${item.end_date ? `<span>${item.end_date}</span>` : (!item.start_date ? "-" : "")}
+          ${item.end_date ? `<span>${item.end_date}</span>` : !item.start_date ? "-" : ""}
         </td>
         <td>${item.harga ? formatRupiah(item.harga.toString()) : "-"}</td>
-        ${currentRole !== 'member' ? `
+        ${
+          currentRole !== "member"
+            ? `
         <td>
           <div style="display: flex; gap: 8px;">
             <button class="btn-edit btn btn-ghost" data-id="${item.id}" title="Edit">
@@ -1069,7 +1118,9 @@ function renderTable(data) {
             </button>
           </div>
         </td>
-        ` : ''}
+        `
+            : ""
+        }
       </tr>
     `,
       )
@@ -1089,7 +1140,10 @@ function renderTable(data) {
 async function fetchData() {
   try {
     if (tableBody) {
-      tableBody.innerHTML = Array(4).fill(0).map(() => `
+      tableBody.innerHTML = Array(4)
+        .fill(0)
+        .map(
+          () => `
         <tr class="skeleton-row">
           <td style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 1rem;"><div class="skeleton-box" style="width: 48px; height: 48px; border-radius: 10px;"></div></td>
           <td style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 1rem;"><div class="skeleton-box" style="width: 120px;"></div></td>
@@ -1097,9 +1151,11 @@ async function fetchData() {
           <td style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 1rem;"><div class="skeleton-box" style="width: 80px; border-radius: 100px;"></div></td>
           <td style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 1rem;"><div class="skeleton-box" style="width: 140px;"></div></td>
           <td style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 1rem;"><div class="skeleton-box" style="width: 100px;"></div></td>
-          ${currentRole !== 'member' ? '<td style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 1rem;"><div class="skeleton-box" style="width: 60px;"></div></td>' : ''}
+          ${currentRole !== "member" ? '<td style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 1rem;"><div class="skeleton-box" style="width: 60px;"></div></td>' : ""}
         </tr>
-      `).join('');
+      `,
+        )
+        .join("");
     }
 
     const { data, error } = await supabase
@@ -1121,58 +1177,69 @@ async function fetchData() {
 // --- ANALYTICS ---
 let scansChart = null;
 
-window.updateScanTimeframe = function(timeframe, btnElement) {
+window.updateScanTimeframe = function (timeframe, btnElement) {
   // Update button active state
-  document.querySelectorAll('.time-filter-btn').forEach(btn => btn.classList.remove('active'));
-  btnElement.classList.add('active');
+  document
+    .querySelectorAll(".time-filter-btn")
+    .forEach((btn) => btn.classList.remove("active"));
+  btnElement.classList.add("active");
 
   // Update Title and Subtitle
-  const title = document.getElementById('scan-activity-title');
-  const desc = document.getElementById('scan-activity-desc');
-  
+  const title = document.getElementById("scan-activity-title");
+  const desc = document.getElementById("scan-activity-desc");
+
   if (title && desc) {
-    if (timeframe === 'weekly') {
-      title.innerText = 'Weekly Scan Activity';
-      desc.innerText = 'Tren interaksi pengunjung dalam 7 hari terakhir.';
-    } else if (timeframe === 'monthly') {
-      title.innerText = 'Monthly Scan Activity';
-      desc.innerText = 'Tren interaksi pengunjung selama 30 hari terakhir.';
-    } else if (timeframe === 'alltime') {
-      title.innerText = 'All-Time Scan Activity';
-      desc.innerText = 'Akumulasi seluruh interaksi pengunjung dari awal.';
+    if (timeframe === "weekly") {
+      title.innerText = "Weekly Scan Activity";
+      desc.innerText = "Tren interaksi pengunjung dalam 7 hari terakhir.";
+    } else if (timeframe === "monthly") {
+      title.innerText = "Monthly Scan Activity";
+      desc.innerText = "Tren interaksi pengunjung selama 30 hari terakhir.";
+    } else if (timeframe === "alltime") {
+      title.innerText = "All-Time Scan Activity";
+      desc.innerText = "Akumulasi seluruh interaksi pengunjung dari awal.";
     }
   }
-  
+
   // Trigger a re-fetch of chart data with the new timeframe
   fetchAnalytics(timeframe);
 };
 
-async function fetchAnalytics(timeframe = 'weekly') {
+async function fetchAnalytics(timeframe = "weekly") {
   try {
     // Show loading state for popular locations table
-    const popBody = document.getElementById('popular-locations-body');
-    if (popBody) popBody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem;"><div class="loading-spinner" style="width: 20px; height: 20px;"></div></td></tr>';
+    const popBody = document.getElementById("popular-locations-body");
+    if (popBody)
+      popBody.innerHTML =
+        '<tr><td colspan="4" style="text-align: center; padding: 2rem;"><div class="loading-spinner" style="width: 20px; height: 20px;"></div></td></tr>';
 
     // 1. Fetch Summary Stats
-    const { count: totalScans } = await supabase.from('scans').select('*', { count: 'exact', head: true });
-    const { count: activeLocations } = await supabase.from('ar_targets').select('*', { count: 'exact', head: true });
-    const { count: totalAdmins } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+    const { count: totalScans } = await supabase
+      .from("scans")
+      .select("*", { count: "exact", head: true });
+    const { count: activeLocations } = await supabase
+      .from("ar_targets")
+      .select("*", { count: "exact", head: true });
+    const { count: totalAdmins } = await supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true });
 
-    document.getElementById('stat-total-scans').innerText = totalScans || 0;
-    document.getElementById('stat-active-locations').innerText = activeLocations || 0;
-    document.getElementById('stat-total-admins').innerText = totalAdmins || 0;
+    document.getElementById("stat-total-scans").innerText = totalScans || 0;
+    document.getElementById("stat-active-locations").innerText =
+      activeLocations || 0;
+    document.getElementById("stat-total-admins").innerText = totalAdmins || 0;
 
     // 2. Fetch Chart Data Based on Timeframe
     let startDate = new Date();
     startDate.setHours(0, 0, 0, 0);
-    let query = supabase.from('scans').select('scanned_at');
-    
-    if (timeframe === 'weekly') {
+    let query = supabase.from("scans").select("scanned_at");
+
+    if (timeframe === "weekly") {
       startDate.setDate(startDate.getDate() - 6);
-      query = query.gte('scanned_at', startDate.toISOString());
-    } else if (timeframe === 'monthly') {
+      query = query.gte("scanned_at", startDate.toISOString());
+    } else if (timeframe === "monthly") {
       startDate.setDate(startDate.getDate() - 29); // 30 days including today
-      query = query.gte('scanned_at', startDate.toISOString());
+      query = query.gte("scanned_at", startDate.toISOString());
     }
 
     const { data: scansData, error: scansError } = await query;
@@ -1181,45 +1248,66 @@ async function fetchAnalytics(timeframe = 'weekly') {
     let chartData = {};
     let labels = [];
 
-    if (timeframe === 'weekly') {
+    if (timeframe === "weekly") {
       for (let i = 0; i < 7; i++) {
         const d = new Date(startDate);
         d.setDate(d.getDate() + i);
-        const label = d.toLocaleDateString('id-ID', { weekday: 'short' });
+        const label = d.toLocaleDateString("id-ID", { weekday: "short" });
         labels.push(label);
         chartData[label] = 0;
       }
-      scansData.forEach(s => {
-        const label = new Date(s.scanned_at).toLocaleDateString('id-ID', { weekday: 'short' });
+      scansData.forEach((s) => {
+        const label = new Date(s.scanned_at).toLocaleDateString("id-ID", {
+          weekday: "short",
+        });
         if (chartData[label] !== undefined) chartData[label]++;
       });
-    } else if (timeframe === 'monthly') {
+    } else if (timeframe === "monthly") {
       for (let i = 0; i < 30; i++) {
         const d = new Date(startDate);
         d.setDate(d.getDate() + i);
-        const label = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        const label = d.toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "short",
+        });
         labels.push(label);
         chartData[label] = 0;
       }
-      scansData.forEach(s => {
-        const label = new Date(s.scanned_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+      scansData.forEach((s) => {
+        const label = new Date(s.scanned_at).toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "short",
+        });
         if (chartData[label] !== undefined) chartData[label]++;
       });
-    } else if (timeframe === 'alltime') {
+    } else if (timeframe === "alltime") {
       const monthlyMap = {};
-      scansData.forEach(s => {
+      scansData.forEach((s) => {
         const d = new Date(s.scanned_at);
         // Format YYYY-MM for correct chronological sorting
-        const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
         if (!monthlyMap[monthKey]) monthlyMap[monthKey] = 0;
         monthlyMap[monthKey]++;
       });
-      
+
       const sortedKeys = Object.keys(monthlyMap).sort();
-      const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
-      
-      sortedKeys.forEach(k => {
-        const [year, month] = k.split('-');
+      const monthNames = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "Mei",
+        "Jun",
+        "Jul",
+        "Ags",
+        "Sep",
+        "Okt",
+        "Nov",
+        "Des",
+      ];
+
+      sortedKeys.forEach((k) => {
+        const [year, month] = k.split("-");
         const labelName = `${monthNames[parseInt(month) - 1]} ${year}`;
         labels.push(labelName);
         chartData[labelName] = monthlyMap[k];
@@ -1234,7 +1322,10 @@ async function fetchAnalytics(timeframe = 'weekly') {
       }
     }
 
-    renderScansChart(labels, labels.map(l => chartData[l]));
+    renderScansChart(
+      labels,
+      labels.map((l) => chartData[l]),
+    );
 
     // 3. Category Distribution Chart
     if (targetData.length === 0) {
@@ -1243,33 +1334,36 @@ async function fetchAnalytics(timeframe = 'weekly') {
     }
 
     const categories = {
-      'Wisata': 0,
-      'Kuliner': 0,
-      'Event': 0,
-      'Unit Bisnis': 0,
-      'Lainnya': 0
+      Wisata: 0,
+      Kuliner: 0,
+      Event: 0,
+      "Unit Bisnis": 0,
+      Lainnya: 0,
     };
-    
-    targetData.forEach(w => {
-      let rawCat = (w.type || 'lainnya').toLowerCase().trim().replace(/_/g, ' ');
-      
-      if (rawCat === 'wisata') {
-        categories['Wisata'] += 1;
-      } else if (rawCat === 'kuliner') {
-        categories['Kuliner'] += 1;
-      } else if (rawCat === 'event') {
-        categories['Event'] += 1;
-      } else if (rawCat === 'unit bisnis') {
-        categories['Unit Bisnis'] += 1;
+
+    targetData.forEach((w) => {
+      let rawCat = (w.type || "lainnya")
+        .toLowerCase()
+        .trim()
+        .replace(/_/g, " ");
+
+      if (rawCat === "wisata") {
+        categories["Wisata"] += 1;
+      } else if (rawCat === "kuliner") {
+        categories["Kuliner"] += 1;
+      } else if (rawCat === "event") {
+        categories["Event"] += 1;
+      } else if (rawCat === "unit bisnis") {
+        categories["Unit Bisnis"] += 1;
       } else {
-        categories['Lainnya'] += 1;
+        categories["Lainnya"] += 1;
       }
     });
 
     const filteredLabels = [];
     const filteredData = [];
-    
-    Object.keys(categories).forEach(key => {
+
+    Object.keys(categories).forEach((key) => {
       if (categories[key] > 0) {
         filteredLabels.push(key);
         filteredData.push(categories[key]);
@@ -1280,199 +1374,216 @@ async function fetchAnalytics(timeframe = 'weekly') {
 
     // 4. Fetch Popular Locations
     const { data: popData, error: popError } = await supabase
-      .from('scans')
-      .select('target_id');
-    
+      .from("scans")
+      .select("target_id");
+
     if (popError) throw popError;
 
     const counts = {};
-    popData.forEach(p => {
+    popData.forEach((p) => {
       counts[p.target_id] = (counts[p.target_id] || 0) + 1;
     });
 
-    const popularList = targetData.map(w => ({
-      ...w,
-      scan_count: counts[w.id] || 0
-    })).sort((a, b) => b.scan_count - a.scan_count);
+    const popularList = targetData
+      .map((w) => ({
+        ...w,
+        scan_count: counts[w.id] || 0,
+      }))
+      .sort((a, b) => b.scan_count - a.scan_count);
 
     renderPopularLocations(popularList);
-
   } catch (err) {
     console.error("Analytics Error:", err);
-    showToast("Terjadi kendala saat mengambil data analitik: " + err.message, "error");
+    showToast(
+      "Terjadi kendala saat mengambil data analitik: " + err.message,
+      "error",
+    );
   }
 }
 
 let categoryChart = null;
 function renderCategoryChart(labels, data) {
-  const ctx = document.getElementById('category-chart')?.getContext('2d');
+  const ctx = document.getElementById("category-chart")?.getContext("2d");
   if (!ctx) return;
   if (categoryChart) categoryChart.destroy();
 
   const total = data.reduce((a, b) => a + b, 0);
 
   const centerTextPlugin = {
-    id: 'centerText',
-    beforeDraw: function(chart) {
+    id: "centerText",
+    beforeDraw: function (chart) {
       const ctx = chart.ctx;
       const chartArea = chart.chartArea;
       if (!chartArea) return;
-      
+
       const centerX = (chartArea.left + chartArea.right) / 2;
       const centerY = (chartArea.top + chartArea.bottom) / 2;
-      
+
       ctx.restore();
-      
+
       // Calculate responsive font size based on chartArea height
       const chartHeight = chartArea.bottom - chartArea.top;
       const fontSize = (chartHeight / 120).toFixed(2);
-      
+
       // Setup horizontal alignment to center
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      
+
       // Render Total Number
       ctx.font = "bold " + fontSize + "em Outfit, sans-serif";
       ctx.fillStyle = "#f3f4f6";
       const text = total.toString();
       const textY = centerY - 6; // Move slightly up to accommodate the label below
       ctx.fillText(text, centerX, textY);
-      
+
       // Render "Total" Label
       ctx.font = (fontSize / 2.3).toFixed(2) + "em Outfit, sans-serif";
       ctx.fillStyle = "#8e939e";
       const label = "Total";
       const labelY = centerY + 18; // Move down below the number
       ctx.fillText(label, centerX, labelY);
-      
+
       ctx.save();
-    }
+    },
   };
 
   categoryChart = new Chart(ctx, {
-    type: 'doughnut',
+    type: "doughnut",
     data: {
       labels: labels,
-      datasets: [{
-        data: data,
-        backgroundColor: [
-          '#bbf7d0', '#e9d5ff', '#fed7aa', '#bfdbfe', '#fecaca', '#d4fc34'
-        ],
-        borderWidth: 0,
-        hoverOffset: 15
-      }]
+      datasets: [
+        {
+          data: data,
+          backgroundColor: [
+            "#bbf7d0",
+            "#e9d5ff",
+            "#fed7aa",
+            "#bfdbfe",
+            "#fecaca",
+            "#d4fc34",
+          ],
+          borderWidth: 0,
+          hoverOffset: 15,
+        },
+      ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      cutout: '75%',
+      cutout: "75%",
       plugins: {
         legend: {
-          position: 'bottom',
+          position: "bottom",
           labels: {
-            color: '#8e939e',
+            color: "#8e939e",
             padding: 20,
             usePointStyle: true,
-            font: { size: 11 }
-          }
+            font: { size: 11 },
+          },
         },
         tooltip: {
-          backgroundColor: '#141519',
+          backgroundColor: "#141519",
           padding: 12,
           cornerRadius: 8,
-          displayColors: true
-        }
-      }
+          displayColors: true,
+        },
+      },
     },
-    plugins: [centerTextPlugin]
+    plugins: [centerTextPlugin],
   });
 }
 
 function renderScansChart(labels, data) {
-  const ctx = document.getElementById('scans-chart')?.getContext('2d');
+  const ctx = document.getElementById("scans-chart")?.getContext("2d");
   if (!ctx) return;
 
   if (scansChart) scansChart.destroy();
 
   // Create Gradient
   const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-  gradient.addColorStop(0, 'rgba(191, 219, 254, 0.4)'); // Pastel Blue
-  gradient.addColorStop(1, 'rgba(191, 219, 254, 0)');
+  gradient.addColorStop(0, "rgba(191, 219, 254, 0.4)"); // Pastel Blue
+  gradient.addColorStop(1, "rgba(191, 219, 254, 0)");
 
   scansChart = new Chart(ctx, {
-    type: 'line',
+    type: "line",
     data: {
       labels: labels,
-      datasets: [{
-        label: 'Jumlah Scan',
-        data: data,
-        borderColor: '#bfdbfe', // Pastel Blue
-        backgroundColor: gradient,
-        borderWidth: 4,
-        tension: 0.4,
-        fill: true,
-        pointBackgroundColor: '#bbf7d0', // Pastel Mint
-        pointBorderColor: '#141519',
-        pointBorderWidth: 2,
-        pointRadius: 0,
-        pointHoverRadius: 8,
-        pointHoverBackgroundColor: '#bbf7d0',
-        pointHoverBorderColor: '#141519',
-        pointHoverBorderWidth: 3
-      }]
+      datasets: [
+        {
+          label: "Jumlah Scan",
+          data: data,
+          borderColor: "#bfdbfe", // Pastel Blue
+          backgroundColor: gradient,
+          borderWidth: 4,
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: "#bbf7d0", // Pastel Mint
+          pointBorderColor: "#141519",
+          pointBorderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 8,
+          pointHoverBackgroundColor: "#bbf7d0",
+          pointHoverBorderColor: "#141519",
+          pointHoverBorderWidth: 3,
+        },
+      ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       interaction: {
         intersect: false,
-        mode: 'index'
+        mode: "index",
       },
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#141519',
-          titleFont: { size: 13, weight: 'bold' },
+          backgroundColor: "#141519",
+          titleFont: { size: 13, weight: "bold" },
           padding: 14,
           cornerRadius: 10,
-          borderColor: 'rgba(255,255,255,0.05)',
+          borderColor: "rgba(255,255,255,0.05)",
           borderWidth: 1,
           displayColors: false,
           callbacks: {
-            label: (context) => `📈 ${context.parsed.y} Scans`
-          }
-        }
+            label: (context) => `📈 ${context.parsed.y} Scans`,
+          },
+        },
       },
       scales: {
         y: {
           beginAtZero: true,
-          grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
-          ticks: { color: '#8e939e', font: { size: 11 }, stepSize: 1 }
+          grid: { color: "rgba(255,255,255,0.03)", drawBorder: false },
+          ticks: { color: "#8e939e", font: { size: 11 }, stepSize: 1 },
         },
         x: {
           grid: { display: false },
-          ticks: { color: '#8e939e', font: { size: 11 } }
-        }
-      }
-    }
+          ticks: { color: "#8e939e", font: { size: 11 } },
+        },
+      },
+    },
   });
 }
 
 function renderPopularLocations(data) {
-  const tbody = document.getElementById('popular-locations-body');
+  const tbody = document.getElementById("popular-locations-body");
   if (!tbody) return;
 
-  if (!data || data.length === 0 || data.every(d => d.scan_count === 0)) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 3rem; color: var(--text-dim);">Belum ada data scan yang tercatat.</td></tr>';
+  if (!data || data.length === 0 || data.every((d) => d.scan_count === 0)) {
+    tbody.innerHTML =
+      '<tr><td colspan="4" style="text-align: center; padding: 3rem; color: var(--text-dim);">Belum ada data scan yang tercatat.</td></tr>';
     return;
   }
 
-  const maxScan = Math.max(...data.map(d => d.scan_count), 1);
+  const maxScan = Math.max(...data.map((d) => d.scan_count), 1);
 
-  tbody.innerHTML = data.slice(0, 5).map(item => `
+  tbody.innerHTML = data
+    .slice(0, 5)
+    .map(
+      (item) => `
     <tr>
       <td style="font-weight: 600; color: #fff;">${item.nama}</td>
-      <td><span class="badge badge-${item.type}">${item.type.replace(/_/g, ' ')}</span></td>
+      <td><span class="badge badge-${item.type}">${item.type.replace(/_/g, " ")}</span></td>
       <td style="font-weight: 700; color: var(--text-main); font-size: 1.125rem;">${item.scan_count}</td>
       <td>
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -1485,7 +1596,9 @@ function renderPopularLocations(data) {
         </div>
       </td>
     </tr>
-  `).join('');
+  `,
+    )
+    .join("");
 }
 
 searchInput?.addEventListener("input", (e) => {
@@ -1506,22 +1619,36 @@ form?.addEventListener("submit", async (e) => {
   const formData = {
     id: document.getElementById("f-id").value,
     nama: document.getElementById("f-nama").value,
-    type: document.getElementById("f-type").value === "lainnya" ? document.getElementById("f-type-custom").value.trim().toLowerCase() : document.getElementById("f-type").value,
+    type:
+      document.getElementById("f-type").value === "lainnya"
+        ? document.getElementById("f-type-custom").value.trim().toLowerCase()
+        : document.getElementById("f-type").value,
     deskripsi: document.getElementById("f-deskripsi").value,
-    harga: document.getElementById("f-harga").value === "Free" ? "Free" : parseRupiah(document.getElementById("f-harga").value).toString(),
+    harga:
+      document.getElementById("f-harga").value === "Free"
+        ? "Free"
+        : parseRupiah(document.getElementById("f-harga").value).toString(),
     contact_url: document.getElementById("f-contact_url").value,
     marker_url: document.getElementById("f-marker-url").value,
     slide_urls: document.getElementById("f-media-url").value,
     video_url: document.getElementById("f-video-url").value,
     start_date: document.getElementById("f-start-date").value || null,
     end_date: document.getElementById("f-end-date").value || null,
-    main_content_type: document.querySelector('input[name="f-main-content-type"]:checked')?.value || 'image_slides',
+    main_content_type:
+      document.querySelector('input[name="f-main-content-type"]:checked')
+        ?.value || "image_slides",
     model_url: document.getElementById("f-model-url").value,
-    model_scale: parseFloat(document.getElementById("f-model-scale").value) || 1.0,
-    model_rot_y: parseFloat(document.getElementById("f-model-rot-y").value) || 0,
-    model_pos_y: parseFloat(document.getElementById("f-model-pos-y").value) || 0,
-    model_pos_z: parseFloat(document.getElementById("f-model-pos-z").value) || 0.0192,
-    target_layout: document.getElementById("f-target-layout") ? document.getElementById("f-target-layout").value : 'mask',
+    model_scale:
+      parseFloat(document.getElementById("f-model-scale").value) || 1.0,
+    model_rot_y:
+      parseFloat(document.getElementById("f-model-rot-y").value) || 0,
+    model_pos_y:
+      parseFloat(document.getElementById("f-model-pos-y").value) || 0,
+    model_pos_z:
+      parseFloat(document.getElementById("f-model-pos-z").value) || 0.0192,
+    target_layout: document.getElementById("f-target-layout")
+      ? document.getElementById("f-target-layout").value
+      : "mask",
   };
   const { error } = isEditing
     ? await supabase.from("ar_targets").update(formData).eq("id", editingId)
@@ -1547,25 +1674,25 @@ async function fetchAppSettings() {
   if (!error && data) {
     activeConfigData = data;
     renderActiveConfig();
-    
+
     // Update Canva Link
     const canvaInput = document.getElementById("f-canva-url");
     const canvaBtn = document.getElementById("canva-link-btn");
     if (canvaInput) canvaInput.value = data.canva_template_url || "";
     if (canvaBtn) {
-        canvaBtn.href = data.canva_template_url || "#";
-        if (!data.canva_template_url) {
-            canvaBtn.style.opacity = "0.5";
-            canvaBtn.style.pointerEvents = "none";
-            canvaBtn.title = "Link Canva belum diatur";
-        } else {
-            canvaBtn.style.opacity = "1";
-            canvaBtn.style.pointerEvents = "auto";
-            canvaBtn.title = "";
-        }
+      canvaBtn.href = data.canva_template_url || "#";
+      if (!data.canva_template_url) {
+        canvaBtn.style.opacity = "0.5";
+        canvaBtn.style.pointerEvents = "none";
+        canvaBtn.title = "Link Canva belum diatur";
+      } else {
+        canvaBtn.style.opacity = "1";
+        canvaBtn.style.pointerEvents = "auto";
+        canvaBtn.title = "";
+      }
     }
   }
-  
+
   // Load logs
   renderAppSettingsLogs();
 }
@@ -1588,27 +1715,35 @@ async function renderAppSettingsLogs() {
 
     let filteredData = data || [];
     const searchInput = document.getElementById("settings-logs-search");
-    const searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : "";
-    
+    const searchQuery = searchInput
+      ? searchInput.value.toLowerCase().trim()
+      : "";
+
     if (searchQuery) {
-      filteredData = data.filter(log => {
+      filteredData = data.filter((log) => {
         const adminEmail = (log.admin_email || "").toLowerCase();
         const newUrl = (log.new_url || "").toLowerCase();
         const oldUrl = (log.old_url || "").toLowerCase();
-        return adminEmail.includes(searchQuery) || newUrl.includes(searchQuery) || oldUrl.includes(searchQuery);
+        return (
+          adminEmail.includes(searchQuery) ||
+          newUrl.includes(searchQuery) ||
+          oldUrl.includes(searchQuery)
+        );
       });
     }
 
     if (filteredData.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-dim);">${searchQuery ? 'Tidak ada riwayat perubahan yang cocok dengan pencarian.' : 'Belum ada riwayat perubahan.'}</td></tr>`;
-      const paginationContainer = document.getElementById("settings-logs-pagination");
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-dim);">${searchQuery ? "Tidak ada riwayat perubahan yang cocok dengan pencarian." : "Belum ada riwayat perubahan."}</td></tr>`;
+      const paginationContainer = document.getElementById(
+        "settings-logs-pagination",
+      );
       if (paginationContainer) paginationContainer.innerHTML = "";
       return;
     }
 
     const totalItems = filteredData.length;
     const totalPages = Math.ceil(totalItems / appSettingsLogsPerPage);
-    
+
     // Safety boundaries for current page
     if (appSettingsLogsCurrentPage > totalPages) {
       appSettingsLogsCurrentPage = totalPages;
@@ -1621,26 +1756,30 @@ async function renderAppSettingsLogs() {
     const endIdx = startIdx + appSettingsLogsPerPage;
     const pageData = filteredData.slice(startIdx, endIdx);
 
-    tbody.innerHTML = pageData.map(log => `
+    tbody.innerHTML = pageData
+      .map(
+        (log) => `
       <tr>
         <td style="font-size: 0.8rem; white-space: nowrap;">
-          ${new Date(log.created_at).toLocaleString('id-ID')}
+          ${new Date(log.created_at).toLocaleString("id-ID")}
         </td>
         <td style="font-weight: 500;">${log.admin_email}</td>
         <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-          <div style="font-size: 0.75rem; color: var(--text-dim); text-decoration: line-through;">${log.old_url || '-'}</div>
-          <div style="color: var(--success); font-size: 0.8rem;">${log.new_url || '-'}</div>
+          <div style="font-size: 0.75rem; color: var(--text-dim); text-decoration: line-through;">${log.old_url || "-"}</div>
+          <div style="color: var(--success); font-size: 0.8rem;">${log.new_url || "-"}</div>
         </td>
         <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-          <div style="font-size: 0.75rem; color: var(--text-dim); text-decoration: line-through;">***${log.old_key?.slice(-8) || 'none'}</div>
-          <div style="color: var(--success); font-size: 0.8rem;">***${log.new_key?.slice(-8) || 'none'}</div>
+          <div style="font-size: 0.75rem; color: var(--text-dim); text-decoration: line-through;">***${log.old_key?.slice(-8) || "none"}</div>
+          <div style="color: var(--success); font-size: 0.8rem;">***${log.new_key?.slice(-8) || "none"}</div>
         </td>
         <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-          <div style="font-size: 0.75rem; color: var(--text-dim); text-decoration: line-through;">***${log.old_gdrive_key?.slice(-8) || 'none'}</div>
-          <div style="color: var(--success); font-size: 0.8rem;">***${log.new_gdrive_key?.slice(-8) || 'none'}</div>
+          <div style="font-size: 0.75rem; color: var(--text-dim); text-decoration: line-through;">***${log.old_gdrive_key?.slice(-8) || "none"}</div>
+          <div style="color: var(--success); font-size: 0.8rem;">***${log.new_gdrive_key?.slice(-8) || "none"}</div>
         </td>
       </tr>
-    `).join("");
+    `,
+      )
+      .join("");
 
     renderAppSettingsLogsPagination(totalItems);
   } catch (err) {
@@ -1649,7 +1788,9 @@ async function renderAppSettingsLogs() {
 }
 
 function renderAppSettingsLogsPagination(totalItems) {
-  const paginationContainer = document.getElementById("settings-logs-pagination");
+  const paginationContainer = document.getElementById(
+    "settings-logs-pagination",
+  );
   if (!paginationContainer) return;
 
   const totalPages = Math.ceil(totalItems / appSettingsLogsPerPage);
@@ -1660,7 +1801,7 @@ function renderAppSettingsLogsPagination(totalItems) {
 
   let html = "";
   // Prev button
-  html += `<button type="button" class="btn btn-ghost" style="padding: 4px 10px; font-size: 0.85rem;" ${appSettingsLogsCurrentPage === 1 ? 'disabled' : ''} onclick="changeSettingsLogsPage(${appSettingsLogsCurrentPage - 1})">Prev</button>`;
+  html += `<button type="button" class="btn btn-ghost" style="padding: 4px 10px; font-size: 0.85rem;" ${appSettingsLogsCurrentPage === 1 ? "disabled" : ""} onclick="changeSettingsLogsPage(${appSettingsLogsCurrentPage - 1})">Prev</button>`;
 
   // Page number buttons
   for (let i = 1; i <= totalPages; i++) {
@@ -1672,15 +1813,15 @@ function renderAppSettingsLogsPagination(totalItems) {
   }
 
   // Next button
-  html += `<button type="button" class="btn btn-ghost" style="padding: 4px 10px; font-size: 0.85rem;" ${appSettingsLogsCurrentPage === totalPages ? 'disabled' : ''} onclick="changeSettingsLogsPage(${appSettingsLogsCurrentPage + 1})">Next</button>`;
+  html += `<button type="button" class="btn btn-ghost" style="padding: 4px 10px; font-size: 0.85rem;" ${appSettingsLogsCurrentPage === totalPages ? "disabled" : ""} onclick="changeSettingsLogsPage(${appSettingsLogsCurrentPage + 1})">Next</button>`;
 
   paginationContainer.innerHTML = html;
 }
 
-window.changeSettingsLogsPage = function(page) {
+window.changeSettingsLogsPage = function (page) {
   appSettingsLogsCurrentPage = page;
   renderAppSettingsLogs();
-}
+};
 
 let currentSettingsFormSubmit = null;
 
@@ -1688,12 +1829,15 @@ settingsForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
   const urlVal = document.getElementById("s-url")?.value?.trim() || "";
   const keyVal = document.getElementById("s-key")?.value?.trim() || "";
-  
+
   if (!urlVal && !keyVal) {
-    showToast("Silakan isi URL atau Secret Key yang ingin diperbarui!", "error");
+    showToast(
+      "Silakan isi URL atau Secret Key yang ingin diperbarui!",
+      "error",
+    );
     return;
   }
-  
+
   currentSettingsFormSubmit = "supabase";
   const passwordInput = document.getElementById("settings-confirm-password");
   if (passwordInput) passwordInput.value = "";
@@ -1704,13 +1848,17 @@ settingsForm?.addEventListener("submit", async (e) => {
 const gdriveSettingsForm = document.getElementById("gdrive-settings-form");
 gdriveSettingsForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const gdriveKeyVal = document.getElementById("s-gdrive-key")?.value?.trim() || "";
-  
+  const gdriveKeyVal =
+    document.getElementById("s-gdrive-key")?.value?.trim() || "";
+
   if (!gdriveKeyVal) {
-    showToast("Silakan isi Google Drive API Key yang ingin diperbarui!", "error");
+    showToast(
+      "Silakan isi Google Drive API Key yang ingin diperbarui!",
+      "error",
+    );
     return;
   }
-  
+
   currentSettingsFormSubmit = "gdrive";
   const passwordInput = document.getElementById("settings-confirm-password");
   if (passwordInput) passwordInput.value = "";
@@ -1727,30 +1875,33 @@ btnSettingsCancel?.addEventListener("click", () => {
 btnSettingsConfirm?.addEventListener("click", async () => {
   const passwordInput = document.getElementById("settings-confirm-password");
   const password = passwordInput?.value || "";
-  
+
   if (!password) {
     showToast("Kata sandi wajib diisi untuk verifikasi!", "error");
     if (passwordInput) passwordInput.focus();
     return;
   }
-  
+
   const originalConfirmText = btnSettingsConfirm.innerText;
   btnSettingsConfirm.disabled = true;
   btnSettingsConfirm.innerText = "Memverifikasi...";
-  
+
   try {
     const sessionData = await supabase.auth.getSession();
     const email = sessionData?.data?.session?.user?.email;
-    
+
     if (!email) {
       showToast("Sesi tidak aktif. Silakan masuk kembali.", "error");
       btnSettingsConfirm.disabled = false;
       btnSettingsConfirm.innerText = originalConfirmText;
       return;
     }
-    
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
-    
+
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
     if (authError) {
       showToast("Kata sandi salah! Akses ditolak.", "error");
       btnSettingsConfirm.disabled = false;
@@ -1761,11 +1912,11 @@ btnSettingsConfirm?.addEventListener("click", async () => {
       }
       return;
     }
-    
+
     // Verification successful, close modal, clear password, and perform save
     modalSettingsConfirm.classList.remove("active");
     if (passwordInput) passwordInput.value = "";
-    
+
     if (currentSettingsFormSubmit === "supabase") {
       await saveSupabaseConfig();
     } else if (currentSettingsFormSubmit === "gdrive") {
@@ -1809,19 +1960,23 @@ async function saveSupabaseConfig() {
       updated_at: new Date().toISOString(),
       supabase_url: newUrl || current?.supabase_url,
       supabase_key: newKey || current?.supabase_key,
-      gdrive_api_key: current?.gdrive_api_key
+      gdrive_api_key: current?.gdrive_api_key,
     };
-    const { error: updateError } = await supabase.from("app_settings").upsert(upsertPayload);
+    const { error: updateError } = await supabase
+      .from("app_settings")
+      .upsert(upsertPayload);
 
     if (updateError) throw updateError;
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     await supabase.from("app_settings_logs").insert({
       admin_email: user.email,
-      old_url: current?.supabase_url || 'empty',
+      old_url: current?.supabase_url || "empty",
       new_url: newUrl || current?.supabase_url,
-      old_key: current?.supabase_key || 'empty',
-      new_key: newKey || current?.supabase_key
+      old_key: current?.supabase_key || "empty",
+      new_key: newKey || current?.supabase_key,
     });
 
     showToast("Konfigurasi Supabase berhasil diperbarui.", "success");
@@ -1864,21 +2019,25 @@ async function saveGDriveConfig() {
       updated_at: new Date().toISOString(),
       supabase_url: current?.supabase_url,
       supabase_key: current?.supabase_key,
-      gdrive_api_key: newGdriveKey
+      gdrive_api_key: newGdriveKey,
     };
-    const { error: updateError } = await supabase.from("app_settings").upsert(upsertPayload);
+    const { error: updateError } = await supabase
+      .from("app_settings")
+      .upsert(upsertPayload);
 
     if (updateError) throw updateError;
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     await supabase.from("app_settings_logs").insert({
       admin_email: user.email,
-      old_url: current?.supabase_url || 'empty',
+      old_url: current?.supabase_url || "empty",
       new_url: current?.supabase_url,
-      old_key: current?.supabase_key || 'empty',
+      old_key: current?.supabase_key || "empty",
       new_key: current?.supabase_key,
-      old_gdrive_key: current?.gdrive_api_key || 'empty',
-      new_gdrive_key: newGdriveKey
+      old_gdrive_key: current?.gdrive_api_key || "empty",
+      new_gdrive_key: newGdriveKey,
     });
 
     showToast("Google Drive API Key berhasil diperbarui.", "success");
@@ -1899,35 +2058,41 @@ document.getElementById("th-sort-time")?.addEventListener("click", () => {
   renderAppSettingsLogs();
 });
 
-document.getElementById("settings-logs-search")?.addEventListener("input", () => {
-  appSettingsLogsCurrentPage = 1;
-  renderAppSettingsLogs();
-});
+document
+  .getElementById("settings-logs-search")
+  ?.addEventListener("input", () => {
+    appSettingsLogsCurrentPage = 1;
+    renderAppSettingsLogs();
+  });
 
 // --- COLLAPSIBLE CONNECTION CONFIG ---
-document.getElementById("connection-config-header")?.addEventListener("click", () => {
-  const content = document.getElementById("connection-config-content");
-  const chevron = document.getElementById("chevron-config-icon");
-  if (!content || !chevron) return;
-  
-  const isCollapsed = content.style.maxHeight === "0px";
-  if (isCollapsed) {
-    content.style.maxHeight = "1500px";
-    content.style.opacity = "1";
-    chevron.style.transform = "rotate(90deg)";
-  } else {
-    content.style.maxHeight = "0px";
-    content.style.opacity = "0";
-    chevron.style.transform = "rotate(0deg)";
-  }
-});
+document
+  .getElementById("connection-config-header")
+  ?.addEventListener("click", () => {
+    const content = document.getElementById("connection-config-content");
+    const chevron = document.getElementById("chevron-config-icon");
+    if (!content || !chevron) return;
+
+    const isCollapsed = content.style.maxHeight === "0px";
+    if (isCollapsed) {
+      content.style.maxHeight = "1500px";
+      content.style.opacity = "1";
+      chevron.style.transform = "rotate(90deg)";
+    } else {
+      content.style.maxHeight = "0px";
+      content.style.opacity = "0";
+      chevron.style.transform = "rotate(0deg)";
+    }
+  });
 
 // --- APP SETTINGS (SUPERADMIN ONLY) ---
 
 // --- STORAGE CLEANUP (MAINTENANCE) ---
 async function cleanupOrphanedFiles() {
   const btn = document.getElementById("btn-cleanup-storage");
-  const progressContainer = document.getElementById("cleanup-progress-container");
+  const progressContainer = document.getElementById(
+    "cleanup-progress-container",
+  );
   const statusText = document.getElementById("cleanup-status-text");
   const countText = document.getElementById("cleanup-count");
   const progressBar = document.getElementById("cleanup-progress-bar");
@@ -1936,10 +2101,12 @@ async function cleanupOrphanedFiles() {
   progressContainer.style.display = "block";
   progressBar.style.width = "0%";
   statusText.innerText = "Mengumpulkan referensi database...";
-  
+
   try {
     // 1. Get all used URLs from database
-    const { data: dbTargets, error: dbError } = await supabase.from('ar_targets').select('slide_urls, marker_url, video_url, model_url');
+    const { data: dbTargets, error: dbError } = await supabase
+      .from("ar_targets")
+      .select("slide_urls, marker_url, video_url, model_url");
     if (dbError) throw dbError;
 
     const usedPaths = new Set();
@@ -1947,15 +2114,24 @@ async function cleanupOrphanedFiles() {
       if (!url) return null;
       // Extracts path after '/ar-media/'
       const parts = url.split("/ar-media/");
-      return parts.length > 1 ? parts[1].split('?')[0] : null;
+      return parts.length > 1 ? parts[1].split("?")[0] : null;
     };
 
-    dbTargets.forEach(item => {
-      if (item.marker_url) { const p = getPathFromUrl(item.marker_url); if (p) usedPaths.add(p); }
-      if (item.video_url) { const p = getPathFromUrl(item.video_url); if (p) usedPaths.add(p); }
-      if (item.model_url) { const p = getPathFromUrl(item.model_url); if (p) usedPaths.add(p); }
+    dbTargets.forEach((item) => {
+      if (item.marker_url) {
+        const p = getPathFromUrl(item.marker_url);
+        if (p) usedPaths.add(p);
+      }
+      if (item.video_url) {
+        const p = getPathFromUrl(item.video_url);
+        if (p) usedPaths.add(p);
+      }
+      if (item.model_url) {
+        const p = getPathFromUrl(item.model_url);
+        if (p) usedPaths.add(p);
+      }
       if (item.slide_urls) {
-        item.slide_urls.split(',').forEach(u => {
+        item.slide_urls.split(",").forEach((u) => {
           const p = getPathFromUrl(u.trim());
           if (p) usedPaths.add(p);
         });
@@ -1963,25 +2139,27 @@ async function cleanupOrphanedFiles() {
     });
 
     statusText.innerText = "Memindai storage bucket...";
-    
+
     // 2. List all files in storage
-    const folders = ['uploads', 'markers', 'models', 'videos'];
+    const folders = ["uploads", "markers", "models", "videos"];
     let allFiles = [];
 
     for (const folder of folders) {
       statusText.innerText = `Memindai folder: ${folder}...`;
-      const { data: files, error: stError } = await supabase.storage.from('ar-media').list(folder, { limit: 1000 });
+      const { data: files, error: stError } = await supabase.storage
+        .from("ar-media")
+        .list(folder, { limit: 1000 });
       if (stError) {
         console.warn(`Could not list folder ${folder}:`, stError);
         continue;
       }
-      
-      files.forEach(f => {
-        if (f.name !== '.emptyKeep') {
+
+      files.forEach((f) => {
+        if (f.name !== ".emptyKeep") {
           allFiles.push({
             name: f.name,
             path: `${folder}/${f.name}`,
-            created_at: f.created_at
+            created_at: f.created_at,
           });
         }
       });
@@ -1989,32 +2167,37 @@ async function cleanupOrphanedFiles() {
 
     // 3. Filter orphaned files
     const now = new Date();
-    const orphanedFiles = allFiles.filter(f => {
+    const orphanedFiles = allFiles.filter((f) => {
       const isUsed = usedPaths.has(f.path);
       // Older than 1 hour (avoid deleting active uploads)
-      const isOldEnough = (now - new Date(f.created_at)) > (60 * 60 * 1000);
+      const isOldEnough = now - new Date(f.created_at) > 60 * 60 * 1000;
       return !isUsed && isOldEnough;
     });
 
     if (orphanedFiles.length === 0) {
       statusText.innerText = "Selesai! Storage sudah bersih.";
       showToast("Tidak ada file sampah ditemukan.", "success");
-      setTimeout(() => { progressContainer.style.display = "none"; btn.disabled = false; }, 3000);
+      setTimeout(() => {
+        progressContainer.style.display = "none";
+        btn.disabled = false;
+      }, 3000);
       return;
     }
 
     // 4. Delete orphaned files
     statusText.innerText = `Menghapus ${orphanedFiles.length} file sampah...`;
     countText.innerText = `0/${orphanedFiles.length}`;
-    
+
     let deletedCount = 0;
-    const pathsToDelete = orphanedFiles.map(f => f.path);
-    
+    const pathsToDelete = orphanedFiles.map((f) => f.path);
+
     // Delete in batches
     for (let i = 0; i < pathsToDelete.length; i += 50) {
       const batch = pathsToDelete.slice(i, i + 50);
-      const { error: delError } = await supabase.storage.from('ar-media').remove(batch);
-      
+      const { error: delError } = await supabase.storage
+        .from("ar-media")
+        .remove(batch);
+
       if (!delError) {
         deletedCount += batch.length;
         const percent = Math.round((deletedCount / orphanedFiles.length) * 100);
@@ -2027,8 +2210,10 @@ async function cleanupOrphanedFiles() {
 
     statusText.innerText = `Selesai! ${deletedCount} file dihapus.`;
     showToast(`Pembersihan berhasil: ${deletedCount} file dihapus.`, "success");
-    setTimeout(() => { progressContainer.style.display = "none"; btn.disabled = false; }, 5000);
-
+    setTimeout(() => {
+      progressContainer.style.display = "none";
+      btn.disabled = false;
+    }, 5000);
   } catch (err) {
     console.error("Cleanup error:", err);
     statusText.innerText = "Gagal memproses pembersihan.";
@@ -2064,176 +2249,187 @@ async function checkDbHeartbeat() {
 }
 
 function setupSettingsListeners() {
-    const btnCleanup = document.getElementById("btn-cleanup-storage");
-    const modalCleanup = document.getElementById("modal-cleanup-confirm");
-    const btnCleanupConfirm = document.getElementById("btn-cleanup-confirm");
-    const btnCleanupCancel = document.getElementById("btn-cleanup-cancel");
+  const btnCleanup = document.getElementById("btn-cleanup-storage");
+  const modalCleanup = document.getElementById("modal-cleanup-confirm");
+  const btnCleanupConfirm = document.getElementById("btn-cleanup-confirm");
+  const btnCleanupCancel = document.getElementById("btn-cleanup-cancel");
 
-    if (btnCleanup && modalCleanup) {
-        btnCleanup.onclick = () => {
-          modalCleanup.classList.add("active");
-        };
-    }
-
-    if (btnCleanupConfirm) {
-        btnCleanupConfirm.onclick = () => {
-          if (modalCleanup) modalCleanup.classList.remove("active");
-          cleanupOrphanedFiles();
-        };
-    }
-
-    if (btnCleanupCancel) {
-        btnCleanupCancel.onclick = () => {
-          if (modalCleanup) modalCleanup.classList.remove("active");
-        };
-    }
-
-    // Toggle Password Visibility
-    document.querySelectorAll(".toggle-password").forEach(btn => {
-        btn.onclick = () => {
-            const targetId = btn.getAttribute("data-target");
-            const input = document.getElementById(targetId);
-            if (input) {
-                const isPassword = input.getAttribute("type") === "password";
-                input.setAttribute("type", isPassword ? "text" : "password");
-                btn.style.color = isPassword ? "var(--pastel-blue)" : "var(--text-dim)";
-            }
-        };
-    });
-
-    // Unlock Config logic
-    const btnUnlockConfig = document.getElementById("btn-unlock-config");
-    const modalUnlockConfig = document.getElementById("modal-unlock-config");
-    const btnUnlockCancel = document.getElementById("btn-unlock-cancel");
-    const formUnlockConfig = document.getElementById("unlock-config-form");
-    const inputUnlockPassword = document.getElementById("unlock-password");
-
-    const closeUnlockModal = () => {
-      if (modalUnlockConfig) modalUnlockConfig.classList.remove("active");
-      if (formUnlockConfig) formUnlockConfig.reset();
+  if (btnCleanup && modalCleanup) {
+    btnCleanup.onclick = () => {
+      modalCleanup.classList.add("active");
     };
+  }
 
-    if (btnUnlockConfig) {
-      btnUnlockConfig.onclick = () => {
-        if (isConfigUnlocked) {
-          isConfigUnlocked = false;
+  if (btnCleanupConfirm) {
+    btnCleanupConfirm.onclick = () => {
+      if (modalCleanup) modalCleanup.classList.remove("active");
+      cleanupOrphanedFiles();
+    };
+  }
+
+  if (btnCleanupCancel) {
+    btnCleanupCancel.onclick = () => {
+      if (modalCleanup) modalCleanup.classList.remove("active");
+    };
+  }
+
+  // Toggle Password Visibility
+  document.querySelectorAll(".toggle-password").forEach((btn) => {
+    btn.onclick = () => {
+      const targetId = btn.getAttribute("data-target");
+      const input = document.getElementById(targetId);
+      if (input) {
+        const isPassword = input.getAttribute("type") === "password";
+        input.setAttribute("type", isPassword ? "text" : "password");
+        btn.style.color = isPassword ? "var(--pastel-blue)" : "var(--text-dim)";
+      }
+    };
+  });
+
+  // Unlock Config logic
+  const btnUnlockConfig = document.getElementById("btn-unlock-config");
+  const modalUnlockConfig = document.getElementById("modal-unlock-config");
+  const btnUnlockCancel = document.getElementById("btn-unlock-cancel");
+  const formUnlockConfig = document.getElementById("unlock-config-form");
+  const inputUnlockPassword = document.getElementById("unlock-password");
+
+  const closeUnlockModal = () => {
+    if (modalUnlockConfig) modalUnlockConfig.classList.remove("active");
+    if (formUnlockConfig) formUnlockConfig.reset();
+  };
+
+  if (btnUnlockConfig) {
+    btnUnlockConfig.onclick = () => {
+      if (isConfigUnlocked) {
+        isConfigUnlocked = false;
+        renderActiveConfig();
+        showToast("Konfigurasi Aktif disensor kembali.", "info");
+      } else {
+        if (modalUnlockConfig) modalUnlockConfig.classList.add("active");
+        if (inputUnlockPassword)
+          setTimeout(() => inputUnlockPassword.focus(), 150);
+      }
+    };
+  }
+
+  if (btnUnlockCancel) {
+    btnUnlockCancel.onclick = closeUnlockModal;
+  }
+
+  if (formUnlockConfig) {
+    formUnlockConfig.onsubmit = async (e) => {
+      e.preventDefault();
+      const password = inputUnlockPassword.value;
+      const btnConfirm = document.getElementById("btn-unlock-confirm");
+      const originalText = btnConfirm ? btnConfirm.innerText : "Verifikasi";
+
+      if (btnConfirm) {
+        btnConfirm.disabled = true;
+        btnConfirm.innerText = "Memverifikasi...";
+      }
+
+      try {
+        const sessionData = await supabase.auth.getSession();
+        const email = sessionData?.data?.session?.user?.email;
+
+        if (!email) throw new Error("Sesi pengguna tidak aktif.");
+
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          showToast("Kata sandi yang Anda masukkan salah!", "error");
+        } else {
+          isConfigUnlocked = true;
           renderActiveConfig();
-          showToast("Konfigurasi Aktif disensor kembali.", "info");
-        } else {
-          if (modalUnlockConfig) modalUnlockConfig.classList.add("active");
-          if (inputUnlockPassword) setTimeout(() => inputUnlockPassword.focus(), 150);
-        }
-      };
-    }
+          closeUnlockModal();
+          showToast("Verifikasi berhasil! Sensor dibuka.", "success");
 
-    if (btnUnlockCancel) {
-      btnUnlockCancel.onclick = closeUnlockModal;
-    }
-
-    if (formUnlockConfig) {
-      formUnlockConfig.onsubmit = async (e) => {
-        e.preventDefault();
-        const password = inputUnlockPassword.value;
-        const btnConfirm = document.getElementById("btn-unlock-confirm");
-        const originalText = btnConfirm ? btnConfirm.innerText : "Verifikasi";
-
-        if (btnConfirm) {
-          btnConfirm.disabled = true;
-          btnConfirm.innerText = "Memverifikasi...";
-        }
-
-        try {
-          const sessionData = await supabase.auth.getSession();
-          const email = sessionData?.data?.session?.user?.email;
-
-          if (!email) throw new Error("Sesi pengguna tidak aktif.");
-
-          const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-          if (error) {
-            showToast("Kata sandi yang Anda masukkan salah!", "error");
-          } else {
-            isConfigUnlocked = true;
-            renderActiveConfig();
-            closeUnlockModal();
-            showToast("Verifikasi berhasil! Sensor dibuka.", "success");
-
-            setTimeout(() => {
-              if (isConfigUnlocked) {
-                isConfigUnlocked = false;
-                renderActiveConfig();
-                showToast("Konfigurasi Aktif disensor kembali otomatis.", "info");
-              }
-            }, 30000);
-          }
-        } catch (err) {
-          console.error("Verification error:", err);
-          showToast("Terjadi kesalahan saat memverifikasi: " + err.message, "error");
-        } finally {
-          if (btnConfirm) {
-            btnConfirm.disabled = false;
-            btnConfirm.innerText = originalText;
-          }
-        }
-      };
-    }
-
-    // Guide Tab Switching
-    document.querySelectorAll(".guide-tab").forEach(tab => {
-        tab.onclick = () => {
-            const guide = tab.getAttribute("data-guide");
-            
-            // Toggle active class on buttons
-            document.querySelectorAll(".guide-tab").forEach(t => {
-                t.classList.remove("active");
-                t.style.color = "var(--text-dim)";
-                t.style.background = "none";
-            });
-            tab.classList.add("active");
-            tab.style.color = "#fff";
-            tab.style.background = "rgba(255, 255, 255, 0.08)";
-
-            // Toggle active content
-            document.querySelectorAll(".guide-tab-content").forEach(content => {
-                content.style.display = "none";
-            });
-            const activeContent = document.getElementById(`guide-content-${guide}`);
-            if (activeContent) {
-                activeContent.style.display = "block";
+          setTimeout(() => {
+            if (isConfigUnlocked) {
+              isConfigUnlocked = false;
+              renderActiveConfig();
+              showToast("Konfigurasi Aktif disensor kembali otomatis.", "info");
             }
-        };
-    });
-
-    // DB Heartbeat Connection
-    checkDbHeartbeat();
-    if (heartbeatInterval) clearInterval(heartbeatInterval);
-    heartbeatInterval = setInterval(() => {
-        const activeSection = localStorage.getItem('activeSection');
-        if (activeSection === "section-settings") {
-            checkDbHeartbeat();
-        } else {
-            clearInterval(heartbeatInterval);
-            heartbeatInterval = null;
+          }, 30000);
         }
-    }, 10000);
+      } catch (err) {
+        console.error("Verification error:", err);
+        showToast(
+          "Terjadi kesalahan saat memverifikasi: " + err.message,
+          "error",
+        );
+      } finally {
+        if (btnConfirm) {
+          btnConfirm.disabled = false;
+          btnConfirm.innerText = originalText;
+        }
+      }
+    };
+  }
+
+  // Guide Tab Switching
+  document.querySelectorAll(".guide-tab").forEach((tab) => {
+    tab.onclick = () => {
+      const guide = tab.getAttribute("data-guide");
+
+      // Toggle active class on buttons
+      document.querySelectorAll(".guide-tab").forEach((t) => {
+        t.classList.remove("active");
+        t.style.color = "var(--text-dim)";
+        t.style.background = "none";
+      });
+      tab.classList.add("active");
+      tab.style.color = "#fff";
+      tab.style.background = "rgba(255, 255, 255, 0.08)";
+
+      // Toggle active content
+      document.querySelectorAll(".guide-tab-content").forEach((content) => {
+        content.style.display = "none";
+      });
+      const activeContent = document.getElementById(`guide-content-${guide}`);
+      if (activeContent) {
+        activeContent.style.display = "block";
+      }
+    };
+  });
+
+  // DB Heartbeat Connection
+  checkDbHeartbeat();
+  if (heartbeatInterval) clearInterval(heartbeatInterval);
+  heartbeatInterval = setInterval(() => {
+    const activeSection = localStorage.getItem("activeSection");
+    if (activeSection === "section-settings") {
+      checkDbHeartbeat();
+    } else {
+      clearInterval(heartbeatInterval);
+      heartbeatInterval = null;
+    }
+  }, 10000);
 }
 
 // --- ADMIN CRUD (SUPERADMIN ONLY) ---
 async function fetchAdmins() {
   const { data: sessionData } = await supabase.auth.getSession();
   const session = sessionData?.session;
-  
+
   if (!session) return;
 
-  const isSuper = session.user.email === "jaswita.ar@gmail.com" || currentRole === "superadmin";
-  
+  const isSuper =
+    session.user.email === "jaswita.ar@gmail.com" ||
+    currentRole === "superadmin";
+
   if (isSuper) {
     if (navAdmins) navAdmins.style.display = "flex";
     if (navSettings) navSettings.style.display = "flex";
   } else {
     if (navAdmins) navAdmins.style.display = "none";
     if (navSettings) navSettings.style.display = "none";
-    if (document.getElementById("section-admins").classList.contains("active")) {
+    if (
+      document.getElementById("section-admins").classList.contains("active")
+    ) {
       showSection("section-target");
     }
     return;
@@ -2265,9 +2461,10 @@ async function fetchAdmins() {
 function renderAdmins(filter = "") {
   if (!adminTableBody) return;
 
-  const filteredData = adminData.filter((item) =>
-    (item.email || "").toLowerCase().includes(filter.toLowerCase()) ||
-    (item.username || "").toLowerCase().includes(filter.toLowerCase())
+  const filteredData = adminData.filter(
+    (item) =>
+      (item.email || "").toLowerCase().includes(filter.toLowerCase()) ||
+      (item.username || "").toLowerCase().includes(filter.toLowerCase()),
   );
 
   // Sorting: Superadmin (0) > Admin (1) > Member (2)
@@ -2323,7 +2520,7 @@ function renderAdmins(filter = "") {
           </div>
         </td>
       </tr>
-    `
+    `,
       )
       .join("");
 
@@ -2332,7 +2529,12 @@ function renderAdmins(filter = "") {
       .forEach(
         (b) =>
           (b.onclick = () =>
-            editAdminItem(b.dataset.id, b.dataset.email, b.dataset.username, b.dataset.role))
+            editAdminItem(
+              b.dataset.id,
+              b.dataset.email,
+              b.dataset.username,
+              b.dataset.role,
+            )),
       );
     document
       .querySelectorAll(".btn-delete-admin")
@@ -2381,7 +2583,10 @@ adminForm?.addEventListener("submit", async (e) => {
     const { data, error } = await supabaseAux.auth.signUp({ email, password });
     if (error) {
       if (error.message.toLowerCase().includes("rate limit")) {
-        showToast("Batas pendaftaran tercapai. Silakan coba lagi dalam 1 jam (Limit Supabase Free).", "error");
+        showToast(
+          "Batas pendaftaran tercapai. Silakan coba lagi dalam 1 jam (Limit Supabase Free).",
+          "error",
+        );
       } else {
         showToast(error.message, "error");
       }
@@ -2465,7 +2670,8 @@ fileInput?.addEventListener("change", async (e) => {
   if (!files.length) return;
   const btn = e.target.nextElementSibling;
   const originalHTML = btn.innerHTML;
-  btn.innerHTML = '<div class="loading-spinner" style="width: 14px; height: 14px; border-width: 2px;"></div> Uploading...';
+  btn.innerHTML =
+    '<div class="loading-spinner" style="width: 14px; height: 14px; border-width: 2px;"></div> Uploading...';
   btn.disabled = true;
 
   let urls = [];
@@ -2502,7 +2708,8 @@ markerFileInput?.addEventListener("change", async (e) => {
   await validateImageDimensions(file);
   const btn = e.target.nextElementSibling;
   const originalHTML = btn.innerHTML;
-  btn.innerHTML = '<div class="loading-spinner" style="width: 14px; height: 14px; border-width: 2px;"></div> Uploading...';
+  btn.innerHTML =
+    '<div class="loading-spinner" style="width: 14px; height: 14px; border-width: 2px;"></div> Uploading...';
   btn.disabled = true;
 
   const filePath = `markers/${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
@@ -2539,7 +2746,8 @@ videoFileInput?.addEventListener("change", async (e) => {
 
   const btn = e.target.nextElementSibling;
   const originalHTML = btn.innerHTML;
-  btn.innerHTML = '<div class="loading-spinner" style="width: 14px; height: 14px; border-width: 2px;"></div> Uploading...';
+  btn.innerHTML =
+    '<div class="loading-spinner" style="width: 14px; height: 14px; border-width: 2px;"></div> Uploading...';
   btn.disabled = true;
 
   const filePath = `videos/${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
@@ -2577,7 +2785,10 @@ function checkGDriveVideoUrl(url) {
   const badge = document.getElementById("gdrive-detector-badge");
   if (!badge) return;
 
-  if (url && (url.includes("drive.google.com") || url.includes("google.com/uc?id="))) {
+  if (
+    url &&
+    (url.includes("drive.google.com") || url.includes("google.com/uc?id="))
+  ) {
     badge.style.display = "flex";
   } else {
     badge.style.display = "none";
@@ -2603,36 +2814,41 @@ async function editItem(id) {
     document.getElementById("f-id").value = data.id;
     document.getElementById("f-id").disabled = true;
     document.getElementById("f-nama").value = data.nama;
-    const knownTypes = ['wisata', 'kuliner', 'event', 'unit_bisnis'];
+    const knownTypes = ["wisata", "kuliner", "event", "unit_bisnis"];
     const otherTypeContainer = document.getElementById("other-type-container");
     const fTypeCustom = document.getElementById("f-type-custom");
     if (knownTypes.includes(data.type)) {
-        document.getElementById("f-type").value = data.type;
-        if (otherTypeContainer) otherTypeContainer.style.display = "none";
-        if (fTypeCustom) {
-            fTypeCustom.value = "";
-            fTypeCustom.required = false;
-        }
+      document.getElementById("f-type").value = data.type;
+      if (otherTypeContainer) otherTypeContainer.style.display = "none";
+      if (fTypeCustom) {
+        fTypeCustom.value = "";
+        fTypeCustom.required = false;
+      }
     } else {
-        document.getElementById("f-type").value = "lainnya";
-        if (otherTypeContainer) otherTypeContainer.style.display = "block";
-        if (fTypeCustom) {
-            fTypeCustom.value = data.type || "";
-            fTypeCustom.required = true;
-        }
+      document.getElementById("f-type").value = "lainnya";
+      if (otherTypeContainer) otherTypeContainer.style.display = "block";
+      if (fTypeCustom) {
+        fTypeCustom.value = data.type || "";
+        fTypeCustom.required = true;
+      }
     }
     document.getElementById("f-deskripsi").value = data.deskripsi;
-    document.getElementById("f-harga").value = data.harga === "Free" ? "Free" : formatRupiah(data.harga || "");
+    document.getElementById("f-harga").value =
+      data.harga === "Free" ? "Free" : formatRupiah(data.harga || "");
     document.getElementById("f-contact_url").value = data.contact_url || "";
     document.getElementById("f-marker-url").value = data.marker_url || "";
     document.getElementById("f-media-url").value = data.slide_urls || "";
     document.getElementById("f-video-url").value = data.video_url || "";
     checkGDriveVideoUrl(data.video_url || "");
-    if (document.getElementById("f-target-layout")) document.getElementById("f-target-layout").value = data.target_layout || "mask";
-    
+    if (document.getElementById("f-target-layout"))
+      document.getElementById("f-target-layout").value =
+        data.target_layout || "mask";
+
     // 3D Content Fields
-    const contentType = data.main_content_type || 'image_slides';
-    const radioToSelect = document.querySelector(`input[name="f-main-content-type"][value="${contentType}"]`);
+    const contentType = data.main_content_type || "image_slides";
+    const radioToSelect = document.querySelector(
+      `input[name="f-main-content-type"][value="${contentType}"]`,
+    );
     if (radioToSelect) radioToSelect.checked = true;
 
     document.getElementById("f-model-url").value = data.model_url || "";
@@ -2746,11 +2962,16 @@ btnDeleteConfirm?.addEventListener("click", async () => {
 
     let error;
     if (deleteType === "target") {
-      const res = await supabase.from("ar_targets").delete().eq("id", idToDelete);
+      const res = await supabase
+        .from("ar_targets")
+        .delete()
+        .eq("id", idToDelete);
       error = res.error;
     } else {
       // Menghapus user secara total dari auth.users dan profiles via SQL Function (RPC)
-      const res = await supabase.rpc('delete_user_completely', { user_id: idToDelete });
+      const res = await supabase.rpc("delete_user_completely", {
+        user_id: idToDelete,
+      });
       error = res.error;
     }
 
@@ -2787,9 +3008,9 @@ btnAdd?.addEventListener("click", () => {
 function closeModal() {
   modal.classList.remove("active");
   form.reset();
-  if (document.getElementById("f-target-layout")) document.getElementById("f-target-layout").value = "mask";
+  if (document.getElementById("f-target-layout"))
+    document.getElementById("f-target-layout").value = "mask";
 
-  
   const otherTypeContainer = document.getElementById("other-type-container");
   const fTypeCustom = document.getElementById("f-type-custom");
   if (otherTypeContainer) otherTypeContainer.style.display = "none";
@@ -2815,20 +3036,24 @@ btnCancel?.addEventListener("click", closeModal);
 // --- UTILITIES ---
 // --- 3D CONTENT TOGGLE ---
 function updateContentModeVisibility() {
-  const selectedMode = document.querySelector('input[name="f-main-content-type"]:checked')?.value;
-  if (selectedMode === '3d_model') {
-    sectionSlides.style.display = 'none';
-    section3D.style.display = 'block';
+  const selectedMode = document.querySelector(
+    'input[name="f-main-content-type"]:checked',
+  )?.value;
+  if (selectedMode === "3d_model") {
+    sectionSlides.style.display = "none";
+    section3D.style.display = "block";
   } else {
-    sectionSlides.style.display = 'block';
-    section3D.style.display = 'none';
+    sectionSlides.style.display = "block";
+    section3D.style.display = "none";
   }
 }
 
 // Event listeners for radio buttons
-document.querySelectorAll('input[name="f-main-content-type"]').forEach(radio => {
-  radio.addEventListener('change', updateContentModeVisibility);
-});
+document
+  .querySelectorAll('input[name="f-main-content-type"]')
+  .forEach((radio) => {
+    radio.addEventListener("change", updateContentModeVisibility);
+  });
 
 // GLB Upload
 modelFileInput?.addEventListener("change", async (e) => {
@@ -2837,14 +3062,15 @@ modelFileInput?.addEventListener("change", async (e) => {
 
   const btn = e.target.nextElementSibling;
   const originalHTML = btn.innerHTML;
-  btn.innerHTML = '<div class="loading-spinner" style="width: 14px; height: 14px; border-width: 2px;"></div> Uploading...';
+  btn.innerHTML =
+    '<div class="loading-spinner" style="width: 14px; height: 14px; border-width: 2px;"></div> Uploading...';
   btn.disabled = true;
 
   const filePath = `models/${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
   const { error } = await supabase.storage
     .from("ar-media")
     .upload(filePath, file);
-    
+
   if (!error) {
     const {
       data: { publicUrl },
@@ -2852,7 +3078,6 @@ modelFileInput?.addEventListener("change", async (e) => {
     modelUrlInput.value = publicUrl;
     update3DPreview(publicUrl);
     showToast("Model 3D (.glb) berhasil diupload", "success");
-
   } else {
     showToast("Gagal upload model 3D: " + error.message, "error");
   }
@@ -2861,32 +3086,37 @@ modelFileInput?.addEventListener("change", async (e) => {
 });
 
 // Real-time 3D Preview Listeners
-const transformInputs = ['f-model-scale', 'f-model-rot-y', 'f-model-pos-y', 'f-model-pos-z'];
-transformInputs.forEach(id => {
-  document.getElementById(id)?.addEventListener('input', () => {
-    const mv = modelPreviewBox?.querySelector('model-viewer');
+const transformInputs = [
+  "f-model-scale",
+  "f-model-rot-y",
+  "f-model-pos-y",
+  "f-model-pos-z",
+];
+transformInputs.forEach((id) => {
+  document.getElementById(id)?.addEventListener("input", () => {
+    const mv = modelPreviewBox?.querySelector("model-viewer");
     if (mv) {
-      const scale = document.getElementById('f-model-scale').value || "1.0";
-      const rotY = document.getElementById('f-model-rot-y').value || "0";
+      const scale = document.getElementById("f-model-scale").value || "1.0";
+      const rotY = document.getElementById("f-model-rot-y").value || "0";
       // We only map scale to model-viewer for visual feedback
       // Position is harder to map directly as it depends on the scene
-      mv.setAttribute('scale', `${scale} ${scale} ${scale}`);
-      mv.setAttribute('orientation', `0deg ${rotY}deg 0deg`);
+      mv.setAttribute("scale", `${scale} ${scale} ${scale}`);
+      mv.setAttribute("orientation", `0deg ${rotY}deg 0deg`);
     }
   });
 });
 
 function reset3DTransform() {
-  document.getElementById('f-model-scale').value = 1.0;
-  document.getElementById('f-model-rot-y').value = 0;
-  document.getElementById('f-model-pos-y').value = 0;
-  document.getElementById('f-model-pos-z').value = 0.0192;
-  
+  document.getElementById("f-model-scale").value = 1.0;
+  document.getElementById("f-model-rot-y").value = 0;
+  document.getElementById("f-model-pos-y").value = 0;
+  document.getElementById("f-model-pos-z").value = 0.0192;
+
   // Trigger update
-  const mv = modelPreviewBox?.querySelector('model-viewer');
+  const mv = modelPreviewBox?.querySelector("model-viewer");
   if (mv) {
-    mv.setAttribute('scale', "1 1 1");
-    mv.setAttribute('orientation', "0deg 0deg 0deg");
+    mv.setAttribute("scale", "1 1 1");
+    mv.setAttribute("orientation", "0deg 0deg 0deg");
   }
   showToast("Transformasi direset ke default", "info");
 }
@@ -2986,13 +3216,16 @@ if (initError) {
     const sessionData = await supabase.auth.getSession();
     const session = sessionData?.data?.session;
     if (session) {
-      const loginTime = localStorage.getItem('login_timestamp');
+      const loginTime = localStorage.getItem("login_timestamp");
       if (loginTime) {
         const elapsed = Date.now() - parseInt(loginTime, 10);
         if (elapsed > 12 * 60 * 60 * 1000) {
-          showToast("Sesi Anda telah berakhir (batas 12 jam). Mengeluarkan...", "warning");
-          localStorage.removeItem('login_timestamp');
-          localStorage.removeItem('activeSection');
+          showToast(
+            "Sesi Anda telah berakhir (batas 12 jam). Mengeluarkan...",
+            "warning",
+          );
+          localStorage.removeItem("login_timestamp");
+          localStorage.removeItem("activeSection");
           await supabase.auth.signOut();
           setTimeout(() => window.location.reload(), 1000);
         }
@@ -3002,72 +3235,72 @@ if (initError) {
 }
 
 // --- CANVA MODAL LOGIC ---
-const modalCanva = document.getElementById('modal-canva');
-const btnEditCanva = document.getElementById('btn-edit-canva');
-const canvaForm = document.getElementById('canva-form');
+const modalCanva = document.getElementById("modal-canva");
+const btnEditCanva = document.getElementById("btn-edit-canva");
+const canvaForm = document.getElementById("canva-form");
 
-btnEditCanva?.addEventListener('click', () => {
-    modalCanva.classList.add('active');
+btnEditCanva?.addEventListener("click", () => {
+  modalCanva.classList.add("active");
 });
 
-canvaForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const newCanvaUrl = document.getElementById('f-canva-url').value;
-    const btn = e.target.querySelector('button[type="submit"]');
-    
-    btn.disabled = true;
-    btn.innerText = "Saving...";
+canvaForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const newCanvaUrl = document.getElementById("f-canva-url").value;
+  const btn = e.target.querySelector('button[type="submit"]');
 
-    const { error } = await supabase
-        .from('app_settings')
-        .update({ canva_template_url: newCanvaUrl })
-        .eq('id', 'current_config');
+  btn.disabled = true;
+  btn.innerText = "Saving...";
 
-    if (error) {
-        showToast("Gagal menyimpan link: " + error.message, "error");
-    } else {
-        showToast("Link Canva berhasil diperbarui!", "success");
-        modalCanva.classList.remove('active');
-        fetchAppSettings(); // Refresh UI
-    }
-    btn.disabled = false;
-    btn.innerText = "Simpan Link";
+  const { error } = await supabase
+    .from("app_settings")
+    .update({ canva_template_url: newCanvaUrl })
+    .eq("id", "current_config");
+
+  if (error) {
+    showToast("Gagal menyimpan link: " + error.message, "error");
+  } else {
+    showToast("Link Canva berhasil diperbarui!", "success");
+    modalCanva.classList.remove("active");
+    fetchAppSettings(); // Refresh UI
+  }
+  btn.disabled = false;
+  btn.innerText = "Simpan Link";
 });
-
 
 // --- ABOUT TABS LOGIC ---
-const aboutTabs = document.querySelectorAll('.about-tab');
-const aboutTabContents = document.querySelectorAll('.about-tab-content');
+const aboutTabs = document.querySelectorAll(".about-tab");
+const aboutTabContents = document.querySelectorAll(".about-tab-content");
 
-aboutTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-        const target = tab.getAttribute('data-tab');
-        
-        // Update tabs active state
-        aboutTabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
+aboutTabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    const target = tab.getAttribute("data-tab");
 
-        // Show/Hide contents
-        aboutTabContents.forEach(content => {
-            content.style.display = 'none';
-            if (content.id === `tab-${target}`) {
-                content.style.display = 'block';
-            }
-        });
+    // Update tabs active state
+    aboutTabs.forEach((t) => t.classList.remove("active"));
+    tab.classList.add("active");
+
+    // Show/Hide contents
+    aboutTabContents.forEach((content) => {
+      content.style.display = "none";
+      if (content.id === `tab-${target}`) {
+        content.style.display = "block";
+      }
     });
+  });
 });
-
 
 // --- TOOLTIP INTERACTION ---
 document.addEventListener("click", (e) => {
   const infoContainer = e.target.closest(".info-icon-container");
 
   // Close all other active tooltips if any
-  document.querySelectorAll(".info-icon-container.active").forEach((container) => {
-    if (container !== infoContainer) {
-      container.classList.remove("active");
-    }
-  });
+  document
+    .querySelectorAll(".info-icon-container.active")
+    .forEach((container) => {
+      if (container !== infoContainer) {
+        container.classList.remove("active");
+      }
+    });
 
   if (infoContainer) {
     infoContainer.classList.toggle("active");
@@ -3075,82 +3308,83 @@ document.addEventListener("click", (e) => {
 });
 
 // --- MOBILE SIDEBAR TOGGLE ---
-const mobileToggle = document.getElementById('mobile-toggle');
-const sidebarClose = document.getElementById('sidebar-close');
-const sidebarOverlay = document.getElementById('sidebar-overlay');
-const sidebar = document.getElementById('sidebar');
+const mobileToggle = document.getElementById("mobile-toggle");
+const sidebarClose = document.getElementById("sidebar-close");
+const sidebarOverlay = document.getElementById("sidebar-overlay");
+const sidebar = document.getElementById("sidebar");
 
 function toggleSidebar() {
-  sidebar.classList.toggle('active');
-  sidebarOverlay.classList.toggle('active');
+  sidebar.classList.toggle("active");
+  sidebarOverlay.classList.toggle("active");
 }
 
-mobileToggle?.addEventListener('click', toggleSidebar);
-sidebarClose?.addEventListener('click', toggleSidebar);
-sidebarOverlay?.addEventListener('click', toggleSidebar);
-
+mobileToggle?.addEventListener("click", toggleSidebar);
+sidebarClose?.addEventListener("click", toggleSidebar);
+sidebarOverlay?.addEventListener("click", toggleSidebar);
 
 // Close sidebar when nav item is clicked (on mobile)
-document.querySelectorAll('.nav-item').forEach(item => {
-  item.addEventListener('click', () => {
+document.querySelectorAll(".nav-item").forEach((item) => {
+  item.addEventListener("click", () => {
     if (window.innerWidth <= 1024) {
-      sidebar.classList.remove('active');
-      sidebarOverlay.classList.remove('active');
+      sidebar.classList.remove("active");
+      sidebarOverlay.classList.remove("active");
     }
   });
 });
 
 // --- QR GENERATOR TOOL ---
-const qrInput = document.getElementById('qr-input');
-const qrResult = document.getElementById('qr-result');
-const btnGenerateQr = document.getElementById('btn-generate-qr');
-const btnDownloadQr = document.getElementById('btn-download-qr');
+const qrInput = document.getElementById("qr-input");
+const qrResult = document.getElementById("qr-result");
+const btnGenerateQr = document.getElementById("btn-generate-qr");
+const btnDownloadQr = document.getElementById("btn-download-qr");
 
-btnGenerateQr?.addEventListener('click', () => {
-    const url = qrInput.value.trim();
-    if (!url) {
-        showToast('Masukkan URL terlebih dahulu', 'error');
-        return;
-    }
-    
-    // Using QR Server API
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(url)}`;
-    qrResult.src = qrUrl;
-    showToast('QR Code diperbarui!', 'success');
+btnGenerateQr?.addEventListener("click", () => {
+  const url = qrInput.value.trim();
+  if (!url) {
+    showToast("Masukkan URL terlebih dahulu", "error");
+    return;
+  }
+
+  // Using QR Server API
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(url)}`;
+  qrResult.src = qrUrl;
+  showToast("QR Code diperbarui!", "success");
 });
 
-btnDownloadQr?.addEventListener('click', async () => {
-    const url = qrResult.src;
-    try {
-        const response = await fetch(url);
-        const blob = await response.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = 'jawita-ar-qr.png';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(blobUrl);
-    } catch (error) {
-        console.error('Download failed:', error);
-        showToast('Gagal mendownload QR', 'error');
-    }
+btnDownloadQr?.addEventListener("click", async () => {
+  const url = qrResult.src;
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = "jawita-ar-qr.png";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(blobUrl);
+  } catch (error) {
+    console.error("Download failed:", error);
+    showToast("Gagal mendownload QR", "error");
+  }
 });
 
 // --- EXPORT ANALYTICS REPORTS ---
 
 // PDF Export (Structured formal business report using jsPDF and jspdf-autotable)
-window.exportDashboardPDF = async function() {
+window.exportDashboardPDF = async function () {
   // 1. Identify active timeframe from dashboard buttons
-  const activeBtn = document.querySelector('.time-filter-btn.active');
-  const timeframe = activeBtn ? activeBtn.getAttribute('onclick').match(/'([^']+)'/)[1] : 'weekly';
-  
+  const activeBtn = document.querySelector(".time-filter-btn.active");
+  const timeframe = activeBtn
+    ? activeBtn.getAttribute("onclick").match(/'([^']+)'/)[1]
+    : "weekly";
+
   let rangeText = "";
-  if (timeframe === 'weekly') {
+  if (timeframe === "weekly") {
     rangeText = "Mingguan (7 Hari Terakhir)";
-  } else if (timeframe === 'monthly') {
+  } else if (timeframe === "monthly") {
     rangeText = "Bulanan (30 Hari Terakhir)";
   } else {
     rangeText = "Semua Waktu (All-Time)";
@@ -3161,9 +3395,9 @@ window.exportDashboardPDF = async function() {
   try {
     // 2. Fetch all scans from Supabase to filter precisely
     const { data: scans, error } = await supabase
-      .from('scans')
-      .select('id, scanned_at, ar_targets(id, nama, type)')
-      .order('scanned_at', { ascending: false });
+      .from("scans")
+      .select("id, scanned_at, ar_targets(id, nama, type)")
+      .order("scanned_at", { ascending: false });
 
     if (error) throw error;
 
@@ -3174,22 +3408,22 @@ window.exportDashboardPDF = async function() {
 
     // 3. Filter data by date range
     let cutoff = null;
-    if (timeframe === 'weekly') {
+    if (timeframe === "weekly") {
       cutoff = new Date();
       cutoff.setDate(cutoff.getDate() - 7);
-    } else if (timeframe === 'monthly') {
+    } else if (timeframe === "monthly") {
       cutoff = new Date();
       cutoff.setDate(cutoff.getDate() - 30);
     }
 
-    const filteredScans = scans.filter(s => {
+    const filteredScans = scans.filter((s) => {
       if (!cutoff) return true;
       return new Date(s.scanned_at) >= cutoff;
     });
 
     // 4. Calculate stats & popular destinations for this range
     const destinationCounts = {};
-    filteredScans.forEach(s => {
+    filteredScans.forEach((s) => {
       if (s.ar_targets) {
         const id = s.ar_targets.id;
         const nama = s.ar_targets.nama;
@@ -3201,21 +3435,23 @@ window.exportDashboardPDF = async function() {
       }
     });
 
-    const topDestinations = Object.values(destinationCounts)
-      .sort((a, b) => b.count - a.count);
+    const topDestinations = Object.values(destinationCounts).sort(
+      (a, b) => b.count - a.count,
+    );
 
     const activeSpotsCount = Object.keys(destinationCounts).length;
-    const totalAdmins = document.getElementById('stat-total-admins')?.innerText || '0';
+    const totalAdmins =
+      document.getElementById("stat-total-admins")?.innerText || "0";
 
     // 5. Initialize jsPDF
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p', 'mm', 'a4'); // Portrait, A4 size
+    const doc = new jsPDF("p", "mm", "a4"); // Portrait, A4 size
     const pageWidth = 210;
 
     // PAGE 1: HEADER & EXECUTIVE SUMMARY
     // Deep slate top border accent
     doc.setFillColor(30, 41, 59);
-    doc.rect(0, 0, pageWidth, 8, 'F');
+    doc.rect(0, 0, pageWidth, 8, "F");
 
     // Platform Logo & Subtitle
     doc.setFont("Helvetica", "bold");
@@ -3242,32 +3478,50 @@ window.exportDashboardPDF = async function() {
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(9.5);
     doc.setTextColor(70, 80, 90);
-    
+
     // Detailed Metadata Table Box style
     doc.text(`Periode Laporan : ${rangeText}`, 14, 51);
-    doc.text(`Tanggal Cetak   : ${new Date().toLocaleString('id-ID')}`, 14, 56);
+    doc.text(`Tanggal Cetak   : ${new Date().toLocaleString("id-ID")}`, 14, 56);
     doc.text(`Dicetak Oleh    : Administrator WebAdmin`, 14, 61);
 
     // EXECUTIVE SUMMARY TABLE
     doc.autoTable({
       startY: 68,
-      head: [['Metrik Ringkasan Laporan', 'Nilai Tercatat']],
+      head: [["Metrik Ringkasan Laporan", "Nilai Tercatat"]],
       body: [
-        ['Total Scan Pengunjung (Engagement)', `${filteredScans.length} kali scan`],
-        ['Target AR Aktif Di-scan (Active Spots)', `${activeSpotsCount} target aktif`],
-        ['Administrator Terverifikasi (Verified Admins)', `${totalAdmins} user`]
+        [
+          "Total Scan Pengunjung (Engagement)",
+          `${filteredScans.length} kali scan`,
+        ],
+        [
+          "Target AR Aktif Di-scan (Active Spots)",
+          `${activeSpotsCount} target aktif`,
+        ],
+        [
+          "Administrator Terverifikasi (Verified Admins)",
+          `${totalAdmins} user`,
+        ],
       ],
-      theme: 'striped',
-      headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+      theme: "striped",
+      headStyles: {
+        fillColor: [30, 41, 59],
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+        fontSize: 10,
+      },
       styles: { fontSize: 9.5, cellPadding: 5 },
-      margin: { left: 14, right: 14 }
+      margin: { left: 14, right: 14 },
     });
 
     // TOP DESTINATIONS TABLE
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(11);
     doc.setTextColor(30, 41, 59);
-    doc.text("DAFTAR TARGET AR TERPOPULER (ENGAGEMENT TERTINGGI)", 14, doc.lastAutoTable.finalY + 12);
+    doc.text(
+      "DAFTAR TARGET AR TERPOPULER (ENGAGEMENT TERTINGGI)",
+      14,
+      doc.lastAutoTable.finalY + 12,
+    );
 
     const topDestRows = topDestinations.slice(0, 10).map((item, idx) => {
       const maxCount = topDestinations[0]?.count || 1;
@@ -3277,17 +3531,33 @@ window.exportDashboardPDF = async function() {
 
     doc.autoTable({
       startY: doc.lastAutoTable.finalY + 16,
-      head: [['Peringkat', 'Nama Target AR', 'Kategori', 'Total Scan', 'Kontribusi Popularitas']],
-      body: topDestRows.length > 0 ? topDestRows : [['-', 'Belum ada data interaksi di periode ini', '-', '-', '-']],
-      theme: 'grid',
-      headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+      head: [
+        [
+          "Peringkat",
+          "Nama Target AR",
+          "Kategori",
+          "Total Scan",
+          "Kontribusi Popularitas",
+        ],
+      ],
+      body:
+        topDestRows.length > 0
+          ? topDestRows
+          : [["-", "Belum ada data interaksi di periode ini", "-", "-", "-"]],
+      theme: "grid",
+      headStyles: {
+        fillColor: [15, 23, 42],
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+        fontSize: 9,
+      },
       styles: { fontSize: 9, cellPadding: 4 },
-      margin: { left: 14, right: 14 }
+      margin: { left: 14, right: 14 },
     });
 
     // PAGE 2: DETAILED TRANSACTION LOGS
     doc.addPage();
-    
+
     // Header for Page 2
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(13);
@@ -3297,23 +3567,37 @@ window.exportDashboardPDF = async function() {
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(100, 110, 120);
-    doc.text(`Rincian log scan aktif periode: ${rangeText} | Total: ${filteredScans.length} data`, 14, 25);
+    doc.text(
+      `Rincian log scan aktif periode: ${rangeText} | Total: ${filteredScans.length} data`,
+      14,
+      25,
+    );
 
     const logRows = filteredScans.map((s, idx) => {
-      const scanTime = new Date(s.scanned_at).toLocaleString('id-ID');
-      const name = s.ar_targets ? s.ar_targets.nama : 'Target Dihapus';
-      const type = s.ar_targets ? s.ar_targets.type : 'N/A';
+      const scanTime = new Date(s.scanned_at).toLocaleString("id-ID");
+      const name = s.ar_targets ? s.ar_targets.nama : "Target Dihapus";
+      const type = s.ar_targets ? s.ar_targets.type : "N/A";
       return [idx + 1, s.id, scanTime, name, type];
     });
 
     doc.autoTable({
       startY: 30,
-      head: [['No', 'ID Scan', 'Waktu Pindai (Scan)', 'Nama Target AR', 'Kategori']],
-      body: logRows.length > 0 ? logRows : [['-', 'Belum ada data scan', '-', '-', '-']],
-      theme: 'striped',
-      headStyles: { fillColor: [71, 85, 105], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8.5 },
+      head: [
+        ["No", "ID Scan", "Waktu Pindai (Scan)", "Nama Target AR", "Kategori"],
+      ],
+      body:
+        logRows.length > 0
+          ? logRows
+          : [["-", "Belum ada data scan", "-", "-", "-"]],
+      theme: "striped",
+      headStyles: {
+        fillColor: [71, 85, 105],
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+        fontSize: 8.5,
+      },
       styles: { fontSize: 8, cellPadding: 3.5 },
-      margin: { left: 14, right: 14 }
+      margin: { left: 14, right: 14 },
     });
 
     // Signature Block at the bottom of the table
@@ -3333,11 +3617,11 @@ window.exportDashboardPDF = async function() {
       doc.setTextColor(30, 41, 59);
       doc.text("Mengetahui,", 138, y);
       doc.text("Administrator D'Jaswita AR WebAdmin", 138, y + 5);
-      
+
       // Signature line
       doc.setDrawColor(180, 185, 195);
       doc.line(138, y + 25, 190, y + 25);
-      
+
       doc.setFontSize(8.5);
       doc.setTextColor(120, 130, 140);
       doc.text("Sistem Verifikasi Digital Laporan", 138, y + 29);
@@ -3346,7 +3630,6 @@ window.exportDashboardPDF = async function() {
     // Save and download PDF
     doc.save(`DjaswitaAR_Laporan_Analisis_${timeframe}_${Date.now()}.pdf`);
     showToast("PDF Laporan resmi berhasil diunduh!", "success");
-
   } catch (err) {
     console.error("PDF generation failed:", err);
     showToast("Gagal menghasilkan PDF Laporan: " + err.message, "error");
@@ -3354,26 +3637,31 @@ window.exportDashboardPDF = async function() {
 };
 
 // CSV / Styled Excel Export (Excel compatible structured report with full styling and auto-borders)
-window.exportDashboardCSV = async function() {
-  const activeBtn = document.querySelector('.time-filter-btn.active');
-  const timeframe = activeBtn ? activeBtn.getAttribute('onclick').match(/'([^']+)'/)[1] : 'weekly';
-  
+window.exportDashboardCSV = async function () {
+  const activeBtn = document.querySelector(".time-filter-btn.active");
+  const timeframe = activeBtn
+    ? activeBtn.getAttribute("onclick").match(/'([^']+)'/)[1]
+    : "weekly";
+
   let rangeText = "";
-  if (timeframe === 'weekly') {
+  if (timeframe === "weekly") {
     rangeText = "Mingguan (7 Hari Terakhir)";
-  } else if (timeframe === 'monthly') {
+  } else if (timeframe === "monthly") {
     rangeText = "Bulanan (30 Hari Terakhir)";
   } else {
     rangeText = "Semua Waktu (All-Time)";
   }
 
-  showToast(`Mengekstrak spreadsheet ber-style periode ${timeframe}...`, "info");
-  
+  showToast(
+    `Mengekstrak spreadsheet ber-style periode ${timeframe}...`,
+    "info",
+  );
+
   try {
     const { data: scans, error } = await supabase
-      .from('scans')
-      .select('id, scanned_at, ar_targets(id, nama, type)')
-      .order('scanned_at', { ascending: false });
+      .from("scans")
+      .select("id, scanned_at, ar_targets(id, nama, type)")
+      .order("scanned_at", { ascending: false });
 
     if (error) throw error;
 
@@ -3384,22 +3672,22 @@ window.exportDashboardCSV = async function() {
 
     // Filter by Date Range
     let cutoff = null;
-    if (timeframe === 'weekly') {
+    if (timeframe === "weekly") {
       cutoff = new Date();
       cutoff.setDate(cutoff.getDate() - 7);
-    } else if (timeframe === 'monthly') {
+    } else if (timeframe === "monthly") {
       cutoff = new Date();
       cutoff.setDate(cutoff.getDate() - 30);
     }
 
-    const filteredScans = scans.filter(s => {
+    const filteredScans = scans.filter((s) => {
       if (!cutoff) return true;
       return new Date(s.scanned_at) >= cutoff;
     });
 
     // Grouping Top Destinations
     const destinationCounts = {};
-    filteredScans.forEach(s => {
+    filteredScans.forEach((s) => {
       if (s.ar_targets) {
         const id = s.ar_targets.id;
         const nama = s.ar_targets.nama;
@@ -3411,11 +3699,13 @@ window.exportDashboardCSV = async function() {
       }
     });
 
-    const topDestinations = Object.values(destinationCounts)
-      .sort((a, b) => b.count - a.count);
+    const topDestinations = Object.values(destinationCounts).sort(
+      (a, b) => b.count - a.count,
+    );
 
     const activeSpotsCount = Object.keys(destinationCounts).length;
-    const totalAdmins = document.getElementById('stat-total-admins')?.innerText || '0';
+    const totalAdmins =
+      document.getElementById("stat-total-admins")?.innerText || "0";
 
     // Build premium XML/HTML-based styled spreadsheet
     let excelContent = `
@@ -3449,7 +3739,7 @@ window.exportDashboardCSV = async function() {
         <tr>
           <td colspan="5" class="subtitle-cell">
             Periode Laporan: ${rangeText} | 
-            Tanggal Cetak: ${new Date().toLocaleString('id-ID')} | 
+            Tanggal Cetak: ${new Date().toLocaleString("id-ID")} | 
             Status: Resmi WebAdmin Export
           </td>
         </tr>
@@ -3541,9 +3831,9 @@ window.exportDashboardCSV = async function() {
     `;
 
     filteredScans.forEach((s, idx) => {
-      const scanTime = new Date(s.scanned_at).toLocaleString('id-ID');
-      const name = s.ar_targets ? s.ar_targets.nama : 'Target Dihapus';
-      const type = s.ar_targets ? s.ar_targets.type : 'N/A';
+      const scanTime = new Date(s.scanned_at).toLocaleString("id-ID");
+      const name = s.ar_targets ? s.ar_targets.nama : "Target Dihapus";
+      const type = s.ar_targets ? s.ar_targets.type : "N/A";
       excelContent += `
         <tr>
           <td class="rank-col">${idx + 1}</td>
@@ -3561,18 +3851,20 @@ window.exportDashboardCSV = async function() {
     </html>
     `;
 
-    const blob = new Blob([excelContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const blob = new Blob([excelContent], {
+      type: "application/vnd.ms-excel;charset=utf-8;",
+    });
     const url = URL.createObjectURL(blob);
-    
+
     const link = document.createElement("a");
     link.href = url;
     link.download = `DjaswitaAR_Spreadsheet_Laporan_${timeframe}_${Date.now()}.xls`;
     document.body.appendChild(link);
     link.click();
-    
+
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    
+
     showToast("Excel Laporan ber-style premium berhasil diunduh!", "success");
   } catch (err) {
     console.error("Excel generation failed:", err);
