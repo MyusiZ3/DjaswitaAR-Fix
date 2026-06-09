@@ -132,6 +132,7 @@ let deleteType = null; // 'target' or 'admin'
 // Prevents redundant fetches on tab focus (Supabase onAuthStateChange triggers)
 let isInitialized = false;
 let currentUserId = null;
+let scansSubscription = null;
 
 let logsSortAsc = false;
 let appSettingsLogsCurrentPage = 1;
@@ -949,10 +950,12 @@ async function handleAuthState(session) {
       showSection(lastSection);
 
       fetchData();
+      setupRealtimeScans();
     } else {
       isInitialized = false;
       currentUserId = null;
       localStorage.removeItem("login_timestamp"); // Clear timestamp on logout
+      removeRealtimeScans();
       if (loginScreen) {
         loginScreen.style.display = "flex";
         loginScreen.classList.remove("init-hidden");
@@ -969,6 +972,44 @@ async function handleAuthState(session) {
       loader.style.opacity = "0";
       setTimeout(() => loader.remove(), 500);
     }
+  }
+}
+
+function setupRealtimeScans() {
+  if (scansSubscription) return;
+
+  scansSubscription = supabase
+    .channel("public-scans-changes")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "scans" },
+      (payload) => {
+        console.log("Realtime event on scans table:", payload);
+        const activeSection = localStorage.getItem("activeSection") || "section-dashboard";
+        if (activeSection === "section-dashboard") {
+          const activeBtn = document.querySelector(".time-filter-btn.active");
+          let timeframe = "weekly";
+          if (activeBtn) {
+            const onclickAttr = activeBtn.getAttribute("onclick");
+            if (onclickAttr) {
+              if (onclickAttr.includes("weekly")) timeframe = "weekly";
+              else if (onclickAttr.includes("monthly")) timeframe = "monthly";
+              else if (onclickAttr.includes("alltime")) timeframe = "alltime";
+            }
+          }
+          fetchAnalytics(timeframe);
+        }
+      }
+    )
+    .subscribe((status) => {
+      console.log("Supabase Realtime subscription status:", status);
+    });
+}
+
+function removeRealtimeScans() {
+  if (scansSubscription) {
+    supabase.removeChannel(scansSubscription);
+    scansSubscription = null;
   }
 }
 
