@@ -314,6 +314,11 @@ DjaswitaAR-Fix/
 │   │   │   ├── Blackboxtesting_admin_dashboard_result.md # Hasil uji Dashboard CMS
 │   │   │   ├── Blackboxtesting_unity_app_result.md       # Hasil uji Unity Editor Sim
 │   │   │   └── Blackboxtesting_app_build_result.md       # Hasil uji Android Build Fisik
+│   │   ├── Requirement/           # Output Dokumen Word (.docx) & Markdown (.md)
+│   │   │   ├── Dokumen_Kebutuhan_dan_Perancangan_Jadwal.md/.docx # Fitur & Timeline Agile
+│   │   │   ├── Dokumen_Perancangan_Sistem.docx                   # Arsitektur & Database
+│   │   │   ├── Laporan_Pengujian_Blackbox.docx                   # Hasil Uji Fungsional
+│   │   │   └── User_manual_Djaswita.md/.docx                     # Panduan Penggunaan Sistem
 │   │   └── *.md                   # Rencana gaya UI (Style Plans) & Audit Keamanan
 │   ├── public/                    # Aset publik statis untuk web server
 │   │   ├── favicon.svg            # Ikon browser (logo tab)
@@ -595,6 +600,24 @@ Agar CMS Web Admin yang berjalan di komputer lokal (`localhost:5173`) atau domai
    * `https://domain-hosting-anda.com` (Ubah dengan URL domain dasbor produksi Anda jika sudah dideploy)
 5. Klik **Save** di bagian bawah halaman untuk menerapkan perubahan.
 
+### F. Mengaktifkan Supabase Realtime (Kanal WebSocket)
+
+Dashboard Web Admin Djaswita AR memanfaatkan koneksi WebSocket real-time untuk memperbarui grafik statistik pemindaian secara instan setiap kali terjadi aktivitas scan dari aplikasi mobile. Secara default, fitur Realtime di Supabase dinonaktifkan untuk tabel baru. Anda **wajib** mengaktifkannya dengan salah satu dari dua cara berikut:
+
+#### Cara 1: Melalui SQL Editor (Direkomendasikan)
+Jalankan perintah SQL berikut pada menu **SQL Editor** di Dashboard Supabase untuk mendaftarkan tabel `scans` ke dalam publikasi realtime:
+```sql
+ALTER PUBLICATION supabase_realtime ADD TABLE scans;
+```
+
+#### Cara 2: Melalui UI Dashboard Supabase
+1. Masuk ke dashboard proyek Supabase Anda.
+2. Di menu navigasi kiri, pilih **Database** (ikon silinder/database).
+3. Pilih menu **Publications**.
+4. Klik pada publikasi bernama **`supabase_realtime`** (atau edit publikasi tersebut).
+5. Pada bagian tabel yang terdaftar, centang atau aktifkan toggle untuk tabel **`scans`**.
+6. Simpan perubahan Anda.
+
 ---
 
 ## 5. Unity AR Application (Unity 6 Core)
@@ -670,6 +693,7 @@ Agar kamera augmented reality (AR) berbasis Vuforia dapat memindai marker fisik 
 
 ## 6. Fitur Unggulan & Optimasi Sistem (Terbaru)
 
+- **Analitik Real-Time Berbasis Supabase Realtime API (WebSockets):** Dashboard Admin terintegrasi langsung dengan saluran WebSocket Supabase pada tabel `scans`. Ketika aplikasi mobile Android melakukan scan target dan mengirimkan data scan ke Supabase, dashboard admin akan mendeteksi event `postgres_changes` secara instan dan memperbarui grafik analitik pemindaian tanpa perlu memuat ulang (*reload*) halaman.
 - **Proteksi Sesi & Auto-Logout 12 Jam:** Mekanisme pengamanan akun administrator yang secara aktif memantau durasi sesi login melalui interval background (setiap 60 detik) dan saat reload halaman. Jika sesi aktif telah mencapai 12 jam, sistem secara otomatis melakukan pembersihan kredensial lokal dan mengalihkan pengguna kembali ke halaman login.
 - **Pencegahan Pop-up Validasi Konfigurasi (Smart UX Validation Bypass):** Desain form pengaturan yang cerdas di mana verifikasi password otentikasi ganda hanya dipicu apabila terdapat data konfigurasi yang diisi oleh pengguna. Jika semua kolom masukan kosong, sistem langsung mengembalikan toast peringatan tanpa menampilkan pop-up password untuk menjaga kenyamanan alur kerja (UX) admin.
 - **Keamanan Konfigurasi Aktif (Masking & Verification):** Sistem perlindungan data kredensial API Supabase & GDrive di WebAdmin dengan penyensoran otomatis (*masking*), sistem verifikasi kata sandi admin untuk membuka kunci, serta fitur penguncian otomatis (*auto-lock* dalam 30 detik) demi mencegah kebocoran kunci API.
