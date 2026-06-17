@@ -133,6 +133,7 @@ let deleteType = null; // 'target' or 'admin'
 let isInitialized = false;
 let currentUserId = null;
 let scansSubscription = null;
+let realtimeDebounceTimer = null;
 
 let logsSortAsc = false;
 let appSettingsLogsCurrentPage = 1;
@@ -982,27 +983,42 @@ function setupRealtimeScans() {
     .channel("public-scans-changes")
     .on(
       "postgres_changes",
-      { event: "*", schema: "public", table: "scans" },
+      { event: "INSERT", schema: "public", table: "scans" },
       (payload) => {
-        console.log("Realtime event on scans table:", payload);
-        const activeSection = localStorage.getItem("activeSection") || "section-dashboard";
-        if (activeSection === "section-dashboard") {
+        console.log("[Realtime] New scan detected:", payload);
+
+        // Debounce: tunggu 500ms setelah event terakhir sebelum fetch
+        // agar tidak banjir request jika ada banyak scan sekaligus
+        clearTimeout(realtimeDebounceTimer);
+        realtimeDebounceTimer = setTimeout(() => {
+          const activeSection =
+            localStorage.getItem("activeSection") || "section-dashboard";
+          if (activeSection !== "section-dashboard") return;
+
+          // Baca timeframe aktif dari data-timeframe attribute (lebih reliable)
           const activeBtn = document.querySelector(".time-filter-btn.active");
-          let timeframe = "weekly";
-          if (activeBtn) {
-            const onclickAttr = activeBtn.getAttribute("onclick");
-            if (onclickAttr) {
-              if (onclickAttr.includes("weekly")) timeframe = "weekly";
-              else if (onclickAttr.includes("monthly")) timeframe = "monthly";
-              else if (onclickAttr.includes("alltime")) timeframe = "alltime";
-            }
-          }
+          const timeframe =
+            activeBtn?.dataset?.timeframe || // pakai data-timeframe jika ada
+            (() => {
+              // fallback: parse dari onclick string
+              const onclickAttr = activeBtn?.getAttribute("onclick") || "";
+              if (onclickAttr.includes("monthly")) return "monthly";
+              if (onclickAttr.includes("alltime")) return "alltime";
+              return "weekly";
+            })();
+
           fetchAnalytics(timeframe);
-        }
+        }, 500);
       }
     )
     .subscribe((status) => {
-      console.log("Supabase Realtime subscription status:", status);
+      console.log("[Realtime] Scans subscription status:", status);
+      if (status === "CHANNEL_ERROR") {
+        console.warn(
+          "[Realtime] Supabase Realtime error. Pastikan Replication " +
+          "sudah diaktifkan untuk tabel 'scans' di Supabase Dashboard."
+        );
+      }
     });
 }
 

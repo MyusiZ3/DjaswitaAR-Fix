@@ -72,9 +72,9 @@ export const DashboardSection = () => `
           <p id="scan-activity-desc" style="font-size: 0.875rem; color: var(--text-dim); margin-top: 2px;">Tren interaksi pengunjung dalam 7 hari terakhir.</p>
         </div>
         <div style="display: flex; gap: 4px; background: rgba(0, 0, 0, 0.2); padding: 4px; border-radius: 8px; border: 1px solid var(--glass-border);">
-          <button class="time-filter-btn active" onclick="updateScanTimeframe('weekly', this)">Week</button>
-          <button class="time-filter-btn" onclick="updateScanTimeframe('monthly', this)">Month</button>
-          <button class="time-filter-btn" onclick="updateScanTimeframe('alltime', this)">All</button>
+          <button class="time-filter-btn active" data-timeframe="weekly" onclick="updateScanTimeframe('weekly', this)">Week</button>
+          <button class="time-filter-btn" data-timeframe="monthly" onclick="updateScanTimeframe('monthly', this)">Month</button>
+          <button class="time-filter-btn" data-timeframe="alltime" onclick="updateScanTimeframe('alltime', this)">All</button>
         </div>
       </div>
       <div style="padding: 1.5rem; height: 320px">
