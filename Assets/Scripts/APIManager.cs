@@ -28,6 +28,10 @@ public class APIManager : MonoBehaviour
     public string activeGDriveApiKey;
     public bool isInitialized = false;
 
+    [Header("Hot-Reload / Targets Cache")]
+    public List<ARTargetData> targetsCache = new List<ARTargetData>();
+    public event Action<List<ARTargetData>> OnTargetsUpdated;
+
     private void Awake()
     {
         if (Instance == null)
@@ -237,5 +241,26 @@ public class APIManager : MonoBehaviour
             }
         }
         return url;
+    }
+
+    /// <summary>
+    /// Refreshes the target cache and triggers the hot-reload event.
+    /// </summary>
+    public IEnumerator RefreshTargets(Action<List<ARTargetData>> onSuccess = null, Action<string> onError = null)
+    {
+        yield return GetAllTargets(
+            (dataArray) => {
+                targetsCache.Clear();
+                if (dataArray != null)
+                {
+                    targetsCache.AddRange(dataArray);
+                }
+                OnTargetsUpdated?.Invoke(targetsCache);
+                onSuccess?.Invoke(targetsCache);
+            },
+            (error) => {
+                onError?.Invoke(error);
+            }
+        );
     }
 }

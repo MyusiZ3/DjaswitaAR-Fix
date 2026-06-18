@@ -17,8 +17,15 @@ public class DynamicMarkerManager : MonoBehaviour
     public static DynamicMarkerManager Instance;
     private int activeMarkers = 0;
     
-    // Set untuk mencegah duplikasi marker yang diload
-    private HashSet<string> loadedMarkers = new HashSet<string>();
+    // Dictionaries to prevent duplicate marker loading and track runtime active handlers
+    private Dictionary<string, ARTargetData> loadedMarkers = new Dictionary<string, ARTargetData>();
+    private Dictionary<string, ImageTargetBehaviour> activeVuforiaTargets = new Dictionary<string, ImageTargetBehaviour>();
+    private Dictionary<string, ARTargetHandler> activeHandlers = new Dictionary<string, ARTargetHandler>();
+
+    [Header("Real-Time Synchronization")]
+    public bool enableRealTimeSync = true;
+    public float syncInterval = 15f; // Check for updates every 15 seconds
+    private Coroutine syncCoroutine;
 
     private void Awake()
     {
@@ -81,17 +88,19 @@ public class DynamicMarkerManager : MonoBehaviour
                 {
                     // Internet terputus!
                     ShowNoInternet();
+                    if (syncCoroutine != null)
+                    {
+                        StopCoroutine(syncCoroutine);
+                        syncCoroutine = null;
+                    }
                 }
                 else
                 {
                     // Internet kembali!
                     ShowScanPrompt();
                     
-                    // Jika sebelumnya gagal load database, coba load ulang
-                    if (loadedMarkers.Count == 0)
-                    {
-                        StartCoroutine(LoadMarkersFromDatabase());
-                    }
+                    // Coba sync ulang metadata dari Supabase
+                    StartCoroutine(LoadMarkersFromDatabase());
                 }
             }
         }
@@ -157,18 +166,14 @@ public class DynamicMarkerManager : MonoBehaviour
     {
         Debug.Log("[DynamicMarker] Fetching data from Supabase...");
         
-        yield return APIManager.Instance.GetAllTargets(
+        yield return APIManager.Instance.RefreshTargets(
             (dataList) => {
-                // Pastikan kembali ke mode scan prompt jika berhasil
-                ShowScanPrompt();
-                
-                foreach (var data in dataList)
+                SyncMarkersWithDatabase(dataList);
+
+                // Start periodic polling sync if not already running
+                if (syncCoroutine == null && enableRealTimeSync)
                 {
-                    if (!string.IsNullOrEmpty(data.marker_url) && !loadedMarkers.Contains(data.id))
-                    {
-                        loadedMarkers.Add(data.id);
-                        StartCoroutine(CreateRuntimeTarget(data));
-                    }
+                    syncCoroutine = StartCoroutine(SyncMarkersPeriodic());
                 }
             },
             (error) => {
@@ -176,6 +181,120 @@ public class DynamicMarkerManager : MonoBehaviour
                 ShowNoInternet();
             }
         );
+    }
+
+    private IEnumerator SyncMarkersPeriodic()
+    {
+        while (enableRealTimeSync)
+        {
+            yield return new WaitForSeconds(syncInterval);
+
+            if (Application.internetReachability != NetworkReachability.NotReachable)
+            {
+                Debug.Log("[DynamicMarker] Polling Supabase for target changes...");
+                yield return APIManager.Instance.RefreshTargets(
+                    (dataList) => {
+                        SyncMarkersWithDatabase(dataList);
+                    },
+                    (error) => {
+                        Debug.LogWarning("[DynamicMarker] Polling sync failed: " + error);
+                    }
+                );
+            }
+        }
+    }
+
+    private void SyncMarkersWithDatabase(List<ARTargetData> dataList)
+    {
+        if (dataList == null) return;
+
+        // Pastikan kembali ke mode scan prompt jika berhasil
+        ShowScanPrompt();
+
+        // 1. Identify deleted targets
+        HashSet<string> currentDbIds = new HashSet<string>();
+        foreach (var data in dataList)
+        {
+            currentDbIds.Add(data.id);
+        }
+
+        List<string> targetsToDelete = new List<string>();
+        foreach (var loadedId in loadedMarkers.Keys)
+        {
+            if (!currentDbIds.Contains(loadedId))
+            {
+                targetsToDelete.Add(loadedId);
+            }
+        }
+
+        foreach (var idToDelete in targetsToDelete)
+        {
+            Debug.Log($"[DynamicMarker] Target {idToDelete} deleted from database. Removing from client.");
+            DestroyRuntimeTarget(idToDelete);
+        }
+
+        // 2. Identify new or updated targets
+        foreach (var data in dataList)
+        {
+            if (string.IsNullOrEmpty(data.marker_url)) continue;
+
+            if (!loadedMarkers.TryGetValue(data.id, out ARTargetData oldData))
+            {
+                // New target!
+                loadedMarkers[data.id] = data;
+                StartCoroutine(CreateRuntimeTarget(data));
+            }
+            else
+            {
+                // Existing target: check if marker image URL has changed
+                if (oldData.marker_url != data.marker_url)
+                {
+                    Debug.Log($"[DynamicMarker] Marker image URL changed for target {data.id}. Re-creating target.");
+                    DestroyRuntimeTarget(data.id);
+                    loadedMarkers[data.id] = data;
+                    StartCoroutine(CreateRuntimeTarget(data));
+                }
+                else
+                {
+                    // Update metadata and reload content if needed
+                    loadedMarkers[data.id] = data;
+                    if (activeHandlers.TryGetValue(data.id, out ARTargetHandler handler))
+                    {
+                        if (handler != null)
+                        {
+                            handler.UpdateTargetData(data);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void DestroyRuntimeTarget(string targetId)
+    {
+        if (activeVuforiaTargets.TryGetValue(targetId, out ImageTargetBehaviour target))
+        {
+            if (target != null)
+            {
+                Debug.Log($"[DynamicMarker] Destroying observer target: {targetId}");
+                if (target.gameObject != null)
+                {
+                    Destroy(target.gameObject);
+                }
+            }
+            activeVuforiaTargets.Remove(targetId);
+        }
+
+        if (activeHandlers.TryGetValue(targetId, out ARTargetHandler handler))
+        {
+            if (handler != null && handler.gameObject != null)
+            {
+                Destroy(handler.gameObject);
+            }
+            activeHandlers.Remove(targetId);
+        }
+
+        loadedMarkers.Remove(targetId);
     }
 
     private IEnumerator CreateRuntimeTarget(ARTargetData data)
@@ -235,6 +354,7 @@ public class DynamicMarkerManager : MonoBehaviour
             if (target != null)
             {
                 Debug.Log($"[DynamicMarker] Created target: {data.id} with width 0.16m");
+                activeVuforiaTargets[data.id] = target;
                 
                 if (uiPrefab != null)
                 {
@@ -245,6 +365,7 @@ public class DynamicMarkerManager : MonoBehaviour
                     ARTargetHandler handler = content.GetComponent<ARTargetHandler>();
                     if (handler != null)
                     {
+                        activeHandlers[data.id] = handler;
                         handler.Initialize(data);
                     }
                 }

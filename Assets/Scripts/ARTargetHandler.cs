@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 using UnityEngine.Serialization;
+using System.Collections.Generic;
 // using Siccity.GLTFUtility; // REMOVED: Incompatible with Draco compression and URP Android
 // using GLTFast; (dipanggil langsung via namespace)
 public class ARTargetHandler : MonoBehaviour
@@ -667,6 +668,101 @@ public class ARTargetHandler : MonoBehaviour
             {
                 // Ini akan menghilangkan 'gap' ekstra jika Vertical Layout Group punya spacing
                 LayoutRebuilder.ForceRebuildLayoutImmediate(pr);
+            }
+        }
+    }
+
+    public ARTargetData GetTargetData()
+    {
+        return mData;
+    }
+
+    public bool IsTargetPresent()
+    {
+        return mIsTargetPresent;
+    }
+
+    public void UpdateTargetData(ARTargetData newData)
+    {
+        if (newData == null) return;
+
+        if (mData == null)
+        {
+            Initialize(newData);
+            return;
+        }
+
+        Debug.Log($"[ARTargetHandler] Hot-reloading metadata for target: {newData.nama} ({newData.id})");
+
+        // Check which URLs or critical configurations changed
+        bool modelUrlChanged = mData.model_url != newData.model_url;
+        bool videoUrlChanged = mData.video_url != newData.video_url;
+        bool slideUrlsChanged = mData.slide_urls != newData.slide_urls;
+        bool layoutChanged = mData.target_layout != newData.target_layout;
+        bool contentTypeChanged = mData.main_content_type != newData.main_content_type;
+
+        // Evict old slide images from memory cache to prevent memory corruption/VRAM bloat
+        if (slideUrlsChanged && mImageUrls != null)
+        {
+            HashSet<string> newUrls = new HashSet<string>();
+            if (!string.IsNullOrEmpty(newData.slide_urls))
+            {
+                string[] split = newData.slide_urls.Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
+                foreach (var u in split) newUrls.Add(u.Trim());
+            }
+
+            foreach (var oldUrl in mImageUrls)
+            {
+                if (!newUrls.Contains(oldUrl))
+                {
+                    AssetCacheManager.EvictTextureFromMemory(oldUrl);
+                }
+            }
+        }
+
+        // If model URL changed or content type changed to non-3D, destroy the existing model
+        if (modelUrlChanged || contentTypeChanged)
+        {
+            if (mCurrentModel != null)
+            {
+                Debug.Log($"[ARTargetHandler] Destroying old model for {mData.nama} due to model URL or content type change.");
+                Destroy(mCurrentModel);
+                mCurrentModel = null;
+            }
+            mCurrentModelUrl = null;
+        }
+
+        // If video URL changed or content type changed, stop and reset video player
+        if (videoUrlChanged || contentTypeChanged)
+        {
+            if (videoPlayer)
+            {
+                videoPlayer.Stop();
+                videoPlayer.url = "";
+                mShouldRestartVideoOnPlay = true;
+            }
+        }
+
+        // Update local configuration data
+        mData = newData;
+        markerId = newData.id;
+
+        // Re-parse slide URLs
+        mImageUrls = null;
+        mCurrentImageIndex = 0;
+        if (!string.IsNullOrEmpty(newData.slide_urls))
+        {
+            mImageUrls = newData.slide_urls.Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < mImageUrls.Length; i++) mImageUrls[i] = mImageUrls[i].Trim();
+        }
+
+        // If the target is currently tracked, update the active UI and playback states immediately
+        if (mIsTargetPresent)
+        {
+            UpdateUI(newData);
+            if (mObserverBehaviour != null)
+            {
+                HandleVideoPlayback(mObserverBehaviour.TargetStatus);
             }
         }
     }

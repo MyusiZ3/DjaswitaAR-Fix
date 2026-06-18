@@ -265,6 +265,25 @@ public static class AssetCacheManager
         }
     }
 
+    /// <summary>
+    /// Evicts a specific URL from the texture memory cache and destroys the texture to free memory.
+    /// </summary>
+    public static void EvictTextureFromMemory(string url)
+    {
+        if (string.IsNullOrEmpty(url)) return;
+        if (mTextureCache.ContainsKey(url))
+        {
+            Texture2D tex = mTextureCache[url];
+            if (tex != null)
+            {
+                UnityEngine.Object.Destroy(tex);
+            }
+            mTextureCache.Remove(url);
+            mTextureUsageOrder.Remove(url);
+            Debug.Log($"[AssetCacheManager] Evicted texture from memory: {url}");
+        }
+    }
+
     public static void ClearCache()
     {
         foreach (var tex in mTextureCache.Values)
