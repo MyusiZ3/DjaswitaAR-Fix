@@ -27,3 +27,7 @@ Assets/SamplesResources/AugmentationAssets/Models/Astronaut.FBX
 *.tgz
 *.zip
 *.7z
+
+# Ignore WebAdmin docs folder
+/WebAdmin/docs/
+
